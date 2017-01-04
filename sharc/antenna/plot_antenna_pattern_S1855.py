@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sharc.antenna.antenna_s1855 import AntennaS1855
+from sharc.parameters.parameters_fss_es import ParametersFssEs
 
 class PlotAntennaPatternS1855(object):
     """"
@@ -33,7 +34,7 @@ class PlotAntennaPatternS1855(object):
         phi = np.linspace(0,180, num = 180)
         theta = np.array([90.0])
 
-        gain = np.array(antenna.get_gain(phi,theta))
+        gain = np.array(antenna.calculate_gain(phi,theta))
 
         fig = plt.figure(figsize=(20,10))
         ax1 = fig.add_subplot(121)
@@ -48,7 +49,7 @@ class PlotAntennaPatternS1855(object):
         phi = np.linspace(0,180, num = 180)
         theta = np.array([45.0])
 
-        gain = np.array(antenna.get_gain(phi,theta))
+        gain = np.array(antenna.calculate_gain(phi,theta))
 
         ax2 = fig.add_subplot(122, sharey = ax1)
         ax2.plot(phi,gain)
@@ -75,6 +76,6 @@ if __name__ == '__main__':
     gain_dir = "/Users/carlosrodriguez/Desktop/"
 
     plot = PlotAntennaPatternS1855(gain_dir)
-    antenna_array = AntennaS1855(9.1, 24250, 62)
+    antenna_array = AntennaS1855(ParametersFssEs)
     plot.plot_pattern(antenna_array)
 

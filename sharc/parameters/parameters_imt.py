@@ -24,7 +24,7 @@ class ParametersImt(object):
 
     ###########################################################################
     # Number of macrocell sites per cluster (must set to 19 in macrocell network)
-    num_macrocell_sites = 19
+    num_macrocell_sites = 3
 
     ###########################################################################
     # Number of clusters in macro cell topology
