@@ -1,83 +1,44 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb  6 10:38:20 2017
+Created on Thu May  4 16:09:17 2017
 
-@author: edgar
+@author: Calil
 """
 
-class Antenna(object):
+from abc import ABC, abstractmethod
+import numpy as np
+
+class Antenna(ABC):
     """
-    This is an omnidirectional antenna
+    Abstract antenna class. All antenna classes must inherit from it.
+    
+    Methods
+    -------
+    calculate_gain: calculates the antenna gain in the given directions
     """
     
-    def __init__(self, gain: float = 0):
-        self.gain = gain
+    def __init__(self):
+        self.beams_list = []
+        self.w_vec_list = []
     
-        
-    """
-    TODO: check the validity of operator overriding for Antenna class because
-    it has to take into account the departure/arrival angle. Consider the 
-    posibility of creating an arrival angle attribute (instead of parameter)
-    """
-    def __float__(self):
-        return float(self.gain)
-        
-    def __add__(self, other):
-        return self.gain + other
-
-    def __radd__(self, other):
-        return self.gain + other
-
-    def __sub__(self, other):
-        return self.gain - other
-
-    def __rsub__(self, other):
-        return other - self.gain
-
-    def __lt__(self, other):
-        if isinstance(other, self.__class__):
-            return self.gain < other.gain
-        elif isinstance(other, (int, float)):
-            return self.gain < other
-        else:
-            return NotImplemented
-
-    def __le__(self, other):
-        if isinstance(other, self.__class__):
-            return self.gain <= other.gain
-        elif isinstance(other, (int, float)):
-            return self.gain <= other
-        else:
-            return NotImplemented
-        
-    def __gt__(self, other):
-        if isinstance(other, self.__class__):
-            return self.gain > other.gain
-        elif isinstance(other, (int, float)):
-            return self.gain > other
-        else:
-            return NotImplemented
     
-    def __ge__(self, other):
-        if isinstance(other, self.__class__):
-            return self.gain >= other.gain
-        elif isinstance(other, (int, float)):
-            return self.gain >= other
-        else:
-            return NotImplemented
-
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.gain == other.gain
-        elif isinstance(other, (int, float)):
-            return self.gain == other
-        else:
-            return NotImplemented
-
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return self.gain != other.gain
-        elif isinstance(other, (int, float)):
-            return self.gain != other            
-        else:
-            return NotImplemented            
+    @abstractmethod
+    def calculate_gain(self, *args, **kwargs) -> np.array:
+        """
+        Calculates the antenan gain.
+        """        
+        pass
+    
+    
+    def add_beam(self, phi_etilt: float, theta_etilt: float):
+        """
+        Add new beam to antenna.
+        Does not receive angles in local coordinate system.
+        Theta taken with z axis as reference.
+        
+        Parameters
+        ----------
+            phi_etilt (float): azimuth electrical tilt angle [degrees]
+            theta_etilt (float): elevation electrical tilt angle [degrees]
+        """
+        pass
