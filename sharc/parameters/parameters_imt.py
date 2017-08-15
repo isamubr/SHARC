@@ -7,6 +7,7 @@ Created on Wed Feb 15 16:05:58 2017
 
 class ParametersImt(object):
 
+<<<<<<< HEAD
     __instance = None
 
     def __new__(cls):
@@ -216,3 +217,8 @@ class ParametersImt(object):
 
     BOLTZMANN_CONSTANT = 1.38064852e-23
 
+=======
+    def __init__(self):
+        pass
+        
+>>>>>>> origin/dev-edgar

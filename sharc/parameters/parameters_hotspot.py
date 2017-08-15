@@ -7,6 +7,7 @@ Created on Wed May 17 15:47:05 2017
 
 class ParametersHotspot(object):
 
+<<<<<<< HEAD
     __instance = None
 
     def __new__(cls):
@@ -35,3 +36,7 @@ class ParametersHotspot(object):
     # Minimum 2D distance between two hotspots in the same cell [m]
     # This is twice the distance between hotspot and UE
     min_dist_hotspots = 2*max_dist_hotspot_ue
+=======
+    def __init__(self):
+        pass
+>>>>>>> origin/dev-edgar
