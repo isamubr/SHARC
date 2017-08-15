@@ -8,6 +8,7 @@ Created on Wed Feb 15 16:05:58 2017
 class ParametersImt(object):
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     __instance = None
 
     def __new__(cls):
@@ -222,3 +223,8 @@ class ParametersImt(object):
         pass
         
 >>>>>>> origin/dev-edgar
+=======
+    def __init__(self):
+        pass
+        
+>>>>>>> development

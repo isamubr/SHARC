@@ -8,6 +8,7 @@ Created on Wed May 17 15:47:05 2017
 class ParametersHotspot(object):
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     __instance = None
 
     def __new__(cls):
@@ -40,3 +41,7 @@ class ParametersHotspot(object):
     def __init__(self):
         pass
 >>>>>>> origin/dev-edgar
+=======
+    def __init__(self):
+        pass
+>>>>>>> development
