@@ -113,7 +113,33 @@ class AntennaS1855(Antenna):
             elif phi > 30.2 and phi <= 70:
                 gain = -5
             else:
-                gain = 0             
+                gain = 0   
+# Ganho da antenna S.465-6
+#        gain = None
+#        wavelength = 3e8 / (self.frequency * 1000000)
+#        d_to_wavel = self.diameter/wavelength
+#        phimin1 = 1
+#        phimin2 = 2                
+#        
+#        if d_to_wavel >= 50:
+#            if   phi < phimin1:
+#                gain = self.antenna_gain
+#            elif phi >= phimin2 and phi <= 48:
+#                gain = 32 - 25 *np.log10(phi)
+#            elif phi > 48:
+#                gain = -10
+#            else:
+#                return -10  
+#        elif d_to_wavel < 50:
+#            if   phi < phimin2:
+#                gain = self.antenna_gain
+#            elif phi >= phimin2 and phi <= 48:
+#                gain = 32 - 25 *np.log10(phi)
+#            elif phi > 48:
+#                gain = -10
+#            else:
+#                return -10                          
+    
         else:
             gain = 0
         return gain
