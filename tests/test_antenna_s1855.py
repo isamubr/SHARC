@@ -33,11 +33,16 @@ class AntennaS1855Test(unittest.TestCase):
         # phi = 15, the third part of the equation
         # phi = 15, the third part of the equation
         phi = np.array([7, 8, 15, 100])
-        theta = np.array([90, 45, 45, 45])
-        expected_result = np.array([ 0, 0, 0, 0 ])
-        #expected_result = np.array([[10.872549, 9.372549, 9.372549, 9.372549], [9.53636364, 8.71818182, 8.71818182, 8.71818182], [2.5977185236079663, 2.5977185236079663, 2.5977185236079663, 2.5977185236079663], [-10.00, -10.00, -10.00, -10.00]])
+        theta = np.array([90, 90, 90, 90])
+        expected_result = np.array([10.872549, 9.53636364, 2.5977185236079663, -10])        
         gain = self.antenna.calculate_gain(phi_vec = phi, theta_vec = theta)
-        #npt.assert_array_almost_equal(gain, expected_result)
+        npt.assert_array_almost_equal(gain, expected_result)
+
+        phi = np.array([7, 8, 15, 100])
+        theta = np.array([45, 45, 45, 45])
+        expected_result = np.array([9.372549, 8.718182, 2.597719, -10])        
+        gain = self.antenna.calculate_gain(phi_vec = phi, theta_vec = theta)
+        npt.assert_array_almost_equal(gain, expected_result)
 
     
         

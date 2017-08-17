@@ -7,6 +7,7 @@ Created on Thu Apr 13 17:18:59 2017
 
 import math
 import numpy as np
+from scipy import interpolate
 
 from sharc.antenna.antenna import Antenna
 
@@ -40,9 +41,13 @@ class AntennaFss_9_1(Antenna):
         -------
             gain (numpy.array): gain array in given directions
         """
-        phi_list = np.arange (0,10,0.1)
+#        phi_list = kwargs["phi_vec"]
+#        theta_list = kwargs["theta_vec"]
         
-        response = np.array([0,-4,-20,	-28,	-30,	-50,	-54,	-48,	-51,	-49,	-66,	-48,
+#        gain = np.empty(phi_list.shape, dtype = np.float)
+        
+        angle_range = np.arange (0,10.1,0.1)
+        gain_in_range = np.array([0,-4,-20,	-28,	-30,	-50,	-54,	-48,	-51,	-49,	-66,	-48,
                           -50,	-55,	-52,	-58,	-53,	-54,	-62,	-55,	-80,	-74,	-58,	-68,
                           -88,	-54,	-66,	-70,	-62,	-88,	-63,	-66,	-62,	-68,	-64,	-75,
                           -64,	-60,-90,	-60,	-82,	-69,	-64,	-67,	-90,	-72,	-90,	-72,	
@@ -51,5 +56,8 @@ class AntennaFss_9_1(Antenna):
                           -69,	-69,	-70,	-72,	-74,	-76,	-78,	-88,	-76,	-75,	-90,	-90,	
                           -82,	-90,	-82,-62,	-86,	-74,	-90,	-78,	-88,	-90,	-88,	-90,
                           -87,	-90,	-88,	-82,	-88])
-        return response       
+    
+
+
+        return gain_phi       
      

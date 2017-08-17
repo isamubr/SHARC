@@ -27,7 +27,7 @@ class PlotAntennaPatternFSS_9_1(object):
                 
         # Plot radiation pattern for theta = 90 degrees
         phi = np.arange (0,10.1,0.1)
-        gain = np.array(antenna.get_gain())
+        gain = np.array(antenna.calculate_gain())
 
         fig = plt.figure(figsize=(20,10))
         ax1 = fig.add_subplot(121)

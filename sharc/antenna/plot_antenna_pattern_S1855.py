@@ -13,6 +13,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sharc.antenna.antenna_s1855 import AntennaS1855
+<<<<<<< HEAD
+=======
+from sharc.parameters.parameters_fss_es import ParametersFssEs
+>>>>>>> c30bb4377ebe26ec39120295d21bd9d43c4b0610
 
 class PlotAntennaPatternS1855(object):
     """"
@@ -33,7 +37,11 @@ class PlotAntennaPatternS1855(object):
         phi = np.linspace(0,180, num = 180)
         theta = np.array([90.0])
 
+<<<<<<< HEAD
         gain = np.array(antenna.calculate_gain(phi_vec = phi,theta_vec = theta))
+=======
+        gain = np.array(antenna.calculate_gain(phi,theta))
+>>>>>>> c30bb4377ebe26ec39120295d21bd9d43c4b0610
 
         fig = plt.figure(figsize=(20,10))
         ax1 = fig.add_subplot(121)
@@ -48,7 +56,11 @@ class PlotAntennaPatternS1855(object):
         phi = np.linspace(0,180, num = 180)
         theta = np.array([45.0])
 
+<<<<<<< HEAD
         gain = np.array(antenna.calculate_gain(phi_vec = phi,theta_vec = theta))
+=======
+        gain = np.array(antenna.calculate_gain(phi,theta))
+>>>>>>> c30bb4377ebe26ec39120295d21bd9d43c4b0610
 
         ax2 = fig.add_subplot(122, sharey = ax1)
         ax2.plot(phi,gain)
@@ -72,9 +84,16 @@ class PlotAntennaPatternS1855(object):
         
 if __name__ == '__main__':
     
+<<<<<<< HEAD
     gain_dir = "/Users/cetuc/Desktop/"
 
     plot = PlotAntennaPatternS1855(gain_dir)
     antenna_array = AntennaS1855(9.1, 24250, 62)
+=======
+    gain_dir = "/Users/carlosrodriguez/Desktop/"
+
+    plot = PlotAntennaPatternS1855(gain_dir)
+    antenna_array = AntennaS1855(ParametersFssEs)
+>>>>>>> c30bb4377ebe26ec39120295d21bd9d43c4b0610
     plot.plot_pattern(antenna_array)
 
