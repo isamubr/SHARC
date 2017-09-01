@@ -121,43 +121,76 @@ class AntennaS1855(Antenna):
 #                gain = -5
 #            else:
 #                gain = 0   
-# Ganho da antenna S.465-6
+## Ganho da antenna S.465-6
+#        gain = None
+#        wavelength = 3e8 / (self.frequency * 1000000)
+#        d_to_wavel = self.diameter/wavelength
+#        wavel_to_d = wavelength/self.diameter
+#        
+#        if 1 > 100 * wavel_to_d:
+#            phimin1 = 1
+#        else:
+#            phimin1 = 100 * wavel_to_d
+#        if 2 > 114 * math.pow(wavel_to_d, -1.09):
+#            phimin2 = 2
+#        else:
+#            phimin2 = 114 * math.pow(wavel_to_d, -1.09)                
+#        
+#        if d_to_wavel >= 50:
+#            if   phi < phimin1:
+#                gain = self.antenna_gain
+#            elif phi >= phimin2 and phi <= 48:
+##                gain = 32 - 25 *np.log10(phi)
+#                gain = 29 - 25 * np.log10(phi)
+#            elif phi > 48:
+#                gain = -10
+#            else:
+#                gain = -10  
+#       
+#        elif d_to_wavel < 50:
+#            if   phi < phimin2:
+#                gain = self.antenna_gain
+#            elif phi >= phimin2 and phi <= 48:
+##                gain = 32 - 25 *np.log10(phi)
+#                gain = 29 - 25 * np.log10(phi)
+#            elif phi > 48:
+#                gain = -10
+#            else:
+#                gain = -10
+#       
+#        return gain
+
+# Ganho da antenna F.699
         gain = None
         wavelength = 3e8 / (self.frequency * 1000000)
         d_to_wavel = self.diameter/wavelength
-        wavel_to_d = wavelength/self.diameter
+        gainmax = 20 * math.log10(d_to_wavel) + 7.7
+        phir = 15.85 * math.pow(d_to_wavel, -0.6)
+        g1 = 2 + 15 * math.log10(d_to_wavel) 
+        g2 = gainmax - g1
+        phim = 20 * d_to_wavel * g2 * g2
         
-        if 1 > 100 * wavel_to_d:
-            phimin1 = 1
-        else:
-            phimin1 = 100 * wavel_to_d
-        if 2 > 114 * math.pow(wavel_to_d, -1.09):
-            phimin2 = 2
-        else:
-            phimin2 = 114 * math.pow(wavel_to_d, -1.09)                
-        
-        if d_to_wavel >= 50:
-            if   phi < phimin1:
-                gain = self.antenna_gain
-            elif phi >= phimin2 and phi <= 48:
+        if d_to_wavel > 100:
+            if   phi < phim:
+                gain = gainmax - 0.0025 * math.pow(d_to_wavel * phi, 2)
+            elif phi >= phim and phi <= phir:
+                 gain = g1
+            elif phi >= phir and phi <= 48:
                 gain = 32 - 25 *np.log10(phi)
-            elif phi > 48:
-                gain = -10
             else:
                 gain = -10  
        
-        elif d_to_wavel < 50:
-            if   phi < phimin2:
-                gain = self.antenna_gain
-            elif phi >= phimin2 and phi <= 48:
-                gain = 32 - 25 *np.log10(phi)
-            elif phi > 48:
-                gain = -10
-            else:
-                gain = -10
+        elif d_to_wavel <= 100:
+           if   phi < phim:
+                gain = gainmax - 0.0025 * math.pow(d_to_wavel * phi, 2)
+           elif phi >= phim and phi <= phir:
+                gain = g1
+           elif phi >= phir and phi <= 48:
+                gain = 52 - 10 * math.log10(d_to_wavel) - 25 * np.log10(phi)
+           else:
+                gain = 10 - 10 * math.log10(d_to_wavel) 
        
-        return gain
-        
+        return gain      
         
 if __name__ == '__main__':
     
