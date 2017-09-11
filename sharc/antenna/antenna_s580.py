@@ -11,7 +11,7 @@ from sharc.parameters.parameters_fss_es import ParametersFssEs
 import numpy as np
 import math
 
-class AntennaS465(Antenna):
+class AntennaS580(Antenna):
     """
     Implements the Earth station antenna pattern in the EESS/ISS service
     according to Recommendation ITU-R S.580-6
@@ -23,15 +23,10 @@ class AntennaS465(Antenna):
         lmbda = 3e8 / ( param.frequency * 1e6 )
         D_lmbda = param.diameter / lmbda
         
-#        if D_lmbda >= 50:
-#            self.phi_min = np.maximum(1, 100 / D_lmbda)
-#        else:
-#            self.phi_min = np.maximum(2, 114 * math.pow(D_lmbda, -1.09))
-
-        if 1 <=D_lmbda*100:
+        if 1 <=D_lmbda * 100:
             self.phi_min = 1
         else:
-           self.phi_min = D_lmbda*100
+           self.phi_min = D_lmbda * 100
         
     def calculate_gain(self, *args, **kwargs) -> np.array:
         phi = np.absolute(kwargs["phi_vec"])
@@ -61,7 +56,7 @@ if __name__ == '__main__':
     param27.frequency = 27000
     param27.antenna_gain = 50
     param27.diameter = 9.6
-    antenna27 = AntennaS465(param27)
+    antenna27 = AntennaS580(param27)
 
     gain27 = antenna27.calculate_gain(phi_vec=phi)
     
@@ -70,7 +65,7 @@ if __name__ == '__main__':
     param43.frequency = 43000
     param43.antenna_gain = 50
     param43.diameter = 1.8
-    antenna43 = AntennaS465(param43)
+    antenna43 = AntennaS580(param43)
     gain43 = antenna43.calculate_gain(phi_vec=phi)
 
     fig = plt.figure(figsize=(8,7), facecolor='w', edgecolor='k')  # create a figure object
