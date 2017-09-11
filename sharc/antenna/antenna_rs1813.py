@@ -59,7 +59,7 @@ if __name__ == '__main__':
     
     # initialize antenna parameters
     param27 = ParametersFssEs()
-    param27.antenna_pattern = "ITU-R S.509-3"
+    param27.antenna_pattern = "ITU-R RS.1813-1"
     param27.frequency = 27000
     param27.antenna_gain = 64
     param27.diameter = 9.6
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     gain27 = antenna27.calculate_gain(phi_vec=phi)
     
     param43 = ParametersFssEs()
-    param43.antenna_pattern = "ITU-R S.509-3"
+    param43.antenna_pattern = "ITU-R RS.1813-1"
     param43.frequency = 43000
     param43.antenna_gain = 50
     param43.diameter = 1.8
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     plt.semilogx(phi, gain27 - param27.antenna_gain, "-b", label = "$f = 27$ $GHz,$ $D = 9.6$ $m$")
  #   plt.semilogx(phi, gain43 - param43.antenna_gain, "-r", label = "$f = 43$ $GHz,$ $D = 1.8$ $m$")
 
-    plt.title("ITU-R SA.509 antenna radiation pattern")
+    plt.title("ITU-R RS.1813-1 antenna radiation pattern")
     plt.xlabel("Off-axis angle $\phi$ [deg]")
     plt.ylabel("Gain relative to $G_m$ [dB]")
     plt.legend(loc="lower left")
