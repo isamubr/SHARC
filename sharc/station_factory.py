@@ -80,17 +80,17 @@ class StationFactory(object):
     def generate_imt_ue(param: ParametersImt,
                         param_ant: ParametersAntennaImt,
                         topology: Topology) -> StationManager:
-        
+
         if param.topology == "INDOOR":
             return StationFactory.generate_imt_ue_indoor(param, param_ant, topology)
         else:
             return StationFactory.generate_imt_ue_outdoor(param, param_ant, topology)
 
-            
+
     @staticmethod
     def generate_imt_ue_outdoor(param: ParametersImt,
                                 param_ant: ParametersAntennaImt,
-                                topology: Topology) -> StationManager:           
+                                topology: Topology) -> StationManager:
         num_bs = topology.num_base_stations
         num_ue_per_bs = param.ue_k*param.ue_k_m
         num_ue = num_bs*num_ue_per_bs
@@ -185,11 +185,11 @@ class StationFactory(object):
         imt_ue.noise_figure = param.ue_noise_figure*np.ones(num_ue)
         return imt_ue
 
-        
+
     @staticmethod
     def generate_imt_ue_indoor(param: ParametersImt,
                                param_ant: ParametersAntennaImt,
-                               topology: Topology) -> StationManager:           
+                               topology: Topology) -> StationManager:
         num_bs = topology.num_base_stations
         num_ue_per_bs = param.ue_k*param.ue_k_m
         num_ue = num_bs*num_ue_per_bs
@@ -198,7 +198,7 @@ class StationFactory(object):
         imt_ue.station_type = StationType.IMT_UE
         ue_x = list()
         ue_y = list()
-        
+
         # initially set all UE's as indoor
         imt_ue.indoor = np.ones(num_ue, dtype=bool)
 
@@ -209,7 +209,7 @@ class StationFactory(object):
         #azimuth = np.zeros(num_ue)
         elevation_range = (-90, 90)
         elevation = (elevation_range[1] - elevation_range[0])*np.random.random(num_ue) + elevation_range[0]
-        
+
         delta_x = (topology.b_w/math.sqrt(topology.ue_indoor_percent) - topology.b_w)/2
         delta_y = (topology.b_d/math.sqrt(topology.ue_indoor_percent) - topology.b_d)/2
 
@@ -230,7 +230,7 @@ class StationFactory(object):
             y = (y_max - y_min)*np.random.random(num_ue_per_bs) + y_min
             ue_x.extend(x)
             ue_y.extend(y)
-        
+
             # theta is the horizontal angle of the UE wrt the serving BS
             theta = np.degrees(np.arctan2(y - topology.y[bs], x - topology.x[bs]))
             # calculate UE azimuth wrt serving BS
@@ -255,7 +255,7 @@ class StationFactory(object):
                       (y > topology.y[bs] + topology.b_d/2) | \
                       (y < topology.y[bs] - topology.b_d/2)
             imt_ue.indoor[idx] = ~ out
-                
+
         imt_ue.x = np.array(ue_x)
         imt_ue.y = np.array(ue_y)
 
@@ -275,7 +275,7 @@ class StationFactory(object):
         imt_ue.bandwidth = param.bandwidth*np.ones(num_ue)
         imt_ue.noise_figure = param.ue_noise_figure*np.ones(num_ue)
         return imt_ue
-        
+
 
     @staticmethod
     def generate_system(parameters: Parameters):
@@ -370,16 +370,16 @@ class StationFactory(object):
         elif param.antenna_pattern == "ITU-R S.465":
             fss_earth_station.antenna = np.array([AntennaS465(param)])
         elif param.antenna_pattern == "ITU-R S.580":
-            fss_earth_station.antenna = np.array([AntennaS580(param)])  
+            fss_earth_station.antenna = np.array([AntennaS580(param)])
         else:
             sys.stderr.write("ERROR\nInvalid FSS ES antenna pattern: " + param.antenna_pattern)
             sys.exit(1)
 
         fss_earth_station.bandwidth = np.array([param.bandwidth])
-        
+
         return fss_earth_station
-        
-        
+
+
     @staticmethod
     def generate_fs_station(param: ParametersFs):
         fs_station = StationManager(1)
@@ -395,7 +395,7 @@ class StationFactory(object):
         fs_station.active = np.array([True])
         fs_station.tx_power = np.array([param.tx_power_density + 10*math.log10(param.bandwidth*1e6) + 30])
         fs_station.rx_interference = -500
-        
+
         if param.antenna_pattern == "OMNI":
             fs_station.antenna = np.array([AntennaOmni(param.antenna_gain)])
         elif param.antenna_pattern == "ITU-R F.699":
@@ -403,12 +403,12 @@ class StationFactory(object):
         else:
             sys.stderr.write("ERROR\nInvalid FS antenna pattern: " + param.antenna_pattern)
             sys.exit(1)
-            
+
         fs_station.bandwidth = np.array([param.bandwidth])
-        
+
         return fs_station
-        
-        
+
+
     @staticmethod
     def generate_haps(param: ParametersHaps, intersite_distance: int):
         num_haps = 1
@@ -421,7 +421,7 @@ class StationFactory(object):
 #        haps.y = np.array([0, 9*h, 15*h, 6*h, -9*h, -15*h, -6*h])
         haps.x = np.array([0])
         haps.y = np.array([0])
-        
+
         haps.height = param.altitude * np.ones(num_haps)
 
         #haps.azimuth = param.azimuth
@@ -430,7 +430,7 @@ class StationFactory(object):
         elev_max = 68.19 # corresponds to 50 km radius and 20 km altitude
         haps.azimuth = 360 * np.random.random(num_haps)
         haps.elevation = ((270 + elev_max) - (270 - elev_max)) * np.random.random(num_haps) + (270 - elev_max)
-        
+
         haps.active = np.ones(num_haps, dtype = bool)
 
         haps.antenna = np.empty(num_haps, dtype=Antenna)
@@ -448,8 +448,8 @@ class StationFactory(object):
         haps.bandwidth = np.array([param.bandwidth])
 
         return haps
-        
-        
+
+
     @staticmethod
     def generate_rns(param: ParametersRns):
         num_rns = 1
@@ -459,14 +459,14 @@ class StationFactory(object):
         rns.x = np.array([param.x])
         rns.y = np.array([param.y])
         rns.height = np.array([param.altitude])
-        
+
         # minimum and maximum values for azimuth and elevation
         azimuth = np.array([-30, 30])
         elevation = np.array([-30, 5])
 
         rns.azimuth = 90 + (azimuth[1] - azimuth[0]) * np.random.random(num_rns) + azimuth[0]
         rns.elevation = (elevation[1] - elevation[0]) * np.random.random(num_rns) + elevation[0]
-        
+
         rns.active = np.ones(num_rns, dtype = bool)
 
         if param.antenna_pattern == "OMNI":
@@ -484,5 +484,3 @@ class StationFactory(object):
         rns.rx_interference = -500
 
         return rns
-        
-        
