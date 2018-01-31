@@ -8,6 +8,7 @@ Created on Tue Jan 30 14:39:17 2018
 from sharc.propagation.propagation import Propagation
 from sharc.support.named_tuples import PathLossHeader
 
+import matplotlib.pyplot as plt
 import numpy as np
 from glob import glob
 
@@ -88,3 +89,25 @@ class PropagationInputFile(Propagation):
         This method will be implemented later
         """
         pass
+    
+if __name__ == '__main__':
+    
+    prop = PropagationInputFile("measurements")
+    
+    plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot', 
+               interpolation='nearest',
+               extent = [prop.path_loss["BRCU0010"][0].lower_left[1],
+                         prop.path_loss["BRCU0010"][0].upper_right[1],
+                         prop.path_loss["BRCU0010"][0].lower_left[0],
+                         prop.path_loss["BRCU0010"][0].upper_right[0]])
+    plt.colorbar()
+    plt.show()
+    
+    plt.imshow(prop.path_loss["BRUC0020"][1], cmap='hot', 
+               interpolation='nearest',
+               extent = [prop.path_loss["BRUC0020"][0].lower_left[1],
+                         prop.path_loss["BRUC0020"][0].upper_right[1],
+                         prop.path_loss["BRUC0020"][0].lower_left[0],
+                         prop.path_loss["BRUC0020"][0].upper_right[0]])
+    plt.colorbar()
+    plt.show()
