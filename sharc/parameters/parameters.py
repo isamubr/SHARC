@@ -6,6 +6,8 @@ Created on Wed Aug  9 19:35:52 2017
 """
 
 import configparser
+import sys
+import pandas as pd
 
 from sharc.parameters.parameters_general import ParametersGeneral
 from sharc.parameters.parameters_imt import ParametersImt
@@ -58,6 +60,25 @@ class Parameters(object):
         # IMT
         #######################################################################
         self.imt.topology                = config.get("IMT", "topology")
+
+        # For INPUT_MAP the input file with BS physical data must be loaded
+        # the self.imt.bs_data contain a dict of BS parameters
+        if self.imt.topology == "INPUT_MAP":
+            self.imt.bs_data = {}
+            if config.has_option("IMT", "bs_physical_data_file"):
+                self.imt.bs_physical_data_file = config.get("IMT", "bs_physical_data_file")
+                try:
+                    bs_data_df = pd.read_excel(self.imt.bs_physical_data_file)
+                except FileNotFoundError as err:
+                    sys.stderr.write(str(err) + "\n")
+                    sys.exit(1)
+                self.imt.bs_data = bs_data_df.to_dict('list')
+            else:
+                err_msg = "ERROR\nInvalid configuration: For topology type INPUT_MAP, the base station physical data " \
+                          "file must be set in parameter bs_physical_data_file\n"
+                sys.stderr.write(err_msg)
+                sys.exit(1)
+
         self.imt.num_macrocell_sites     = config.getint("IMT", "num_macrocell_sites")
         self.imt.num_clusters            = config.getint("IMT", "num_clusters")
         self.imt.intersite_distance      = config.getfloat("IMT", "intersite_distance")
@@ -252,7 +273,7 @@ class Parameters(object):
         self.haps.antenna_l_n             = config.getfloat("HAPS", "antenna_l_n")
         self.haps.BOLTZMANN_CONSTANT      = config.getfloat("HAPS", "BOLTZMANN_CONSTANT")
         self.haps.EARTH_RADIUS            = config.getfloat("HAPS", "EARTH_RADIUS")
-        
+
         #######################################################################
         # RNS
         #######################################################################
@@ -271,5 +292,4 @@ class Parameters(object):
         self.rns.imt_lat_deg        = config.getfloat("RNS", "imt_lat_deg")
         self.rns.channel_model      = config.get("RNS", "channel_model")
         self.rns.BOLTZMANN_CONSTANT = config.getfloat("RNS", "BOLTZMANN_CONSTANT")
-        self.rns.EARTH_RADIUS       = config.getfloat("RNS", "EARTH_RADIUS")        
-        
+        self.rns.EARTH_RADIUS       = config.getfloat("RNS", "EARTH_RADIUS")
