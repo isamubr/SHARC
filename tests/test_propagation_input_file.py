@@ -6,8 +6,10 @@ Created on Tue Jan 30 14:40:58 2018
 """
 
 import unittest
+from unittest.mock import patch
 import numpy.testing as npt
 import numpy as np
+from io import StringIO
 
 from sharc.propagation.propagation_input_file import PropagationInputFile
 from sharc.support.named_tuples import PathLossHeader
@@ -22,7 +24,7 @@ class PropagationInputFileTest(unittest.TestCase):
         # Test 2
         input_folder = "propagation_test_files\\test_2"
         self.propagation_2 = PropagationInputFile(input_folder)
-        
+    
     def test_files(self):
         # Test 1
         npt.assert_equal(self.propagation_1.files,
@@ -34,10 +36,36 @@ class PropagationInputFileTest(unittest.TestCase):
                           'propagation_test_files\\test_2\\test_dummy_2.txt',
                           'propagation_test_files\\test_2\\test_dummy_3.txt'])
     
+    def test_parameters(self):
+        # Test 3
+        input_folder = "propagation_test_files\\test_3"
+        propagation_3 = PropagationInputFile(input_folder)
+        
+        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].antenna,
+                         'DUMMY01')
+        self.assertTrue(np.all(np.isnan(
+                propagation_3.path_loss['DUMMY01'][0].location)))
+        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].frequency,
+                         2600.0)
+        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].power,
+                         ['10.000', 'W', 'EIRP'])
+        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].antennatype,
+                         'ISO')
+        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].lower_left,
+                         [10.0, 10.0])
+        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].upper_right,
+                         [60.0, 60.0])
+        self.assertTrue(np.isnan(propagation_3.path_loss['DUMMY01'][0].height))
+        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].resolution,
+                         10.0)
+        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].receiver_gain,
+                         0.0)
+    
     def test_path_loss(self):
         # Test 1
-        npt.assert_equal(list(self.propagation_1.path_loss.keys()),
-                         ['DUMMY02', 'DUMMY01'])
+        self.assertTrue('DUMMY01' in list(self.propagation_1.path_loss.keys()))
+        self.assertTrue('DUMMY02' in list(self.propagation_1.path_loss.keys()))
+        self.assertEqual(len(list(self.propagation_1.path_loss.keys())),2)
         self.assertEqual(self.propagation_1.path_loss['DUMMY01'][0],
                          PathLossHeader(antenna='DUMMY01', 
                                         location=[24.0, 42.0, 44.0], 
