@@ -195,15 +195,22 @@ class Simulation(ABC, Observable):
             self.system_imt_antenna_gain = gain_a
             self.imt_system_antenna_gain = gain_b
         else:
-            path_loss = propagation.get_loss(distance_3D=d_3D,
-                                             distance_2D=d_2D,
-                                             frequency=self.parameters.imt.frequency*np.ones(d_2D.shape),
-                                             indoor_stations=np.tile(station_b.indoor, (station_a.num_stations, 1)),
-                                             bs_height=station_a.height,
-                                             ue_height=station_b.height,
-                                             elevation=elevation_angles,
-                                             shadowing=self.parameters.imt.shadowing,
-                                             line_of_sight_prob=self.parameters.imt.line_of_sight_prob)
+            if not self.parameters.imt.channel_model == "INPUT_FILE":
+                path_loss = propagation.get_loss(distance_3D=d_3D,
+                                                 distance_2D=d_2D,
+                                                 frequency=self.parameters.imt.frequency*np.ones(d_2D.shape),
+                                                 indoor_stations=np.tile(station_b.indoor, (station_a.num_stations, 1)),
+                                                 bs_height=station_a.height,
+                                                 ue_height=station_b.height,
+                                                 elevation=elevation_angles,
+                                                 shadowing=self.parameters.imt.shadowing,
+                                                 line_of_sight_prob=self.parameters.imt.line_of_sight_prob)
+            else:
+                #TODO Pass parameters correctly
+                path_loss = propagation.get_loss(cell_id=self.bs.cell_id,
+                                                 ue_position_x=self.ue.x,
+                                                 ue_position_y=self.ue.y)
+                
             # define antenna gains
             gain_a = self.calculate_gains(station_a, station_b)
             gain_b = np.transpose(self.calculate_gains(station_b, station_a))

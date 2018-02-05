@@ -135,6 +135,8 @@ class PropagationInputFile(Propagation):
         
     def get_loss(self, *args, **kwargs) -> np.array:
         """
+        Returns from given BSs in the specified UE positions
+        
         Keyword Arguments:
             cell_id (np.array): array of strings with IDs of cells to which
                 calculate the path loss
@@ -142,6 +144,10 @@ class PropagationInputFile(Propagation):
                 which calculate path loss
             ue_position_y (np.array):array of y coordinate of UEs to 
                 which calculate path loss
+                
+        Returns:
+            loss (np.array): path loss matrix. Lines correspond to BSs while
+                columns correspond to UEs
         """
         # Get keywork arguments
         cell_id = kwargs["cell_id"]
@@ -170,7 +176,7 @@ class PropagationInputFile(Propagation):
     
 if __name__ == '__main__':
     
-    prop = PropagationInputFile("measurements")
+    prop = PropagationInputFile("../parameters/measurements")
     
     plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot', 
                interpolation='nearest',

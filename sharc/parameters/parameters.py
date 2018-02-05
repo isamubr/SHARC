@@ -60,6 +60,7 @@ class Parameters(object):
         # IMT
         #######################################################################
         self.imt.topology                = config.get("IMT", "topology")
+        self.imt.channel_model           = config.get("IMT", "channel_model")
 
         # For INPUT_MAP the input file with BS physical data must be loaded
         # the self.imt.bs_data contain a dict of BS parameters
@@ -76,6 +77,25 @@ class Parameters(object):
             else:
                 err_msg = "ERROR\nInvalid configuration: For topology type INPUT_MAP, the base station physical data " \
                           "file must be set in parameter bs_physical_data_file\n"
+                sys.stderr.write(err_msg)
+                sys.exit(1)
+                
+        if self.imt.channel_model == "INPUT_FILES":
+            if config.has_option("IMT", "propagation_folder"):
+                self.imt.path_loss_folder = config.get("IMT", "propagation_folder")
+            else:
+                err_msg = "ERROR\nInvalid configuration: For channel model " \
+                          "type INPUT_FILES,  the folder containing the " \
+                          "path loss measurement files must be set in "\
+                          "parameter propagation_folder\n"
+                sys.stderr.write(err_msg)
+                sys.exit(1)
+            
+            if self.imt.topology != "INPUT_MAP":
+                err_msg = "ERROR\nInvalid configuration: For channel model " \
+                          "type INPUT_FILES,  parameter " \
+                          "bs_physical_data_file must be set to INPUT_MAP " \
+                          "value\n"
                 sys.stderr.write(err_msg)
                 sys.exit(1)
 
@@ -118,7 +138,6 @@ class Parameters(object):
         self.imt.dl_attenuation_factor   = config.getfloat("IMT", "dl_attenuation_factor")
         self.imt.dl_sinr_min             = config.getfloat("IMT", "dl_sinr_min")
         self.imt.dl_sinr_max             = config.getfloat("IMT", "dl_sinr_max")
-        self.imt.channel_model           = config.get("IMT", "channel_model")
         self.imt.line_of_sight_prob      = config.getfloat("IMT", "line_of_sight_prob")
         self.imt.shadowing               = config.getboolean("IMT", "shadowing")
         self.imt.noise_temperature       = config.getfloat("IMT", "noise_temperature")

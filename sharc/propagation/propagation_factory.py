@@ -18,6 +18,7 @@ from sharc.propagation.propagation_uma import PropagationUMa
 from sharc.propagation.propagation_umi import PropagationUMi
 from sharc.propagation.propagation_abg import PropagationABG
 from sharc.propagation.propagation_indoor import PropagationIndoor
+from sharc.propagation.propagation_input_file import PropagationInputFile
 
 class PropagationFactory(object):
 
@@ -41,6 +42,8 @@ class PropagationFactory(object):
             return PropagationP619()
         elif channel_model == "INDOOR":
             return PropagationIndoor(param.indoor)
+        elif channel_model == "INPUT_FILE":
+            return PropagationInputFile(param.imt.path_loss_folder)
         else:
             sys.stderr.write("ERROR\nInvalid channel_model: " + channel_model)
             sys.exit(1)

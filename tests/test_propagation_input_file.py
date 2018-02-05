@@ -6,10 +6,8 @@ Created on Tue Jan 30 14:40:58 2018
 """
 
 import unittest
-from unittest.mock import patch
 import numpy.testing as npt
 import numpy as np
-from io import StringIO
 
 from sharc.propagation.propagation_input_file import PropagationInputFile
 from sharc.support.named_tuples import PathLossHeader
