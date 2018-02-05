@@ -35,7 +35,7 @@ class TopologyInputMap(Topology):
         self.num_base_stations = len(self.x)
 
         # Zero Azimuth for omni antennas
-        antenna_patterns = self.params.bs_data['pattern']
+        antenna_patterns = self.param.bs_data['pattern']
         # FIXME: define antenna Azimuths for other antenna patterns
         self.azimuth = [self.AZIMUTH[0] if pattern.startswith('omni') else None for pattern in antenna_patterns]
 
