@@ -11,6 +11,7 @@ from sharc.support.named_tuples import PathLossHeader
 import matplotlib.pyplot as plt
 import numpy as np
 from glob import glob
+import sys
 
 class PropagationInputFile(Propagation):
     """
@@ -35,9 +36,6 @@ class PropagationInputFile(Propagation):
         self.files = []
         self.path_loss = dict()
         
-        # Find where data begins
-        begin_data_line = 12
-        
         # Loop through all the txt files in the folder
         for file in glob(input_folder + "\\*.txt"):
             
@@ -45,18 +43,69 @@ class PropagationInputFile(Propagation):
             
             with open(file) as f:
                 
-                # Treat file header
-                head_raw = [next(f) for x in range(begin_data_line)]
-                head = PathLossHeader(head_raw[0].split()[1][1:-1],
-                                      [float(x) for x in head_raw[1].split()[1:]],
-                                      float(head_raw[2].split()[1]),
-                                      head_raw[3].split()[1:],
-                                      head_raw[4].split()[1],
-                                      [float(x) for x in head_raw[5].split()[1:]],
-                                      [float(x) for x in head_raw[6].split()[1:]],
-                                      float(head_raw[7].split()[1]),
-                                      float(head_raw[8].split()[1]),
-                                      float(head_raw[9].split()[1]))
+                # Find where data begins and extract header
+                head_raw = ""
+                line = next(f)
+                while "BEGIN_DATA" not in line:
+                    head_raw = head_raw + line
+                    line = next(f)
+                    
+                # Find tokens in file header
+                head_list = head_raw.split() + 4*[np.nan]
+                param_list = ["ANTENNA",
+                              "LOCATION",
+                              "FREQUENCY",
+                              "POWER",
+                              "ANTENNATYPE",
+                              "LOWER_LEFT",
+                              "UPPER_RIGHT",
+                              "HEIGHT",
+                              "RESOLUTION",
+                              "RECEIVER_GAIN"]
+                essential_params = ["ANTENNA",
+                                    "LOWER_LEFT",
+                                    "UPPER_RIGHT",
+                                    "RESOLUTION",
+                                    "RECEIVER_GAIN"]
+                idx_list = []
+                for param in param_list:
+                    try:
+                        idx_list.append(head_list.index(param))
+                    except ValueError as err:
+                        if param in essential_params:
+                            sys.stderr.write(param + 
+                                         " parameter not in path loss file " +
+                                         file + "\n")
+                            sys.exit(1)
+                        else:
+                            idx_list.append(-4)
+                    
+                # Get parameter values
+                antenna = head_list[idx_list[0] + 1][1:-1]
+                location = [float(x) for x in head_list[idx_list[1] + 1:
+                                                        idx_list[1] + 4]]
+                frequency = float(head_list[idx_list[2] + 1])
+                power = head_list[idx_list[3] + 1:idx_list[3] + 4]
+                antenna_type = head_list[idx_list[4] + 1]
+                lower_left = [float(x) for x in head_list[idx_list[5] + 1:
+                                                          idx_list[5] + 3]]
+                upper_right = [float(x) for x in head_list[idx_list[6] + 1:
+                                                           idx_list[6] + 3]]
+                height = float(head_list[idx_list[7] + 1])
+                resolution = float(head_list[idx_list[8] + 1])
+                receive_gain = float(head_list[idx_list[9] + 1])
+                
+                # Create header struct
+                head = PathLossHeader(antenna,
+                                      location,
+                                      frequency,
+                                      power,
+                                      antenna_type,
+                                      lower_left,
+                                      upper_right,
+                                      height,
+                                      resolution,
+                                      receive_gain)
                 
                 # Initialize path loss array
                 # Remember that data in file is in LAT LONG format, so y value
@@ -77,7 +126,7 @@ class PropagationInputFile(Propagation):
                            head.resolution/2))/head.resolution)
                     col = int((data[1] - (head.lower_left[1] + 
                            head.resolution/2))/head.resolution)
-                    loss[lin,col] = data[2]
+                    loss[lin,col] = (data[2] + head.receiver_gain) 
                     
                     line = next(f)
                     
@@ -86,9 +135,38 @@ class PropagationInputFile(Propagation):
         
     def get_loss(self, *args, **kwargs) -> np.array:
         """
-        This method will be implemented later
+        Keyword Arguments:
+            cell_id (np.array): array of strings with IDs of cells to which
+                calculate the path loss
+            ue_position_x (np.array): array of x coordinate of UEs to 
+                which calculate path loss
+            ue_position_y (np.array):array of y coordinate of UEs to 
+                which calculate path loss
         """
-        pass
+        # Get keywork arguments
+        cell_id = kwargs["cell_id"]
+        ue_position_x = kwargs["ue_position_x"]
+        ue_position_y = kwargs["ue_position_y"]
+        
+        # Initialize array
+        loss = np.zeros((len(cell_id),len(ue_position_x)))
+        
+        # Loop through all the cells
+        for k in range(len(cell_id)):
+            # Convert positions to array indexes
+            cell = cell_id[k]
+            lowleft_y = self.path_loss[cell][0].lower_left[0]
+            lowleft_x = self.path_loss[cell][0].lower_left[1]
+            res = self.path_loss[cell_id[0]][0].resolution
+            lin_f = (ue_position_y - lowleft_y)/res
+            col_f = (ue_position_x - lowleft_x)/res
+            lin = lin_f.astype(int)
+            col = col_f.astype(int)
+            
+            # Fill array
+            loss[k:] = self.path_loss[cell][1][lin,col]
+            
+        return loss
     
 if __name__ == '__main__':
     
