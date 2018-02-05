@@ -47,10 +47,18 @@ class StationFactory(object):
         imt_base_stations.y = topology.y
         imt_base_stations.azimuth = topology.azimuth
         imt_base_stations.elevation = topology.elevation
-        imt_base_stations.height = param.bs_height*np.ones(num_bs)
+        if param.topology == "INPUT_MAP":
+            imt_base_stations.station_id = param.bs_data['strCellID']
+            imt_base_stations.height = np.array(param.bs_data['dHeight'])
+            # FIXME: Different tx power from conducted power
+            imt_base_stations.tx_power = np.array(param.bs_data['dMaxTxPowerdBm'])
+        else:
+            imt_base_stations.height = param.bs_height*np.ones(num_bs)
+            imt_base_stations.tx_power = param.bs_conducted_power * np.ones(num_bs)
+
         imt_base_stations.indoor = topology.indoor
         imt_base_stations.active = np.random.rand(num_bs) < param.bs_load_probability
-        imt_base_stations.tx_power = param.bs_conducted_power*np.ones(num_bs)
+
         imt_base_stations.rx_power = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
         imt_base_stations.rx_interference = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
         imt_base_stations.ext_interference = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
@@ -61,6 +69,7 @@ class StationFactory(object):
         imt_base_stations.sinr_ext = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
         imt_base_stations.inr = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
 
+        # TODO: Not always the IMT antenna has beamforming
         imt_base_stations.antenna = np.empty(num_bs, dtype=AntennaBeamformingImt)
         par = param_ant.get_antenna_parameters("BS", "RX")
 
