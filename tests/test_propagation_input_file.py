@@ -133,7 +133,7 @@ class PropagationInputFileTest(unittest.TestCase):
         c_id = np.array(['DUMMY01','DUMMY02'])
         ue_x = np.array([35.0, 12.5, 49.9, 10.0, 10.0])
         ue_y = np.array([35.0, 42.0, 19.9, 10.0, 20.0])
-        pl = self.propagation_1.get_loss(cell_id = c_id,
+        pl = self.propagation_1.get_loss(bs_id = c_id,
                                          ue_position_x = ue_x,
                                          ue_position_y = ue_y)
         npt.assert_equal(pl,np.array([[-33.0, -41.0, -14.0, -11.0, -21.0],
@@ -143,7 +143,7 @@ class PropagationInputFileTest(unittest.TestCase):
         c_id = np.array(['DUMMY01','DUMMY02','DUMMY03'])
         ue_x = np.array([35.0, 12.5, 49.9, 10.0, 10.0])
         ue_y = np.array([35.0, 42.0, 19.9, 10.0, 20.0])
-        pl = self.propagation_2.get_loss(cell_id = c_id,
+        pl = self.propagation_2.get_loss(bs_id = c_id,
                                          ue_position_x = ue_x,
                                          ue_position_y = ue_y)
         npt.assert_equal(pl,np.array([[-33.0, -41.0, -14.0, -11.0, -21.0],
