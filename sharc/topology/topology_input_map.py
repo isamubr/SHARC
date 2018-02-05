@@ -5,44 +5,42 @@ Created on Tue Jan 30 16:00:22 2018
 @author: Bruno Faria (bruno.faria@ektrum.com)
 """
 
-from sharc.topology.topology import Topology
-import pandas as pd
 import numpy as np
-import matplotlib.axes
 import matplotlib.pyplot as plt
 
+from sharc.topology.topology import Topology
+from sharc.parameters.parameters_imt import ParametersImt
 
-class TopologyMap(Topology):
+
+class TopologyInputMap(Topology):
     """
     Generates the coordinates of the BSs based on the base station physical cell data input file.
     """
 
-    def __init__(self):
-        # TODO: This must came from parameters parsing
-        self.cell_phy_data_file = 'brucuCCO2600.xlsx'
+    # Possible values for antenna Azimuth and elevation
+    # FIXME: Those parameters must come from input file
+    AZIMUTH = [0, 90, 180, 270]
+    ELEVATION = -10
 
-    def read_cell_data_file(self):
-
-        return pd.read_excel(self.cell_phy_data_file)
+    def __init__(self, param: ParametersImt):
+        self.param = param
 
     def calculate_coordinates(self):
         """
-        Read the base station coordinates in from the file.
+        Read the base station coordinates from Base Station data parsed from file.
         """
 
-        cell_data_df = self.read_cell_data_file()
-
-        self.x = np.array(cell_data_df['dWECoordinateMeter'].tolist())
-        self.y = np.array(cell_data_df['dSNCoordinateMeter'].tolist())
+        self.x = np.array(self.param.bs_data['dWECoordinateMeter'])
+        self.y = np.array(self.param.bs_data['dSNCoordinateMeter'])
         self.num_base_stations = len(self.x)
+
         # Zero Azimuth for omni antennas
-        # TODO: How to define antenna Azimuths for other antenna patterns
-        antenna_patterns = cell_data_df['pattern'].tolist()
-        self.azimuth = [0 if pattern.startswith('omni') else None for pattern in antenna_patterns]
-        self.azimuth = np.zeros(self.num_base_stations)
-        self.elevation = np.array(cell_data_df['dHeight'].tolist())
-        # TODO: Guessing that this scenario should be static?
-        self.static_base_stations = True
+        antenna_patterns = self.params.bs_data['pattern']
+        # FIXME: define antenna Azimuths for other antenna patterns
+        self.azimuth = [self.AZIMUTH[0] if pattern.startswith('omni') else None for pattern in antenna_patterns]
+
+        # FIXME: Need to parse elevation information from input file
+        self.elevation = self.ELEVATION
 
     def plot(self):
         plt.figure()  # create a figure object
@@ -60,7 +58,7 @@ class TopologyMap(Topology):
 
 if __name__ == '__main__':
 
-    topology = TopologyMap()
+    topology = TopologyInputMap()
     topology.calculate_coordinates()
     topology.plot()
 

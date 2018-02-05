@@ -43,6 +43,7 @@ class StationManager(object):
         self.sinr_ext = np.empty(n)
         self.inr = np.empty(n)
         self.station_type = StationType.NONE
+        self.station_id = list()
 
     def get_station_list(self, id=None) -> list:
         if(id is None):
@@ -98,10 +99,10 @@ class StationManager(object):
         """
         Calculates the elevation angle between stations. Can be used for
         IMT stations.
-        
-        TODO: this implementation is essentialy the same as the one from 
+
+        TODO: this implementation is essentialy the same as the one from
               get_elevation_angle (free-space elevation angle), despite the
-              different matrix dimentions. So, the methods should be merged 
+              different matrix dimentions. So, the methods should be merged
               in order to reuse the source code
         """
 
@@ -112,10 +113,10 @@ class StationManager(object):
                            np.power(self.y[i] - station.y, 2))
             rel_z = station.height - self.height[i]
             elevation[i] = np.degrees(np.arctan2(rel_z, distance))
-            
+
         return elevation
-        
-        
+
+
     def get_elevation_angle(self, station, sat_params) -> dict:
         free_space_angle = np.empty(self.num_stations)
         angle = np.empty(self.num_stations)
@@ -167,10 +168,9 @@ class StationManager(object):
 
         a = 90 - self.elevation
         C = Az0 - Az
-        
+
         phi = np.arccos(np.cos(np.radians(a))*np.cos(np.radians(b)) \
                         + np.sin(np.radians(a))*np.sin(np.radians(b))*np.cos(np.radians(C)))
         phi_deg = np.degrees(phi)
 
         return phi_deg
-        
