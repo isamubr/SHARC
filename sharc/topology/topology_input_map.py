@@ -24,6 +24,11 @@ class TopologyInputMap(Topology):
 
     def __init__(self, param: ParametersImt):
         self.param = param
+        
+        # FIXME: cells are not supposed to be deffined for this topology
+        intersite_distance = 500
+        cell_radius = 100
+        super().__init__(intersite_distance, cell_radius)
 
     def calculate_coordinates(self):
         """
@@ -37,10 +42,13 @@ class TopologyInputMap(Topology):
         # Zero Azimuth for omni antennas
         antenna_patterns = self.param.bs_data['pattern']
         # FIXME: define antenna Azimuths for other antenna patterns
-        self.azimuth = [self.AZIMUTH[0] if pattern.startswith('omni') else None for pattern in antenna_patterns]
+        self.azimuth = [self.AZIMUTH[0] if pattern.startswith('omni') else None for pattern in antenna_patterns]*np.ones_like(self.num_base_stations)
 
         # FIXME: Need to parse elevation information from input file
-        self.elevation = self.ELEVATION
+        self.elevation = self.ELEVATION*np.ones_like(self.num_base_stations)
+        
+        # No indoor stations
+        self.indoor = np.zeros(self.num_base_stations, dtype = bool)
 
     def plot(self):
         plt.figure()  # create a figure object
