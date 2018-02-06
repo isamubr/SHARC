@@ -135,29 +135,35 @@ class PropagationInputFile(Propagation):
         
     def get_loss(self, *args, **kwargs) -> np.array:
         """
+        Returns from given BSs in the specified UE positions
+        
         Keyword Arguments:
-            cell_id (np.array): array of strings with IDs of cells to which
+            bs_id (np.array): array of strings with IDs of BSs to which
                 calculate the path loss
             ue_position_x (np.array): array of x coordinate of UEs to 
                 which calculate path loss
             ue_position_y (np.array):array of y coordinate of UEs to 
                 which calculate path loss
+                
+        Returns:
+            loss (np.array): path loss matrix. Lines correspond to BSs while
+                columns correspond to UEs
         """
         # Get keywork arguments
-        cell_id = kwargs["cell_id"]
+        bs_id = kwargs["bs_id"]
         ue_position_x = kwargs["ue_position_x"]
         ue_position_y = kwargs["ue_position_y"]
         
         # Initialize array
-        loss = np.zeros((len(cell_id),len(ue_position_x)))
+        loss = np.zeros((len(bs_id),len(ue_position_x)))
         
         # Loop through all the cells
-        for k in range(len(cell_id)):
+        for k in range(len(bs_id)):
             # Convert positions to array indexes
-            cell = cell_id[k]
+            cell = bs_id[k]
             lowleft_y = self.path_loss[cell][0].lower_left[0]
             lowleft_x = self.path_loss[cell][0].lower_left[1]
-            res = self.path_loss[cell_id[0]][0].resolution
+            res = self.path_loss[bs_id[0]][0].resolution
             lin_f = (ue_position_y - lowleft_y)/res
             col_f = (ue_position_x - lowleft_x)/res
             lin = lin_f.astype(int)
@@ -170,7 +176,7 @@ class PropagationInputFile(Propagation):
     
 if __name__ == '__main__':
     
-    prop = PropagationInputFile("measurements")
+    prop = PropagationInputFile("../parameters/measurements")
     
     plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot', 
                interpolation='nearest',
