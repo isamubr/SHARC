@@ -110,9 +110,9 @@ class PropagationInputFile(Propagation):
                 # Initialize path loss array
                 # Remember that data in file is in LAT LONG format, so y value
                 # is given befor the x value
-                n_col = int((head.upper_right[1] - 
+                n_lin = int((head.upper_right[1] - 
                          head.lower_left[1])/head.resolution)
-                n_lin = int((head.upper_right[0] - 
+                n_col = int((head.upper_right[0] - 
                          head.lower_left[0])/head.resolution)
                 loss = -np.inf*np.ones((n_lin,n_col))
                 
@@ -122,9 +122,9 @@ class PropagationInputFile(Propagation):
                     data = [float(x) for x in line.split()]
                     
                     # Define line and column of array
-                    lin = int((data[0] - (head.lower_left[0] + 
+                    lin = int((data[1] - (head.lower_left[1] + 
                            head.resolution/2))/head.resolution)
-                    col = int((data[1] - (head.lower_left[1] + 
+                    col = int((data[0] - (head.lower_left[0] + 
                            head.resolution/2))/head.resolution)
                     loss[lin,col] = (data[2] + head.receiver_gain) 
                     
@@ -160,17 +160,25 @@ class PropagationInputFile(Propagation):
         # Loop through all the cells
         for k in range(len(bs_id)):
             # Convert positions to array indexes
-            cell = bs_id[k]
-            lowleft_y = self.path_loss[cell][0].lower_left[0]
-            lowleft_x = self.path_loss[cell][0].lower_left[1]
-            res = self.path_loss[bs_id[0]][0].resolution
+            bs = bs_id[k]
+            lowleft_y = self.path_loss[bs][0].lower_left[1]
+            lowleft_x = self.path_loss[bs][0].lower_left[0]
+            res = self.path_loss[bs][0].resolution
             lin_f = (ue_position_y - lowleft_y)/res
             col_f = (ue_position_x - lowleft_x)/res
             lin = lin_f.astype(int)
             col = col_f.astype(int)
             
+            # TODO Remove these prints
+#            print("ue_y = {}".format(ue_position_y))
+#            print("ue_x = {}".format(ue_position_x))
+#            print("lleft_y = {}".format(lowleft_y))
+#            print("lleft_x = {}".format(lowleft_x))
+#            print("lin = {}".format(lin))
+#            print("col = {}".format(col))
+            
             # Fill array
-            loss[k:] = self.path_loss[cell][1][lin,col]
+            loss[k:] = self.path_loss[bs][1][lin,col]
             
         return loss
     
@@ -180,18 +188,18 @@ if __name__ == '__main__':
     
     plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot', 
                interpolation='nearest',
-               extent = [prop.path_loss["BRCU0010"][0].lower_left[1],
-                         prop.path_loss["BRCU0010"][0].upper_right[1],
-                         prop.path_loss["BRCU0010"][0].lower_left[0],
-                         prop.path_loss["BRCU0010"][0].upper_right[0]])
+               extent = [prop.path_loss["BRCU0010"][0].lower_left[0],
+                         prop.path_loss["BRCU0010"][0].upper_right[0],
+                         prop.path_loss["BRCU0010"][0].lower_left[1],
+                         prop.path_loss["BRCU0010"][0].upper_right[1]])
     plt.colorbar()
     plt.show()
     
     plt.imshow(prop.path_loss["BRUC0020"][1], cmap='hot', 
                interpolation='nearest',
-               extent = [prop.path_loss["BRUC0020"][0].lower_left[1],
-                         prop.path_loss["BRUC0020"][0].upper_right[1],
-                         prop.path_loss["BRUC0020"][0].lower_left[0],
-                         prop.path_loss["BRUC0020"][0].upper_right[0]])
+               extent = [prop.path_loss["BRUC0020"][0].lower_left[0],
+                         prop.path_loss["BRUC0020"][0].upper_right[0],
+                         prop.path_loss["BRUC0020"][0].lower_left[1],
+                         prop.path_loss["BRUC0020"][0].upper_right[1]])
     plt.colorbar()
     plt.show()

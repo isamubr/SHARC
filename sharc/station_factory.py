@@ -48,7 +48,7 @@ class StationFactory(object):
         imt_base_stations.azimuth = topology.azimuth
         imt_base_stations.elevation = topology.elevation
         if param.topology == "INPUT_MAP":
-            imt_base_stations.station_id = param.bs_data['strCellID']
+            imt_base_stations.station_id = np.array(param.bs_data['strCellID'])
             imt_base_stations.height = np.array(param.bs_data['dHeight'])
             # FIXME: Different tx power from conducted power
             imt_base_stations.tx_power = np.array(param.bs_data['dMaxTxPowerdBm'])

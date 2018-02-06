@@ -196,7 +196,7 @@ class Simulation(ABC, Observable):
             self.system_imt_antenna_gain = gain_a
             self.imt_system_antenna_gain = gain_b
         else:
-            if not self.parameters.imt.channel_model == "INPUT_FILE":
+            if not self.parameters.imt.channel_model == "INPUT_FILES":
                 path_loss = propagation.get_loss(distance_3D=d_3D,
                                                  distance_2D=d_2D,
                                                  frequency=self.parameters.imt.frequency*np.ones(d_2D.shape),
