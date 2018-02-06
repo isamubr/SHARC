@@ -67,6 +67,7 @@ class Parameters(object):
         if self.imt.topology == "INPUT_MAP":
             self.imt.bs_data = {}
             if config.has_option("IMT", "bs_physical_data_file"):
+                # FIXME: Need to do some sanity check on the input file
                 self.imt.bs_physical_data_file = config.get("IMT", "bs_physical_data_file")
                 try:
                     bs_data_df = pd.read_excel(self.imt.bs_physical_data_file)
@@ -79,7 +80,7 @@ class Parameters(object):
                           "file must be set in parameter bs_physical_data_file\n"
                 sys.stderr.write(err_msg)
                 sys.exit(1)
-                
+
         if self.imt.channel_model == "INPUT_FILES":
             if config.has_option("IMT", "propagation_folder"):
                 self.imt.path_loss_folder = config.get("IMT", "propagation_folder")
@@ -90,7 +91,7 @@ class Parameters(object):
                           "parameter propagation_folder\n"
                 sys.stderr.write(err_msg)
                 sys.exit(1)
-            
+
             if self.imt.topology != "INPUT_MAP":
                 err_msg = "ERROR\nInvalid configuration: For channel model " \
                           "type INPUT_FILES,  parameter " \

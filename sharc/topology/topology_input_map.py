@@ -27,7 +27,7 @@ class TopologyInputMap(Topology):
 
     def __init__(self, param: ParametersImt):
         self.param = param
-        
+
         # FIXME: cells are not supposed to be deffined for this topology
         intersite_distance = 500
         cell_radius = 100
@@ -41,26 +41,21 @@ class TopologyInputMap(Topology):
         self.x = np.array(self.param.bs_data['dWECoordinateMeter'])
         self.y = np.array(self.param.bs_data['dSNCoordinateMeter'])
         self.num_base_stations = len(self.x)
+        self.azimuth = np.array(self.param.bs_data['dBearing'])
 
-        # Zero Azimuth for omni antennas
-        antenna_patterns = self.param.bs_data['pattern']
-        # FIXME: define antenna Azimuths for other antenna patterns
-        self.azimuth = [self.AZIMUTH[0] if pattern.startswith('omni') else None for pattern in antenna_patterns]*np.ones_like(self.num_base_stations)
+        # Taking the Mechanical Down-tilt
+        self.elevation = np.array(self.param.bs_data['dMDownTilt'])
 
-        # FIXME: Need to parse elevation information from input file
-        self.elevation = self.ELEVATION*np.ones_like(self.num_base_stations)
-        
         # No indoor stations
-        self.indoor = np.zeros(self.num_base_stations, dtype = bool)
+        self.indoor = np.zeros(self.num_base_stations, dtype=bool)
 
     def plot(self, ax: matplotlib.axes.Axes):
         # plot base station locations
         plt.scatter(self.x, self.y, color='g', edgecolor="w", linewidth=0.5, label="Map_base_station")
-        cell_radius_m = 100
 
         # plot base stations coverage area
         for x, y, a in zip(self.x, self.y, self.azimuth):
-            pa = patches.CirclePolygon((x, y), cell_radius_m, 20, fill=False, edgecolor="green", linestyle='solid')
+            pa = patches.CirclePolygon((x, y), self.cell_radius, 20, fill=False, edgecolor="green", linestyle='solid')
             ax.add_patch(pa)
 
 
