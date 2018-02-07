@@ -105,22 +105,22 @@ class PropagationInputFileTest(unittest.TestCase):
     
         # Test 2
         self.assertEqual(self.propagation_2.path_loss['DUMMY01'][1].shape,
-                         (4, 5))
-        self.assertEqual(self.propagation_2.path_loss['DUMMY02'][1].shape,
                          (5, 4))
+        self.assertEqual(self.propagation_2.path_loss['DUMMY02'][1].shape,
+                         (4, 5))
         self.assertEqual(self.propagation_2.path_loss['DUMMY03'][1].shape,
                          (5, 5))
         npt.assert_equal(self.propagation_2.path_loss['DUMMY01'][1],
-                         np.array([[-11, -12, -13, -14, -15],
-                                   [-21, -22, -23, -24, -25],
-                                   [-31, -32, -33, -34, -35],
-                                   [-41, -42, -43, -44, -45]]))
-        npt.assert_equal(self.propagation_2.path_loss['DUMMY02'][1],
-                         np.array([[-51, -52, -53, -54],
-                                   [-41, -42, -43, -44],
-                                   [-31, -32, -33, -34],
+                         np.array([[-11, -12, -13, -14],
                                    [-21, -22, -23, -24],
-                                   [-11, -12, -13, -14]]))
+                                   [-31, -32, -33, -34],
+                                   [-41, -42, -43, -44],
+                                   [-51, -52, -53, -54]]))
+        npt.assert_equal(self.propagation_2.path_loss['DUMMY02'][1],
+                         np.array([[-51, -52, -53, -54, -55],
+                                   [-41, -42, -43, -44, -45],
+                                   [-31, -32, -33, -34, -35],
+                                   [-21, -22, -23, -24, -25]]))
         npt.assert_equal(self.propagation_2.path_loss['DUMMY03'][1],
                          np.array([[-51, -52, -53, -54, -55],
                                    [-41, -42, -43, -44, -45],

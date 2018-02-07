@@ -108,8 +108,6 @@ class PropagationInputFile(Propagation):
                                       receive_gain)
                 
                 # Initialize path loss array
-                # Remember that data in file is in LAT LONG format, so y value
-                # is given befor the x value
                 n_lin = int((head.upper_right[1] - 
                          head.lower_left[1])/head.resolution)
                 n_col = int((head.upper_right[0] - 
