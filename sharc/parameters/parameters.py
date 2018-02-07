@@ -7,7 +7,6 @@ Created on Wed Aug  9 19:35:52 2017
 
 import configparser
 import sys
-import pandas as pd
 
 from sharc.parameters.parameters_general import ParametersGeneral
 from sharc.parameters.parameters_imt import ParametersImt
