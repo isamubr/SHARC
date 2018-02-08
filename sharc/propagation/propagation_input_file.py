@@ -124,7 +124,8 @@ class PropagationInputFile(Propagation):
                            head.resolution/2))/head.resolution)
                     col = int((data[0] - (head.lower_left[0] + 
                            head.resolution/2))/head.resolution)
-                    loss[lin,col] = (data[2] + head.receiver_gain) 
+                    # Invert signal to match simulator convention
+                    loss[lin,col] = (-1)*(data[2] + head.receiver_gain) 
                     
                     line = next(f)
                     
@@ -167,15 +168,8 @@ class PropagationInputFile(Propagation):
             lin = lin_f.astype(int)
             col = col_f.astype(int)
             
-            # TODO Remove these prints
-#            print("ue_y = {}".format(ue_position_y))
-#            print("ue_x = {}".format(ue_position_x))
-#            print("lleft_y = {}".format(lowleft_y))
-#            print("lleft_x = {}".format(lowleft_x))
-#            print("lin = {}".format(lin))
-#            print("col = {}".format(col))
-            
             # Fill array
+            # Invert signal to match the rest of simulator
             loss[k:] = self.path_loss[bs][1][lin,col]
             
         return loss
