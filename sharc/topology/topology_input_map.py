@@ -20,11 +20,6 @@ class TopologyInputMap(Topology):
     Generates the coordinates of the BSs based on the base station physical cell data input file.
     """
 
-    # Possible values for antenna Azimuth and elevation
-    # FIXME: Those parameters must come from input file
-    AZIMUTH = [0, 90, 180, 270]
-    ELEVATION = -10
-
     def __init__(self, param: ParametersImt):
         self.param = param
 
@@ -62,6 +57,7 @@ class TopologyInputMap(Topology):
 if __name__ == '__main__':
 
     parameters_ims = ParametersImt()
+    # TODO: Add a method to ParamatersImt that reads the input cell data file
     parameters_ims.bs_physical_data_file = '../parameters/brucuCCO2600.xlsx'
     bs_data_df = pd.read_excel(parameters_ims.bs_physical_data_file)
     parameters_ims.bs_data = bs_data_df.to_dict('list')

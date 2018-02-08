@@ -7,7 +7,6 @@ Created on Wed Aug  9 19:35:52 2017
 
 import configparser
 import sys
-import pandas as pd
 
 from sharc.parameters.parameters_general import ParametersGeneral
 from sharc.parameters.parameters_imt import ParametersImt
@@ -67,14 +66,8 @@ class Parameters(object):
         if self.imt.topology == "INPUT_MAP":
             self.imt.bs_data = {}
             if config.has_option("IMT", "bs_physical_data_file"):
-                # FIXME: Need to do some sanity check on the input file
                 self.imt.bs_physical_data_file = config.get("IMT", "bs_physical_data_file")
-                try:
-                    bs_data_df = pd.read_excel(self.imt.bs_physical_data_file)
-                except FileNotFoundError as err:
-                    sys.stderr.write(str(err) + "\n")
-                    sys.exit(1)
-                self.imt.bs_data = bs_data_df.to_dict('list')
+                self.imt.bs_data = ParametersImt.read_input_cell_data_file(self.imt.bs_physical_data_file)
             else:
                 err_msg = "ERROR\nInvalid configuration: For topology type INPUT_MAP, the base station physical data " \
                           "file must be set in parameter bs_physical_data_file\n"
