@@ -46,7 +46,7 @@ class Parameters(object):
 
     def read_params(self):
         config = configparser.ConfigParser()
-        config.read(self.file_name)
+        config.read(self.file_name, encoding='utf-8')
 
         #######################################################################
         # GENERAL
