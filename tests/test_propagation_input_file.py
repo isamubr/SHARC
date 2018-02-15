@@ -30,28 +30,25 @@ class PropagationInputFileTest(unittest.TestCase):
         test_dummy_1_file_name = os.path.join('propagation_test_files', 'test_1', 'test_dummy_1.txt')
         test_dummy_2_file_name = os.path.join('propagation_test_files', 'test_1', 'test_dummy_2.txt')
 
-        npt.assert_equal(self.propagation_1.files,
-                         [test_dummy_1_file_name,
-                          test_dummy_2_file_name])
+        self.assertCountEqual(self.propagation_1.files, [test_dummy_1_file_name, test_dummy_2_file_name])
+
         # Test 2
         test_dummy_1_file_name = os.path.join('propagation_test_files', 'test_2', 'test_dummy_1.txt')
         test_dummy_2_file_name = os.path.join('propagation_test_files', 'test_2', 'test_dummy_2.txt')
         test_dummy_3_file_name = os.path.join('propagation_test_files', 'test_2', 'test_dummy_3.txt')
 
-        npt.assert_equal(self.propagation_2.files,
-                         [test_dummy_1_file_name,
-                          test_dummy_2_file_name,
-                          test_dummy_3_file_name])
+        self.assertCountEqual(self.propagation_2.files,
+                              [test_dummy_1_file_name, test_dummy_2_file_name, test_dummy_3_file_name])
 
     def test_parameters(self):
         # Test 3
-        input_folder = "propagation_test_files\\test_3"
+        input_folder = os.path.join('propagation_test_files', 'test_3')
         propagation_3 = PropagationInputFile(input_folder)
 
         self.assertEqual(propagation_3.path_loss['DUMMY01'][0].antenna,
                          'DUMMY01')
         self.assertTrue(np.all(np.isnan(
-                propagation_3.path_loss['DUMMY01'][0].location)))
+            propagation_3.path_loss['DUMMY01'][0].location)))
         self.assertEqual(propagation_3.path_loss['DUMMY01'][0].frequency,
                          2600.0)
         self.assertEqual(propagation_3.path_loss['DUMMY01'][0].power,
@@ -72,7 +69,7 @@ class PropagationInputFileTest(unittest.TestCase):
         # Test 1
         self.assertTrue('DUMMY01' in list(self.propagation_1.path_loss.keys()))
         self.assertTrue('DUMMY02' in list(self.propagation_1.path_loss.keys()))
-        self.assertEqual(len(list(self.propagation_1.path_loss.keys())),2)
+        self.assertEqual(len(list(self.propagation_1.path_loss.keys())), 2)
         self.assertEqual(self.propagation_1.path_loss['DUMMY01'][0],
                          PathLossHeader(antenna='DUMMY01',
                                         location=[24.0, 42.0, 44.0],
@@ -139,25 +136,26 @@ class PropagationInputFileTest(unittest.TestCase):
 
     def test_get_loss(self):
         # Test 1
-        c_id = np.array(['DUMMY01','DUMMY02'])
+        c_id = np.array(['DUMMY01', 'DUMMY02'])
         ue_x = np.array([35.0, 12.5, 49.9, 10.0, 10.0])
         ue_y = np.array([35.0, 42.0, 19.9, 10.0, 20.0])
-        pl = self.propagation_1.get_loss(bs_id = c_id,
-                                         ue_position_x = ue_x,
-                                         ue_position_y = ue_y)
-        npt.assert_equal(pl,np.array([[33.0, 41.0, 14.0, 11.0, 21.0],
-                                      [33.0, 21.0, 54.0, 51.0, 41.0]]))
+        pl = self.propagation_1.get_loss(bs_id=c_id,
+                                         ue_position_x=ue_x,
+                                         ue_position_y=ue_y)
+        npt.assert_equal(pl, np.array([[33.0, 41.0, 14.0, 11.0, 21.0],
+                                       [33.0, 21.0, 54.0, 51.0, 41.0]]))
 
         # Test 2
-        c_id = np.array(['DUMMY01','DUMMY02','DUMMY03'])
+        c_id = np.array(['DUMMY01', 'DUMMY02', 'DUMMY03'])
         ue_x = np.array([35.0, 12.5, 49.9, 10.0, 10.0])
         ue_y = np.array([35.0, 42.0, 19.9, 10.0, 20.0])
-        pl = self.propagation_2.get_loss(bs_id = c_id,
-                                         ue_position_x = ue_x,
-                                         ue_position_y = ue_y)
-        npt.assert_equal(pl,np.array([[33.0, 41.0, 14.0, 11.0, 21.0],
-                                      [33.0, 21.0, 54.0, 51.0, 41.0],
-                                      [33.0, 21.0, 54.0, 51.0, 41.0]]))
+        pl = self.propagation_2.get_loss(bs_id=c_id,
+                                         ue_position_x=ue_x,
+                                         ue_position_y=ue_y)
+        npt.assert_equal(pl, np.array([[33.0, 41.0, 14.0, 11.0, 21.0],
+                                       [33.0, 21.0, 54.0, 51.0, 41.0],
+                                       [33.0, 21.0, 54.0, 51.0, 41.0]]))
+
 
 if __name__ == '__main__':
     unittest.main()

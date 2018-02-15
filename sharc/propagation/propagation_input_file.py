@@ -40,7 +40,6 @@ class PropagationInputFile(Propagation):
         self.path_loss = dict()
 
         # Loop through all the txt files in the folder
-        # path_loss_files = glob(input_folder + '/' + '*.txt')
         path_loss_files = glob(os.path.join(input_folder, '*.txt'))
         if not path_loss_files:
             sys.stderr.write("No Path Loss input file were found in {}\n".format(input_folder))
