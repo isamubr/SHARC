@@ -207,7 +207,6 @@ class Simulation(ABC, Observable):
                                                  shadowing=self.parameters.imt.shadowing,
                                                  line_of_sight_prob=self.parameters.imt.line_of_sight_prob)
             else:
-                #TODO Pass parameters correctly
                 path_loss = propagation.get_loss(bs_id=self.bs.station_id,
                                                  ue_position_x=self.ue.x,
                                                  ue_position_y=self.ue.y)
