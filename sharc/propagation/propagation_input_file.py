@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from glob import glob
 import sys
+import os
+
 
 class PropagationInputFile(Propagation):
     """
@@ -23,6 +25,7 @@ class PropagationInputFile(Propagation):
             with header of respective path loss file and np.array of path loss
             values
     """
+
     def __init__(self, input_folder: str):
         """
         Constructs PropagationInputFile object, initializing the path_loss
@@ -37,9 +40,10 @@ class PropagationInputFile(Propagation):
         self.path_loss = dict()
 
         # Loop through all the txt files in the folder
-        path_loss_files = glob(input_folder + '/' + '*.txt')
+        # path_loss_files = glob(input_folder + '/' + '*.txt')
+        path_loss_files = glob(os.path.join(input_folder, '*.txt'))
         if not path_loss_files:
-            sys.stderr.write("No Path Loss input file were found in {}".format(input_folder))
+            sys.stderr.write("No Path Loss input file were found in {}\n".format(input_folder))
             sys.exit(1)
 
         for file in path_loss_files:
@@ -56,7 +60,7 @@ class PropagationInputFile(Propagation):
                     line = next(f)
 
                 # Find tokens in file header
-                head_list = head_raw.split() + 4*[np.nan]
+                head_list = head_raw.split() + 4 * [np.nan]
                 param_list = ["ANTENNA",
                               "LOCATION",
                               "FREQUENCY",
@@ -79,8 +83,8 @@ class PropagationInputFile(Propagation):
                     except ValueError as err:
                         if param in essential_params:
                             sys.stderr.write(param +
-                                         " parameter not in path loss file " +
-                                         file + "\n")
+                                             " parameter not in path loss file " +
+                                             file + "\n")
                             sys.exit(1)
                         else:
                             idx_list.append(-4)
@@ -114,10 +118,10 @@ class PropagationInputFile(Propagation):
 
                 # Initialize path loss array
                 n_lin = int((head.upper_right[1] -
-                         head.lower_left[1])/head.resolution)
+                             head.lower_left[1]) / head.resolution)
                 n_col = int((head.upper_right[0] -
-                         head.lower_left[0])/head.resolution)
-                loss = -np.inf*np.ones((n_lin,n_col))
+                             head.lower_left[0]) / head.resolution)
+                loss = -np.inf * np.ones((n_lin, n_col))
 
                 # Loop through all the remaining lines
                 line = next(f)
@@ -126,11 +130,11 @@ class PropagationInputFile(Propagation):
 
                     # Define line and column of array
                     lin = int((data[1] - (head.lower_left[1] +
-                           head.resolution/2))/head.resolution)
+                                          head.resolution / 2)) / head.resolution)
                     col = int((data[0] - (head.lower_left[0] +
-                           head.resolution/2))/head.resolution)
+                                          head.resolution / 2)) / head.resolution)
                     # Invert signal to match simulator convention
-                    loss[lin, col] = (-1)*(data[2] + head.receiver_gain)
+                    loss[lin, col] = (-1) * (data[2] + head.receiver_gain)
 
                     line = next(f)
 
@@ -159,7 +163,7 @@ class PropagationInputFile(Propagation):
         ue_position_y = kwargs["ue_position_y"]
 
         # Initialize array
-        loss = np.zeros((len(bs_id),len(ue_position_x)))
+        loss = np.zeros((len(bs_id), len(ue_position_x)))
 
         # Loop through all the cells
         for k in range(len(bs_id)):
@@ -168,35 +172,35 @@ class PropagationInputFile(Propagation):
             lowleft_y = self.path_loss[bs][0].lower_left[1]
             lowleft_x = self.path_loss[bs][0].lower_left[0]
             res = self.path_loss[bs][0].resolution
-            lin_f = (ue_position_y - lowleft_y)/res
-            col_f = (ue_position_x - lowleft_x)/res
+            lin_f = (ue_position_y - lowleft_y) / res
+            col_f = (ue_position_x - lowleft_x) / res
             lin = lin_f.astype(int)
             col = col_f.astype(int)
 
             # Fill array
             # Invert signal to match the rest of simulator
-            loss[k:] = self.path_loss[bs][1][lin,col]
+            loss[k:] = self.path_loss[bs][1][lin, col]
 
         return loss
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     prop = PropagationInputFile("../parameters/measurements")
 
     plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot',
                interpolation='nearest',
-               extent = [prop.path_loss["BRCU0010"][0].lower_left[0],
-                         prop.path_loss["BRCU0010"][0].upper_right[0],
-                         prop.path_loss["BRCU0010"][0].lower_left[1],
-                         prop.path_loss["BRCU0010"][0].upper_right[1]])
+               extent=[prop.path_loss["BRCU0010"][0].lower_left[0],
+                       prop.path_loss["BRCU0010"][0].upper_right[0],
+                       prop.path_loss["BRCU0010"][0].lower_left[1],
+                       prop.path_loss["BRCU0010"][0].upper_right[1]])
     plt.colorbar()
     plt.show()
 
     plt.imshow(prop.path_loss["BRUC0020"][1], cmap='hot',
                interpolation='nearest',
-               extent = [prop.path_loss["BRUC0020"][0].lower_left[0],
-                         prop.path_loss["BRUC0020"][0].upper_right[0],
-                         prop.path_loss["BRUC0020"][0].lower_left[1],
-                         prop.path_loss["BRUC0020"][0].upper_right[1]])
+               extent=[prop.path_loss["BRUC0020"][0].lower_left[0],
+                       prop.path_loss["BRUC0020"][0].upper_right[0],
+                       prop.path_loss["BRUC0020"][0].lower_left[1],
+                       prop.path_loss["BRUC0020"][0].upper_right[1]])
     plt.colorbar()
     plt.show()
