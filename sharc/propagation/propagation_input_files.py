@@ -14,7 +14,7 @@ import sys
 import os
 
 
-class PropagationInputFile(Propagation):
+class PropagationInputFiles(Propagation):
     """
     Implements path loss from specified files
 
@@ -175,7 +175,7 @@ class PropagationInputFile(Propagation):
 
 
 if __name__ == '__main__':
-    prop = PropagationInputFile("../parameters/measurements")
+    prop = PropagationInputFiles("../parameters/measurements")
 
     plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot_r',
                interpolation='nearest',

@@ -10,19 +10,19 @@ import numpy.testing as npt
 import numpy as np
 import os
 
-from sharc.propagation.propagation_input_file import PropagationInputFile
+from sharc.propagation.propagation_input_files import PropagationInputFiles
 
 
-class PropagationInputFileTest(unittest.TestCase):
+class PropagationInputFilesTest(unittest.TestCase):
 
     def setUp(self):
         # Test 1
         input_folder = os.path.join('propagation_test_files', 'test_1')
-        self.propagation_1 = PropagationInputFile(input_folder)
+        self.propagation_1 = PropagationInputFiles(input_folder)
 
         # Test 2
         input_folder = os.path.join('propagation_test_files', 'test_2')
-        self.propagation_2 = PropagationInputFile(input_folder)
+        self.propagation_2 = PropagationInputFiles(input_folder)
 
     def test_files(self):
         # Test 1
@@ -42,7 +42,7 @@ class PropagationInputFileTest(unittest.TestCase):
     def test_parameters(self):
         # Test 3
         input_folder = os.path.join('propagation_test_files', 'test_3')
-        propagation_3 = PropagationInputFile(input_folder)
+        propagation_3 = PropagationInputFiles(input_folder)
  
         self.assertDictEqual(propagation_3.path_loss['DUMMY01'][0],
                              {"ANTENNA": 'DUMMY01',
