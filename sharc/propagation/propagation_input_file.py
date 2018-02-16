@@ -6,7 +6,6 @@ Created on Tue Jan 30 14:39:17 2018
 """
 
 from sharc.propagation.propagation import Propagation
-from sharc.support.named_tuples import PathLossHeader
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -158,9 +157,8 @@ class PropagationInputFile(Propagation):
         loss = np.zeros((len(bs_id), len(ue_position_x)))
 
         # Loop through all the cells
-        for k in range(len(bs_id)):
+        for k, bs in enumerate(bs_id):
             # Convert positions to array indexes
-            bs = bs_id[k]
             lowleft_y = self.path_loss[bs][0]["LOWER_LEFT"][1]
             lowleft_x = self.path_loss[bs][0]["LOWER_LEFT"][0]
             res = self.path_loss[bs][0]["RESOLUTION"]

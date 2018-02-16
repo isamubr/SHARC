@@ -11,7 +11,6 @@ import numpy as np
 import os
 
 from sharc.propagation.propagation_input_file import PropagationInputFile
-from sharc.support.named_tuples import PathLossHeader
 
 
 class PropagationInputFileTest(unittest.TestCase):
