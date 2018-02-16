@@ -52,7 +52,7 @@ class PropagationInputFile(Propagation):
             with open(file) as f:
 
                 # Find where data begins and extract header
-                head_dict = dict()
+                head = dict()
                 line = next(f)
                 while "BEGIN_DATA" not in line:
                     split_line = line.split()
@@ -64,7 +64,7 @@ class PropagationInputFile(Propagation):
                     if len(split_line) < 2: continue
                 
                     # Create dict
-                    head_dict[split_line[0]] = split_line[1:]
+                    head[split_line[0]] = split_line[1:]
                     
                 # Test set of minimal parameters
                 min_params = set(["ANTENNA",
@@ -72,7 +72,7 @@ class PropagationInputFile(Propagation):
                                   "UPPER_RIGHT",
                                   "RESOLUTION",
                                   "RECEIVER_GAIN"])
-                param_keys = set(head_dict.keys())
+                param_keys = set(head.keys())
                 if not min_params.issubset(param_keys):
                     missing_params = min_params - param_keys
                     sys.stderr.write("Minimal parameter(s) " + 
@@ -82,48 +82,37 @@ class PropagationInputFile(Propagation):
                     sys.exit(1)
                     
                 # Parse minimal parameters
-                antenna = head_dict["ANTENNA"][0][1:-1]
-                lower_left = [float(x) for x in head_dict["LOWER_LEFT"]]
-                upper_right = [float(x) for x in head_dict["UPPER_RIGHT"]]
-                resolution = float(head_dict["RESOLUTION"][0])
-                receive_gain = float(head_dict["RECEIVER_GAIN"][0])
+                head["ANTENNA"] = head["ANTENNA"][0][1:-1]
+                head["LOWER_LEFT"] = [float(x) for x in head["LOWER_LEFT"]]
+                head["UPPER_RIGHT"] = [float(x) for x in head["UPPER_RIGHT"]]
+                head["RESOLUTION"] = float(head["RESOLUTION"][0])
+                head["RECEIVER_GAIN"] = float(head["RECEIVER_GAIN"][0])
                 
                 # Undefined parameter value
                 undefined = np.nan
                 
                 # Parse other parameters
-                try: location = [float(x) for x in head_dict["LOCATION"]]
-                except KeyError: location = undefined
+                try: head["LOCATION"] = [float(x) 
+                                              for x in head["LOCATION"]]
+                except KeyError: head["LOCATION"] = undefined
                 
-                try: frequency = float(head_dict["FREQUENCY"][0])
-                except KeyError: frequency = undefined
+                try: head["FREQUENCY"] = float(head["FREQUENCY"][0])
+                except KeyError: head["FREQUENCY"] = undefined
                 
-                try: power = head_dict["POWER"]
-                except KeyError: power = undefined
+                if "POWER" not in head.keys(): 
+                    head["POWER"] = undefined
                 
-                try: antenna_type = head_dict["ANTENNATYPE"][0]
-                except KeyError: antenna_type = undefined
+                try: head["ANTENNATYPE"] = head["ANTENNATYPE"][0]
+                except KeyError: head["ANTENNATYPE"] = undefined
                 
-                try: height = float(head_dict["HEIGHT"][0])
-                except KeyError: height = undefined
-
-                # Create header struct
-                head = PathLossHeader(antenna,
-                                      location,
-                                      frequency,
-                                      power,
-                                      antenna_type,
-                                      lower_left,
-                                      upper_right,
-                                      height,
-                                      resolution,
-                                      receive_gain)
+                try: head["HEIGHT"] = float(head["HEIGHT"][0])
+                except KeyError: head["HEIGHT"] = undefined
 
                 # Initialize path loss array
-                n_lin = int((head.upper_right[1] -
-                             head.lower_left[1]) / head.resolution)
-                n_col = int((head.upper_right[0] -
-                             head.lower_left[0]) / head.resolution)
+                n_lin = int((head["UPPER_RIGHT"][1] -
+                             head["LOWER_LEFT"][1]) / head["RESOLUTION"])
+                n_col = int((head["UPPER_RIGHT"][0] -
+                             head["LOWER_LEFT"][0]) / head["RESOLUTION"])
                 loss = -np.inf * np.ones((n_lin, n_col))
 
                 # Loop through all the remaining lines
@@ -132,17 +121,17 @@ class PropagationInputFile(Propagation):
                     data = [float(x) for x in line.split()]
 
                     # Define line and column of array
-                    lin = int((data[1] - (head.lower_left[1] +
-                                          head.resolution / 2)) / head.resolution)
-                    col = int((data[0] - (head.lower_left[0] +
-                                          head.resolution / 2)) / head.resolution)
+                    lin = int((data[1] - (head["LOWER_LEFT"][1] +
+                                          head["RESOLUTION"] / 2)) / head["RESOLUTION"])
+                    col = int((data[0] - (head["LOWER_LEFT"][0] +
+                                          head["RESOLUTION"] / 2)) / head["RESOLUTION"])
                     # Invert signal to match simulator convention
-                    loss[lin, col] = (-1) * (data[2] + head.receiver_gain)
+                    loss[lin, col] = (-1) * (data[2] + head["RECEIVER_GAIN"])
 
                     line = next(f)
 
                 # Add values to dict
-                self.path_loss[head.antenna] = (head, loss)
+                self.path_loss[head["ANTENNA"]] = (head, loss)
 
     def get_loss(self, *args, **kwargs) -> np.array:
         """
@@ -172,9 +161,9 @@ class PropagationInputFile(Propagation):
         for k in range(len(bs_id)):
             # Convert positions to array indexes
             bs = bs_id[k]
-            lowleft_y = self.path_loss[bs][0].lower_left[1]
-            lowleft_x = self.path_loss[bs][0].lower_left[0]
-            res = self.path_loss[bs][0].resolution
+            lowleft_y = self.path_loss[bs][0]["LOWER_LEFT"][1]
+            lowleft_x = self.path_loss[bs][0]["LOWER_LEFT"][0]
+            res = self.path_loss[bs][0]["RESOLUTION"]
             lin_f = (ue_position_y - lowleft_y) / res
             col_f = (ue_position_x - lowleft_x) / res
             lin = lin_f.astype(int)
@@ -190,20 +179,20 @@ class PropagationInputFile(Propagation):
 if __name__ == '__main__':
     prop = PropagationInputFile("../parameters/measurements")
 
-    plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot',
+    plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot_r',
                interpolation='nearest',
-               extent=[prop.path_loss["BRCU0010"][0].lower_left[0],
-                       prop.path_loss["BRCU0010"][0].upper_right[0],
-                       prop.path_loss["BRCU0010"][0].lower_left[1],
-                       prop.path_loss["BRCU0010"][0].upper_right[1]])
+               extent=[prop.path_loss["BRCU0010"][0]["LOWER_LEFT"][0],
+                       prop.path_loss["BRCU0010"][0]["UPPER_RIGHT"][0],
+                       prop.path_loss["BRCU0010"][0]["LOWER_LEFT"][1],
+                       prop.path_loss["BRCU0010"][0]["UPPER_RIGHT"][1]])
     plt.colorbar()
     plt.show()
 
-    plt.imshow(prop.path_loss["BRUC0020"][1], cmap='hot',
+    plt.imshow(prop.path_loss["BRUC0020"][1], cmap='hot_r',
                interpolation='nearest',
-               extent=[prop.path_loss["BRUC0020"][0].lower_left[0],
-                       prop.path_loss["BRUC0020"][0].upper_right[0],
-                       prop.path_loss["BRUC0020"][0].lower_left[1],
-                       prop.path_loss["BRUC0020"][0].upper_right[1]])
+               extent=[prop.path_loss["BRUC0020"][0]["LOWER_LEFT"][0],
+                       prop.path_loss["BRUC0020"][0]["UPPER_RIGHT"][0],
+                       prop.path_loss["BRUC0020"][0]["LOWER_LEFT"][1],
+                       prop.path_loss["BRUC0020"][0]["UPPER_RIGHT"][1]])
     plt.colorbar()
     plt.show()

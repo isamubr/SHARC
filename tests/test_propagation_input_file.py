@@ -44,54 +44,46 @@ class PropagationInputFileTest(unittest.TestCase):
         # Test 3
         input_folder = os.path.join('propagation_test_files', 'test_3')
         propagation_3 = PropagationInputFile(input_folder)
-
-        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].antenna,
-                         'DUMMY01')
-        self.assertTrue(np.isnan(
-            propagation_3.path_loss['DUMMY01'][0].location))
-        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].frequency,
-                         2600.0)
-        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].power,
-                         ['10.000', 'W', 'EIRP'])
-        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].antennatype,
-                         'ISO')
-        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].lower_left,
-                         [10.0, 10.0])
-        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].upper_right,
-                         [60.0, 60.0])
-        self.assertTrue(np.isnan(propagation_3.path_loss['DUMMY01'][0].height))
-        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].resolution,
-                         10.0)
-        self.assertEqual(propagation_3.path_loss['DUMMY01'][0].receiver_gain,
-                         0.0)
+ 
+        self.assertDictEqual(propagation_3.path_loss['DUMMY01'][0],
+                             {"ANTENNA": 'DUMMY01',
+                              "LOCATION": np.nan,
+                              "FREQUENCY": 2600.0,
+                              "POWER": ['10.000', 'W', 'EIRP'],
+                              "ANTENNATYPE": 'ISO',
+                              "LOWER_LEFT": [10.0, 10.0],
+                              "UPPER_RIGHT": [60.0, 60.0],
+                              "HEIGHT": np.nan,
+                              "RESOLUTION": 10.0,
+                              "RECEIVER_GAIN": 0.0})
 
     def test_path_loss(self):
         # Test 1
         self.assertTrue('DUMMY01' in list(self.propagation_1.path_loss.keys()))
         self.assertTrue('DUMMY02' in list(self.propagation_1.path_loss.keys()))
         self.assertEqual(len(list(self.propagation_1.path_loss.keys())), 2)
-        self.assertEqual(self.propagation_1.path_loss['DUMMY01'][0],
-                         PathLossHeader(antenna='DUMMY01',
-                                        location=[24.0, 42.0, 44.0],
-                                        frequency=2600.0,
-                                        power=['10.000', 'W', 'EIRP'],
-                                        antennatype='ISO',
-                                        lower_left=[10.0, 10.0],
-                                        upper_right=[60.0, 60.0],
-                                        height=1.5,
-                                        resolution=10.0,
-                                        receiver_gain=0.0))
-        self.assertEqual(self.propagation_1.path_loss['DUMMY02'][0],
-                         PathLossHeader(antenna='DUMMY02',
-                                        location=[42.0, 24.0, 44.0],
-                                        frequency=2500.0,
-                                        power=['10.000', 'W', 'EIRP'],
-                                        antennatype='ISO',
-                                        lower_left=[10.0, 10.0],
-                                        upper_right=[60.0, 60.0],
-                                        height=1.5,
-                                        resolution=10.0,
-                                        receiver_gain=0.0))
+        self.assertDictEqual(self.propagation_1.path_loss['DUMMY01'][0],
+                             {"ANTENNA": 'DUMMY01',
+                              "LOCATION": [24.0, 42.0, 44.0],
+                              "FREQUENCY": 2600.0,
+                              "POWER": ['10.000', 'W', 'EIRP'],
+                              "ANTENNATYPE": 'ISO',
+                              "LOWER_LEFT": [10.0, 10.0],
+                              "UPPER_RIGHT": [60.0, 60.0],
+                              "HEIGHT": 1.5,
+                              "RESOLUTION": 10.0,
+                              "RECEIVER_GAIN": 0.0})
+        self.assertDictEqual(self.propagation_1.path_loss['DUMMY02'][0],
+                             {"ANTENNA": 'DUMMY02',
+                              "LOCATION": [42.0, 24.0, 44.0],
+                              "FREQUENCY": 2500.0,
+                              "POWER": ['10.000', 'W', 'EIRP'],
+                              "ANTENNATYPE": 'ISO',
+                              "LOWER_LEFT": [10.0, 10.0],
+                              "UPPER_RIGHT": [60.0, 60.0],
+                              "HEIGHT": 1.5,
+                              "RESOLUTION": 10.0,
+                              "RECEIVER_GAIN": 0.0})
         self.assertEqual(self.propagation_1.path_loss['DUMMY01'][1].shape,
                          (5, 5))
         self.assertEqual(self.propagation_1.path_loss['DUMMY02'][1].shape,
