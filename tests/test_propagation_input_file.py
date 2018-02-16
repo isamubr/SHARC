@@ -47,8 +47,8 @@ class PropagationInputFileTest(unittest.TestCase):
 
         self.assertEqual(propagation_3.path_loss['DUMMY01'][0].antenna,
                          'DUMMY01')
-        self.assertTrue(np.all(np.isnan(
-            propagation_3.path_loss['DUMMY01'][0].location)))
+        self.assertTrue(np.isnan(
+            propagation_3.path_loss['DUMMY01'][0].location))
         self.assertEqual(propagation_3.path_loss['DUMMY01'][0].frequency,
                          2600.0)
         self.assertEqual(propagation_3.path_loss['DUMMY01'][0].power,

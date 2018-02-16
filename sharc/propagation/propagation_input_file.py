@@ -52,56 +52,60 @@ class PropagationInputFile(Propagation):
             with open(file) as f:
 
                 # Find where data begins and extract header
-                head_raw = ""
+                head_dict = dict()
                 line = next(f)
                 while "BEGIN_DATA" not in line:
-                    head_raw = head_raw + line
+                    split_line = line.split()
+                    
+                    # Load next line before skiping blank line
                     line = next(f)
-
-                # Find tokens in file header
-                head_list = head_raw.split() + 4 * [np.nan]
-                param_list = ["ANTENNA",
-                              "LOCATION",
-                              "FREQUENCY",
-                              "POWER",
-                              "ANTENNATYPE",
-                              "LOWER_LEFT",
-                              "UPPER_RIGHT",
-                              "HEIGHT",
-                              "RESOLUTION",
-                              "RECEIVER_GAIN"]
-                essential_params = ["ANTENNA",
-                                    "LOWER_LEFT",
-                                    "UPPER_RIGHT",
-                                    "RESOLUTION",
-                                    "RECEIVER_GAIN"]
-                idx_list = []
-                for param in param_list:
-                    try:
-                        idx_list.append(head_list.index(param))
-                    except ValueError as err:
-                        if param in essential_params:
-                            sys.stderr.write(param +
-                                             " parameter not in path loss file " +
-                                             file + "\n")
-                            sys.exit(1)
-                        else:
-                            idx_list.append(-4)
-
-                # Get parameter values
-                antenna = head_list[idx_list[0] + 1][1:-1]
-                location = [float(x) for x in head_list[idx_list[1] + 1:
-                                                        idx_list[1] + 4]]
-                frequency = float(head_list[idx_list[2] + 1])
-                power = head_list[idx_list[3] + 1:idx_list[3] + 4]
-                antenna_type = head_list[idx_list[4] + 1]
-                lower_left = [float(x) for x in head_list[idx_list[5] + 1:
-                                                          idx_list[5] + 3]]
-                upper_right = [float(x) for x in head_list[idx_list[6] + 1:
-                                                           idx_list[6] + 3]]
-                height = float(head_list[idx_list[7] + 1])
-                resolution = float(head_list[idx_list[8] + 1])
-                receive_gain = float(head_list[idx_list[9] + 1])
+                    # Skip blank line. This way the user can insert blank
+                    # lines between parameters and it still works
+                    if len(split_line) < 2: continue
+                
+                    # Create dict
+                    head_dict[split_line[0]] = split_line[1:]
+                    
+                # Test set of minimal parameters
+                min_params = set(["ANTENNA",
+                                  "LOWER_LEFT",
+                                  "UPPER_RIGHT",
+                                  "RESOLUTION",
+                                  "RECEIVER_GAIN"])
+                param_keys = set(head_dict.keys())
+                if not min_params.issubset(param_keys):
+                    missing_params = min_params - param_keys
+                    sys.stderr.write("Minimal parameter(s) " + 
+                                     str(missing_params) + 
+                                     " not in path loss file " +
+                                     file + "\n")
+                    sys.exit(1)
+                    
+                # Parse minimal parameters
+                antenna = head_dict["ANTENNA"][0][1:-1]
+                lower_left = [float(x) for x in head_dict["LOWER_LEFT"]]
+                upper_right = [float(x) for x in head_dict["UPPER_RIGHT"]]
+                resolution = float(head_dict["RESOLUTION"][0])
+                receive_gain = float(head_dict["RECEIVER_GAIN"][0])
+                
+                # Undefined parameter value
+                undefined = np.nan
+                
+                # Parse other parameters
+                try: location = [float(x) for x in head_dict["LOCATION"]]
+                except KeyError: location = undefined
+                
+                try: frequency = float(head_dict["FREQUENCY"][0])
+                except KeyError: frequency = undefined
+                
+                try: power = head_dict["POWER"]
+                except KeyError: power = undefined
+                
+                try: antenna_type = head_dict["ANTENNATYPE"][0]
+                except KeyError: antenna_type = undefined
+                
+                try: height = float(head_dict["HEIGHT"][0])
+                except KeyError: height = undefined
 
                 # Create header struct
                 head = PathLossHeader(antenna,
