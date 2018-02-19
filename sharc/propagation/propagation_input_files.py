@@ -91,21 +91,23 @@ class PropagationInputFiles(Propagation):
                 undefined = np.nan
                 
                 # Parse other parameters
-                try: head["LOCATION"] = [float(x) 
+                if 'LOCATION' not in head.keys(): head["LOCATION"] = undefined
+                else: head["LOCATION"] = [float(x) 
                                               for x in head["LOCATION"]]
-                except KeyError: head["LOCATION"] = undefined
                 
-                try: head["FREQUENCY"] = float(head["FREQUENCY"][0])
-                except KeyError: head["FREQUENCY"] = undefined
+                if 'FREQUENCY' not in head.keys(): 
+                    head["FREQUENCY"] = undefined
+                else: head["FREQUENCY"] = float(head["FREQUENCY"][0])
                 
                 if "POWER" not in head.keys(): 
                     head["POWER"] = undefined
                 
-                try: head["ANTENNATYPE"] = head["ANTENNATYPE"][0]
-                except KeyError: head["ANTENNATYPE"] = undefined
+                if 'ANTENNATYPE' not in head.keys():
+                    head["ANTENNATYPE"] = undefined
+                else: head["ANTENNATYPE"] = head["ANTENNATYPE"][0]
                 
-                try: head["HEIGHT"] = float(head["HEIGHT"][0])
-                except KeyError: head["HEIGHT"] = undefined
+                if 'HEIGHT' not in head.keys(): head["HEIGHT"] = undefined
+                else: head["HEIGHT"] = float(head["HEIGHT"][0])
 
                 # Initialize path loss array
                 n_lin = int((head["UPPER_RIGHT"][1] -
