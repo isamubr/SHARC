@@ -108,7 +108,6 @@ class TopologyHotspot(Topology):
         self.num_base_stations = len(self.x)
         self.indoor = np.zeros(self.num_base_stations, dtype = bool)
 
-
     def overlapping_hotspots(self,
                              x: np.array,
                              y: np.array,

@@ -83,6 +83,7 @@ class SimulationDownlink(Simulation):
         """
         Apply downlink power control algorithm
         """
+        # TODO use physical data for this power control
         # Currently, the maximum transmit power of the base station is equaly
         # divided among the selected UEs
         tx_power = self.parameters.imt.bs_conducted_power - 10*math.log10(self.parameters.imt.ue_k) \
