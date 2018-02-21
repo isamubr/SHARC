@@ -20,6 +20,9 @@ class PolygonUeDistributionTest(unittest.TestCase):
         res = 10.0
         self.poly_dist_1 = PolygonUeDistribution(low_left,up_right,res)
         
+        # Test 2
+        # TODO: create larger grid for Test 2
+        
     def test_construction(self):
         # Test 1
         self.assertListEqual(self.poly_dist_1.low_left,[10.0, 10.0])

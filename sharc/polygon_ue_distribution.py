@@ -7,7 +7,8 @@ Created on Tue Feb 20 16:19:59 2018
 
 import numpy as np
 from itertools import product
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
+import matplotlib.pyplot as plt
 
 class PolygonUeDistribution(object):
     
@@ -17,7 +18,7 @@ class PolygonUeDistribution(object):
         self.up_right = up_right
         self.resolution = resolution
         
-        # Set of all pixel central x and y values 
+        # List of all pixel central x and y values 
         self.x_vals = np.arange(low_left[0] + resolution/2,
                                 up_right[0],
                                 resolution)
@@ -25,24 +26,69 @@ class PolygonUeDistribution(object):
                                 up_right[1],
                                 resolution)
         
-    def distribute_ues(self, polys: list, num_ues: int):
+        # List of polygon-points tuples
+        self.poly_points = []
         
-        points = []
-        
+    def map_polygons(self, polys: list):
+        # TODO: try and vectorize this loop
         for poly in polys:
+            # List of points inside polygon
+            x = []
+            y = []
+            num_pts = 0
+            # Loop through all x and y combinations
             for coord in product(self.x_vals,self.y_vals):
                 pt = Point(coord)
+                # Append pixel center point if inside polygon
                 if poly.contains(pt):
-                    points.append(pt)
+                    x.append(coord[0])
+                    y.append(coord[1])
+                    num_pts+=1
+            self.poly_points.append((poly,np.array(x),np.array(y),num_pts))
+            
+    def distribute_ues(self, num_ues: list):
+        
+        x = np.array([])
+        y = np.array([])
+        
+        for k, num in enumerate(num_ues):
+            idxs = np.random.randint(0,self.poly_points[k][3],num)
+            x = np.append(x,self.poly_points[k][1][idxs])
+            y = np.append(y,self.poly_points[k][2][idxs])
+            
+        return x,y
     
-    def plot(self,polys: list, x: np.array, y: np.array):
-        pass
+    def plot(self,polys: list, x_ue: np.array, y_ue: np.array):
+        # Create axis object
+        fig = plt.figure(1, figsize=(5,5), dpi=90)
+        ax = fig.add_subplot(111)        
+        
+        for poly in polys:
+            x_poly, y_poly = poly.exterior.xy
+            ax.plot(x_poly,y_poly)
+        
+        ax.plot(x_ue,y_ue,'.r')
+        ax.grid()
+        return ax
     
 if __name__ == '__main__':
+    # Set object
+    low_left = [0.0, 0.0]
+    up_right = [600.0, 600.0]
+    res = 5
+    poly_dist = PolygonUeDistribution(low_left,up_right,res)
+          
+    # Map polygons into grid
+    poly_1 = Polygon([(0,0),(100,100),(100,0)])
+    poly_2 = Polygon([(350,350),(350,550),(550,550),(550,350)])
+    poly_3 = Polygon([(110,0),(110,200),(500,200),(380,50),(210,100)])
+    poly_list = [poly_1,poly_2,poly_3]
+    poly_dist.map_polygons(poly_list)
     
-    poly_dist = PolygonUeDistribution()
-#    polys = 
-#    mun_ues = 
-#    
-#    x, y = poly_dist.distribute_ues(polys,num_ues)
-#    poly_dist.plot(polys,x,y)
+    # Distribute UEs
+    num_ues = [15,100,150]
+    x, y = poly_dist.distribute_ues(num_ues)
+    
+    # Plot it all
+    ax = poly_dist.plot(poly_list,x,y)
+    plt.show(ax)
