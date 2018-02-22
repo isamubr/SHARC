@@ -11,6 +11,21 @@ from shapely.geometry import Point, Polygon
 import matplotlib.pyplot as plt
 
 class PolygonUeDistribution(object):
+    """
+    Implements UE distribution inside given polygons.
+    
+    Attributes
+    ----------
+        low_left (list): lower left corner of grid
+        up_right (list): upper right corner of grid
+        resolution (float): grid resolution
+        x_vals (np.array): possible x values on grid
+        y_vals (np.array): possible y values on grid
+    
+    Construction
+    ------------
+        p = PolygonUeDistribution(low_left,up_right,resolution)
+    """
     
     def __init__(self,low_left: list, up_right: list, resolution: float):
         # Set attributes
@@ -30,6 +45,13 @@ class PolygonUeDistribution(object):
         self.poly_points = []
         
     def map_polygons(self, polys: list):
+        """
+        Maps polygons as mask on grid
+        
+        Parameters
+        ----------
+            polys (list): list of shapely.geometry.Polygon objects
+        """
         # TODO: try and vectorize this loop
         for poly in polys:
             # List of points inside polygon
@@ -47,7 +69,14 @@ class PolygonUeDistribution(object):
             self.poly_points.append((poly,np.array(x),np.array(y),num_pts))
             
     def distribute_ues(self, num_ues: list):
+        """
+        Uniformly distributes UEs onto polygons
         
+        Parameters
+        ----------
+            num_ues (list): number of UEs in each polygon. Indexing must
+                match the polygon indexing given in map_polygons method
+        """
         x = np.array([])
         y = np.array([])
         
