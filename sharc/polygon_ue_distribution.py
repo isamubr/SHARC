@@ -81,12 +81,13 @@ if __name__ == '__main__':
     # Map polygons into grid
     poly_1 = Polygon([(0,0),(100,100),(100,0)])
     poly_2 = Polygon([(350,350),(350,550),(550,550),(550,350)])
-    poly_3 = Polygon([(110,0),(110,200),(500,200),(380,50),(210,100)])
-    poly_list = [poly_1,poly_2,poly_3]
+    poly_3 = Polygon([(110,0),(110,200),(500,200),(380,50),(300,350)])
+    poly_4 = Polygon([(100,500),(450,500),(450,400),(100,400)])
+    poly_list = [poly_1,poly_2,poly_3,poly_4]
     poly_dist.map_polygons(poly_list)
     
     # Distribute UEs
-    num_ues = [15,100,150]
+    num_ues = [15,100,150,200]
     x, y = poly_dist.distribute_ues(num_ues)
     
     # Plot it all
