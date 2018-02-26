@@ -13,6 +13,8 @@ from sharc.topology.topology_indoor import TopologyIndoor
 from sharc.topology.topology_single_base_station import TopologySingleBaseStation
 from sharc.topology.topology_input_map import TopologyInputMap
 from sharc.parameters.parameters import Parameters
+# TODO: replace this with Topography class
+from sharc.support.named_tuples import Topography
 
 class TopologyFactory(object):
 
@@ -27,7 +29,11 @@ class TopologyFactory(object):
         elif parameters.imt.topology == "INDOOR":
             return TopologyIndoor(parameters.indoor)
         elif parameters.imt.topology == "INPUT_MAP":
-            return TopologyInputMap(parameters.imt)
+            # TODO: this Topography is just a dummy. Replace it with real Topography class.
+            topography = Topography([664740.0,7799900.0],
+                                   [672760.0,7805400.0],
+                                   20.0)
+            return TopologyInputMap(parameters.imt,topography)
         else:
             sys.stderr.write("ERROR\nInvalid topology: " + parameters.imt.topology)
             sys.exit(1)
