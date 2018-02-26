@@ -154,27 +154,35 @@ class StationFactory(object):
         #azimuth = np.zeros(num_ue)
         elevation_range = (-90, 90)
         elevation = (elevation_range[1] - elevation_range[0])*np.random.random(num_ue) + elevation_range[0]
+        
+        if param.topology == "INPUT_MAP":
+            num_ue_poly = [int(num_ue/len(param.ue_polygons)) 
+                            for k in range(len(param.ue_polygons))]
+            topology.distribute_ues(num_ue_poly)
+            
+            imt_ue.x = topology.x_ue
+            imt_ue.y = topology.y_ue
+        else:
+            for bs in range(num_bs):
+                idx = [i for i in range(bs*num_ue_per_bs, bs*num_ue_per_bs + num_ue_per_bs)]
+                # theta is the horizontal angle of the UE wrt the serving BS
+                theta = topology.azimuth[bs] + angle[idx]
+                # calculate UE position in x-y coordinates
+                x = topology.x[bs] + radius[idx]*np.cos(np.radians(theta))
+                y = topology.y[bs] + radius[idx]*np.sin(np.radians(theta))
+                ue_x.extend(x)
+                ue_y.extend(y)
+                # calculate UE azimuth wrt serving BS
+                imt_ue.azimuth[idx] = (azimuth[idx] + theta + 180)%360
 
-        for bs in range(num_bs):
-            idx = [i for i in range(bs*num_ue_per_bs, bs*num_ue_per_bs + num_ue_per_bs)]
-            # theta is the horizontal angle of the UE wrt the serving BS
-            theta = topology.azimuth[bs] + angle[idx]
-            # calculate UE position in x-y coordinates
-            x = topology.x[bs] + radius[idx]*np.cos(np.radians(theta))
-            y = topology.y[bs] + radius[idx]*np.sin(np.radians(theta))
-            ue_x.extend(x)
-            ue_y.extend(y)
-            # calculate UE azimuth wrt serving BS
-            imt_ue.azimuth[idx] = (azimuth[idx] + theta + 180)%360
+                # calculate elevation angle
+                # psi is the vertical angle of the UE wrt the serving BS
+                distance = np.sqrt((topology.x[bs] - x)**2 + (topology.y[bs] - y)**2)
+                psi = np.degrees(np.arctan((param.bs_height - param.ue_height)/distance))
+                imt_ue.elevation[idx] = elevation[idx] + psi
 
-            # calculate elevation angle
-            # psi is the vertical angle of the UE wrt the serving BS
-            distance = np.sqrt((topology.x[bs] - x)**2 + (topology.y[bs] - y)**2)
-            psi = np.degrees(np.arctan((param.bs_height - param.ue_height)/distance))
-            imt_ue.elevation[idx] = elevation[idx] + psi
-
-        imt_ue.x = np.array(ue_x)
-        imt_ue.y = np.array(ue_y)
+            imt_ue.x = np.array(ue_x)
+            imt_ue.y = np.array(ue_y)
 
         imt_ue.active = np.zeros(num_ue, dtype=bool)
         imt_ue.height = param.ue_height*np.ones(num_ue)

@@ -33,7 +33,9 @@ class TopologyFactory(object):
             topography = Topography([664740.0,7799900.0],
                                    [672760.0,7805400.0],
                                    20.0)
-            return TopologyInputMap(parameters.imt,topography)
+            topology = TopologyInputMap(parameters.imt,topography)
+            topology.map_polygons(parameters.imt.ue_polygons)
+            return topology
         else:
             sys.stderr.write("ERROR\nInvalid topology: " + parameters.imt.topology)
             sys.exit(1)

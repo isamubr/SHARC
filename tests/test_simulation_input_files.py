@@ -9,6 +9,7 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 import math
+from shapely.geometry import Polygon
 
 from sharc.simulation_downlink import SimulationDownlink
 from sharc.simulation_uplink import SimulationUplink
@@ -16,12 +17,15 @@ from sharc.parameters.parameters import Parameters
 from sharc.antenna.antenna_omni import AntennaOmni
 from sharc.station_factory import StationFactory
 
-class SimulationDownlinkTest(unittest.TestCase):
+class SimulationInputFilesTest(unittest.TestCase):
 
     def setUp(self):
         self.param = Parameters()
         self.param.set_file_name("parameters_test_input_files.ini")
         self.param.read_params()
+        self.param.imt.ue_polygons = [Polygon([(669000.0,7803000.0),
+                                               (669200.0,7803000.0),
+                                               (669000.0,7803200.0)])]
         
     def test_simulation_2bs_2ue_downlink(self):
 
