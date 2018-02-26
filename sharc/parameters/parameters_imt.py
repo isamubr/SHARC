@@ -6,7 +6,9 @@ Created on Wed Feb 15 16:05:58 2017
 """
 
 import pandas as pd
+import geopandas as gpd
 import sys
+
 
 class ParametersImt(object):
     def __init__(self):
@@ -47,3 +49,26 @@ class ParametersImt(object):
             sys.exit(1)
         else:
             return bs_data_df.to_dict('list')
+
+    @staticmethod
+    def read_input_ue_polygon_kml_file(ue_polygon_file: str) -> list:
+        """
+        Parse KML data from file and return a list of Shapely Polygons
+        :param ue_polygon_file: KML file path containing the polygons
+        :return: list of Polygons inside KML file
+        """
+        # enable the KML-driver, which is not enabled by default
+        gpd.io.file.fiona.drvsupport.supported_drivers['KML'] = 'rw'
+        gdf = gpd.read_file(ue_polygon_file, driver='KML')
+
+        shape_list = list()
+        for idx, geom in gdf['geometry'].iteritems():
+            if geom.is_valid:
+                shape_list.append(geom)
+            else:
+                # try to fix this polygon. Hope it works.
+                geom_fix = geom.buffer(0)
+                shape_list.append(geom_fix)
+
+        return shape_list
+

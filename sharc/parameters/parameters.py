@@ -93,6 +93,12 @@ class Parameters(object):
                 sys.stderr.write(err_msg)
                 sys.exit(1)
 
+            if config.has_option("IMT", "ue_polygon_file"):
+                self.imt.ue_polygon_file = config.get("IMT", "ue_polygon_file")
+                self.imt.ue_polygons = ParametersImt.read_input_ue_polygon_kml_file(self.imt.ue_polygon_file)
+            else:
+                self.imt.ue_polygons = None
+
         self.imt.num_macrocell_sites     = config.getint("IMT", "num_macrocell_sites")
         self.imt.num_clusters            = config.getint("IMT", "num_clusters")
         self.imt.intersite_distance      = config.getfloat("IMT", "intersite_distance")
