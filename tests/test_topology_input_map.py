@@ -6,9 +6,9 @@ Created on Feb 07 16:53 2018
 """
 
 import unittest
-import pandas as pd
 import numpy as np
 import numpy.testing as npt
+import os
 
 from sharc.parameters.parameters_imt import ParametersImt
 from sharc.topology.topology_input_map import TopologyInputMap
@@ -36,7 +36,8 @@ class TopologyInputMapTest(unittest.TestCase):
 
     def setUp(self):
         parameters_imt = ParametersImt()
-        bs_physical_data_file = './topology_input_map_files/cell_data_test_file.xlsx'
+        self.our_path = os.path.dirname(__file__)
+        bs_physical_data_file = os.path.join(self.our_path, 'topology_input_map_files', 'cell_data_test_file.xlsx')
         parameters_imt.bs_data = parameters_imt.read_input_cell_data_file(bs_physical_data_file)
         self.topology = TopologyInputMap(parameters_imt)
 

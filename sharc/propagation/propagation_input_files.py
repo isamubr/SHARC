@@ -6,10 +6,10 @@ Created on Tue Jan 30 14:39:17 2018
 """
 
 from sharc.propagation.propagation import Propagation
+from sharc.parameters.parameters_imt import ParametersImt
 
 import matplotlib.pyplot as plt
 import numpy as np
-from glob import glob
 import sys
 import os
 
@@ -25,7 +25,7 @@ class PropagationInputFiles(Propagation):
             values
     """
 
-    def __init__(self, input_folder: str):
+    def __init__(self, parameters_imt: ParametersImt):
         """
         Constructs PropagationInputFile object, initializing the path_loss
         attribute.
@@ -39,12 +39,7 @@ class PropagationInputFiles(Propagation):
         self.path_loss = dict()
 
         # Loop through all the txt files in the folder
-        path_loss_files = glob(os.path.join(input_folder, '*.txt'))
-        if not path_loss_files:
-            sys.stderr.write("No Path Loss input file were found in {}\n".format(input_folder))
-            sys.exit(1)
-
-        for file in path_loss_files:
+        for file in parameters_imt.path_loss_files:
 
             self.files.append(file)
 
@@ -55,16 +50,16 @@ class PropagationInputFiles(Propagation):
                 line = next(f)
                 while "BEGIN_DATA" not in line:
                     split_line = line.split()
-                    
+
                     # Load next line before skiping blank line
                     line = next(f)
                     # Skip blank line. This way the user can insert blank
                     # lines between parameters and it still works
                     if len(split_line) < 2: continue
-                
+
                     # Create dict
                     head[split_line[0]] = split_line[1:]
-                    
+
                 # Test set of minimal parameters
                 min_params = set(["ANTENNA",
                                   "LOWER_LEFT",
@@ -74,38 +69,38 @@ class PropagationInputFiles(Propagation):
                 param_keys = set(head.keys())
                 if not min_params.issubset(param_keys):
                     missing_params = min_params - param_keys
-                    sys.stderr.write("Minimal parameter(s) " + 
-                                     str(missing_params) + 
+                    sys.stderr.write("Minimal parameter(s) " +
+                                     str(missing_params) +
                                      " not in path loss file " +
                                      file + "\n")
                     sys.exit(1)
-                    
+
                 # Parse minimal parameters
                 head["ANTENNA"] = head["ANTENNA"][0][1:-1]
                 head["LOWER_LEFT"] = [float(x) for x in head["LOWER_LEFT"]]
                 head["UPPER_RIGHT"] = [float(x) for x in head["UPPER_RIGHT"]]
                 head["RESOLUTION"] = float(head["RESOLUTION"][0])
                 head["RECEIVER_GAIN"] = float(head["RECEIVER_GAIN"][0])
-                
+
                 # Undefined parameter value
                 undefined = np.nan
-                
+
                 # Parse other parameters
                 if 'LOCATION' not in head.keys(): head["LOCATION"] = undefined
-                else: head["LOCATION"] = [float(x) 
+                else: head["LOCATION"] = [float(x)
                                               for x in head["LOCATION"]]
-                
-                if 'FREQUENCY' not in head.keys(): 
+
+                if 'FREQUENCY' not in head.keys():
                     head["FREQUENCY"] = undefined
                 else: head["FREQUENCY"] = float(head["FREQUENCY"][0])
-                
-                if "POWER" not in head.keys(): 
+
+                if "POWER" not in head.keys():
                     head["POWER"] = undefined
-                
+
                 if 'ANTENNATYPE' not in head.keys():
                     head["ANTENNATYPE"] = undefined
                 else: head["ANTENNATYPE"] = head["ANTENNATYPE"][0]
-                
+
                 if 'HEIGHT' not in head.keys(): head["HEIGHT"] = undefined
                 else: head["HEIGHT"] = float(head["HEIGHT"][0])
 

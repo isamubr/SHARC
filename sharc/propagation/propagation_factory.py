@@ -43,7 +43,7 @@ class PropagationFactory(object):
         elif channel_model == "INDOOR":
             return PropagationIndoor(param.indoor)
         elif channel_model == "INPUT_FILES":
-            return PropagationInputFiles(param.imt.path_loss_folder)
+            return PropagationInputFiles(param.imt)
         else:
             sys.stderr.write("ERROR\nInvalid channel_model: " + channel_model)
             sys.exit(1)

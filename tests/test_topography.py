@@ -6,8 +6,7 @@ Created on Feb 26 15:08 2018
 """
 
 import unittest
-import numpy as np
-import numpy.testing as npt
+import os
 
 from sharc.map.topography import Topography
 
@@ -23,7 +22,8 @@ class TopographyTest(unittest.TestCase):
     }
 
     def setUp(self):
-        self.topo_file = './map_test_files/Test_brucutu_res_20m.asc'
+        self.our_dir = os.path.dirname(__file__)
+        self.topo_file = os.path.join(self.our_dir, 'map_test_files', 'Test_brucutu_res_20m.asc')
 
     def test_topography_parser(self):
 
@@ -32,8 +32,8 @@ class TopographyTest(unittest.TestCase):
         self.assertEqual(topo_data.nrows, self.TEST_VALUES['nrows'])
         self.assertEqual(topo_data.ncols, self.TEST_VALUES['ncols'])
         self.assertEqual(topo_data.resolution, self.TEST_VALUES['resolution'])
-        self.assertEquals(topo_data.low_left, self.TEST_VALUES['low_left'])
-        self.assertEquals(topo_data.up_right, self.TEST_VALUES['up_right'])
+        self.assertEqual(topo_data.low_left, self.TEST_VALUES['low_left'])
+        self.assertEqual(topo_data.up_right, self.TEST_VALUES['up_right'])
 
 
 if __name__ == '__main__':
