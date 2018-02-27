@@ -8,7 +8,7 @@ Created on Wed Feb 15 16:05:58 2017
 import pandas as pd
 import geopandas as gpd
 import sys
-
+from pyproj import Proj
 
 class ParametersImt(object):
     def __init__(self):
@@ -51,15 +51,22 @@ class ParametersImt(object):
             return bs_data_df.to_dict('list')
 
     @staticmethod
-    def read_input_ue_polygon_kml_file(ue_polygon_file: str) -> list:
+    def read_input_ue_polygon_kml_file(ue_polygon_file: str, utm_zone: str) -> list:
         """
         Parse KML data from file and return a list of Shapely Polygons
+        Note that the Simulator deals with UTM projection, so the it expects that the KML file is in WSG84 lat/lon
+        and returns the polygon with UTM coordinates.
         :param ue_polygon_file: KML file path containing the polygons
+        :param utm_zone: The UTM zone where the KML polygons reside
         :return: list of Polygons inside KML file
         """
         # enable the KML-driver, which is not enabled by default
         gpd.io.file.fiona.drvsupport.supported_drivers['KML'] = 'rw'
         gdf = gpd.read_file(ue_polygon_file, driver='KML')
+
+        # Re-projecting from WSG84 to UTM.
+        proj_str = '+proj=utm +zone={}, +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs'.format(utm_zone.upper())
+        gdf = gdf.to_crs(proj_str)
 
         shape_list = list()
         for idx, geom in gdf['geometry'].iteritems():

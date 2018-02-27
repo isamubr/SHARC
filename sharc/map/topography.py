@@ -91,7 +91,7 @@ if __name__ == '__main__':
     print(topo_data.topography_grid)
 
     # Customize the color map so the invalid value '13' is grey
-    custom_map = plt.cm.get_cmap('Blues', 15)
+    custom_map = plt.cm.get_cmap('Blues', 7)
     cmaplist = [custom_map(i) for i in range(custom_map.N)]
     # reverse the colors
     cmaplist = cmaplist[::-1]
@@ -102,7 +102,8 @@ if __name__ == '__main__':
     topo_grid = np.ma.array(topo_data.topography_grid)
 
     # The invalid value is -9999 but this specific data set has invalid values that are below 300
-    masked_grid = np.ma.masked_where(topo_grid == -9999, topo_grid)
+    # masked_grid = np.ma.masked_where(topo_grid == -9999, topo_grid)
+    masked_grid = np.ma.masked_where(topo_grid <= 400, topo_grid)
 
     plt.imshow(masked_grid, cmap=custom_map, extent=[topo_data.low_left[0],
                                                   topo_data.low_left[0] + topo_data.ncols*topo_data.resolution,
