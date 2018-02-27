@@ -171,7 +171,7 @@ class PropagationInputFiles(Propagation):
 
             # Fill array
             # Invert signal to match the rest of simulator
-            loss[k:] = self.path_loss[bs][1][lin, col]
+            loss[k,:] = self.path_loss[bs][1][lin, col]
 
         return loss
 
