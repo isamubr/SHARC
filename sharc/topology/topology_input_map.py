@@ -15,8 +15,7 @@ from shapely.geometry import Point, Polygon
 
 from sharc.topology.topology import Topology
 from sharc.parameters.parameters_imt import ParametersImt
-# TODO: replace this with Topography class
-from sharc.support.named_tuples import Topography
+from sharc.map.topography import Topography
 
 
 class TopologyInputMap(Topology):
@@ -24,7 +23,7 @@ class TopologyInputMap(Topology):
     Generates the coordinates of the BSs based on the base station physical cell data input file.
     """
     # TODO: topography type hint
-    def __init__(self, param: ParametersImt, topography):
+    def __init__(self, param: ParametersImt, topography: Topography):
         self.param = param
         self.topography = topography
         
@@ -40,6 +39,13 @@ class TopologyInputMap(Topology):
         
         # List of polygon-points tuples
         self.poly_points = []
+        self.polys = []
+        
+        # Initialize attributes
+        self.x_ue = np.empty(0)
+        self.y_ue = np.empty(0)
+        self.z_ue = np.empty(0)
+        self.z = np.empty(0)
 
         # FIXME: cells are not supposed to be deffined for this topology
         intersite_distance = 500
@@ -50,10 +56,9 @@ class TopologyInputMap(Topology):
         """
         Read the base station coordinates from Base Station data parsed from file.
         """
-        # TODO: maybe just use x and y attributes from super class for the BS
-        # positions
         self.x = np.array(self.param.bs_data['dWECoordinateMeter'])
         self.y = np.array(self.param.bs_data['dSNCoordinateMeter'])
+        self.z = self.topography.get_z(self.x,self.y)
         self.num_base_stations = len(self.x)
         self.azimuth = np.array(self.param.bs_data['dBearing'])
 
@@ -107,6 +112,7 @@ class TopologyInputMap(Topology):
             
         self.x_ue = x
         self.y_ue = y
+        self.z_ue = self.topography.get_z(self.x_ue,self.y_ue)
 
     def plot_bs(self, ax: matplotlib.axes.Axes):
         # plot base station locations

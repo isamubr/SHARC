@@ -76,7 +76,7 @@ class Topography:
         
         lin_f = (y - self.low_left[1]) / self.resolution
         col_f = (x - self.low_left[0]) / self.resolution
-        lin = self.nrows - lin_f.astype(int)
+        lin = self.nrows - lin_f.astype(int) - 1
         col = col_f.astype(int)
         
         return self.topography_grid[lin,col]

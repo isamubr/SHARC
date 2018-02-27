@@ -41,7 +41,7 @@ class TopographyTest(unittest.TestCase):
         x = np.array([668899.0,665881.0,671632.0,666998.0])
         y = np.array([7803680.0,7805070.0,7800620.0,7804701.0])
         z = self.topo_data.get_z(x,y)
-        npt.assert_equal(z,np.array([1094,661,693,720]))
+        npt.assert_equal(z,np.array([1091,660,691,720]))
 
 
 if __name__ == '__main__':

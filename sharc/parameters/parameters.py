@@ -73,6 +73,15 @@ class Parameters(object):
                           "file must be set in parameter bs_physical_data_file\n"
                 sys.stderr.write(err_msg)
                 sys.exit(1)
+            
+            self.imt.topography_data_file = ""
+            if config.has_option("IMT", "topography_data_file"):
+                self.imt.topography_data_file = config.get("IMT", "topography_data_file")
+            else:
+                err_msg = "ERROR\nInvalid configuration: For topology type INPUT_MAP, the topography data " \
+                          "file must be set in parameter topography_data_file\n"
+                sys.stderr.write(err_msg)
+                sys.exit(1)
 
         if self.imt.channel_model == "INPUT_FILES":
             if config.has_option("IMT", "propagation_folder"):

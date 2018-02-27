@@ -23,9 +23,14 @@ class SimulationInputFilesTest(unittest.TestCase):
         self.param = Parameters()
         self.param.set_file_name("parameters_test_input_files.ini")
         self.param.read_params()
-        self.param.imt.ue_polygons = [Polygon([(669000.0,7803000.0),
-                                               (669200.0,7803000.0),
-                                               (669000.0,7803200.0)])]
+        self.param.imt.ue_polygons = [Polygon([(669240,7803180),
+                                               (669240,7803200),
+                                               (669260,7803200),
+                                               (669260,7803180)]),
+                                      Polygon([(671340,7803200),
+                                               (671340,7803220),
+                                               (671360,7803220),
+                                               (671360,7803200)])]
         
     def test_simulation_2bs_2ue_downlink(self):
 
@@ -45,8 +50,11 @@ class SimulationInputFilesTest(unittest.TestCase):
                                                             self.param.antenna_imt,
                                                             self.simulation.topology)
         # UEs positioned exactly 100m north of the BSs
-        self.simulation.ue.x = np.array([669242.9, 671354.38])
-        self.simulation.ue.y = np.array([7803199.9, 7803206.72])
+        npt.assert_equal(self.simulation.ue.x,
+                         np.array([669250,671350]))
+        npt.assert_equal(self.simulation.ue.y,
+                         np.array([7803190, 7803210]))
+        npt.assert_equal(self.simulation.ue.height,np.array([950.5,841.5]))
         self.simulation.ue.antenna = np.array([AntennaOmni(10), AntennaOmni(11)])
         self.simulation.ue.active = np.ones(2, dtype=bool)
         
@@ -121,8 +129,11 @@ class SimulationInputFilesTest(unittest.TestCase):
                                                             self.param.antenna_imt,
                                                             self.simulation.topology)
         # UEs positioned exactly 100m north of the BSs
-        self.simulation.ue.x = np.array([669242.9, 671354.38])
-        self.simulation.ue.y = np.array([7803199.9, 7803206.72])
+        npt.assert_equal(self.simulation.ue.x,
+                         np.array([669250,671350]))
+        npt.assert_equal(self.simulation.ue.y,
+                         np.array([7803190, 7803210]))
+        npt.assert_equal(self.simulation.ue.height,np.array([950.5,841.5]))
         self.simulation.ue.antenna = np.array([AntennaOmni(10), AntennaOmni(11)])
         self.simulation.ue.active = np.ones(2, dtype=bool)
         

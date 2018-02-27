@@ -49,8 +49,8 @@ class StationFactory(object):
         imt_base_stations.elevation = topology.elevation
         if param.topology == "INPUT_MAP":
             imt_base_stations.station_id = np.array(param.bs_data['strCellID'])
-            imt_base_stations.height = np.array(param.bs_data['dHeight'])
-            # FIXME: Different tx power from conducted power
+            imt_base_stations.height = np.array(param.bs_data['dHeight']) + topology.z
+            # FIXME: Differentiate tx power from conducted power
             imt_base_stations.tx_power = np.array(param.bs_data['dMaxTxPowerdBm'])
         else:
             imt_base_stations.height = param.bs_height*np.ones(num_bs)
@@ -162,6 +162,7 @@ class StationFactory(object):
             
             imt_ue.x = topology.x_ue
             imt_ue.y = topology.y_ue
+            imt_ue.height = param.ue_height*np.ones(num_ue) + topology.z_ue
         else:
             for bs in range(num_bs):
                 idx = [i for i in range(bs*num_ue_per_bs, bs*num_ue_per_bs + num_ue_per_bs)]
@@ -183,9 +184,9 @@ class StationFactory(object):
 
             imt_ue.x = np.array(ue_x)
             imt_ue.y = np.array(ue_y)
+            imt_ue.height = param.ue_height*np.ones(num_ue)
 
         imt_ue.active = np.zeros(num_ue, dtype=bool)
-        imt_ue.height = param.ue_height*np.ones(num_ue)
         imt_ue.indoor = np.random.random(num_ue) <= (param.ue_indoor_percent/100)
         imt_ue.tx_power = param.ue_conducted_power*np.ones(num_ue)
         imt_ue.rx_interference = -500*np.ones(num_ue)
