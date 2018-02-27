@@ -94,8 +94,10 @@ class Parameters(object):
                 sys.exit(1)
 
             if config.has_option("IMT", "ue_polygon_file"):
+                self.imt.utm_zone = config.get("IMT", "utm_zone")
                 self.imt.ue_polygon_file = config.get("IMT", "ue_polygon_file")
-                self.imt.ue_polygons = ParametersImt.read_input_ue_polygon_kml_file(self.imt.ue_polygon_file)
+                self.imt.ue_polygons = ParametersImt.read_input_ue_polygon_kml_file(self.imt.ue_polygon_file,
+                                                                                    self.imt.utm_zone)
             else:
                 self.imt.ue_polygons = None
 
