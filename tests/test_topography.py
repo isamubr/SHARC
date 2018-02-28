@@ -6,6 +6,7 @@ Created on Feb 26 15:08 2018
 """
 
 import unittest
+import os
 import numpy as np
 import numpy.testing as npt
 
@@ -23,7 +24,8 @@ class TopographyTest(unittest.TestCase):
     }
 
     def setUp(self):
-        self.topo_file = './map_test_files/Test_brucutu_res_20m.asc'
+        self.our_dir = os.path.dirname(__file__)
+        self.topo_file = os.path.join(self.our_dir, 'map_test_files', 'Test_brucutu_res_20m.asc')
         self.topo_data = Topography()       
         self.topo_data.parse_raster_data(self.topo_file)
 

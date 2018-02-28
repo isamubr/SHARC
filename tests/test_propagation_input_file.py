@@ -9,41 +9,51 @@ import unittest
 import numpy.testing as npt
 import numpy as np
 import os
+from glob import glob
 
 from sharc.propagation.propagation_input_files import PropagationInputFiles
+from sharc.parameters.parameters_imt import ParametersImt
 
 
 class PropagationInputFilesTest(unittest.TestCase):
 
     def setUp(self):
+        self.parameters_imt = ParametersImt()
+        self.my_path = os.path.dirname(__file__)
         # Test 1
-        input_folder = os.path.join('propagation_test_files', 'test_1')
-        self.propagation_1 = PropagationInputFiles(input_folder)
+        self.parameters_imt.path_loss_folder = os.path.join(self.my_path, 'propagation_test_files', 'test_1')
+        self.parameters_imt.path_loss_files = \
+            self.parameters_imt.get_path_loss_files(self.parameters_imt.path_loss_folder)
+        self.propagation_1 = PropagationInputFiles(self.parameters_imt)
 
         # Test 2
-        input_folder = os.path.join('propagation_test_files', 'test_2')
-        self.propagation_2 = PropagationInputFiles(input_folder)
+        self.parameters_imt.path_loss_folder = os.path.join(self.my_path, 'propagation_test_files', 'test_2')
+        self.parameters_imt.path_loss_files = \
+            self.parameters_imt.get_path_loss_files(self.parameters_imt.path_loss_folder)
+        self.propagation_2 = PropagationInputFiles(self.parameters_imt)
 
     def test_files(self):
         # Test 1
-        test_dummy_1_file_name = os.path.join('propagation_test_files', 'test_1', 'test_dummy_1.txt')
-        test_dummy_2_file_name = os.path.join('propagation_test_files', 'test_1', 'test_dummy_2.txt')
+        test_dummy_1_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_1', 'test_dummy_1.txt')
+        test_dummy_2_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_1', 'test_dummy_2.txt')
 
         self.assertCountEqual(self.propagation_1.files, [test_dummy_1_file_name, test_dummy_2_file_name])
 
         # Test 2
-        test_dummy_1_file_name = os.path.join('propagation_test_files', 'test_2', 'test_dummy_1.txt')
-        test_dummy_2_file_name = os.path.join('propagation_test_files', 'test_2', 'test_dummy_2.txt')
-        test_dummy_3_file_name = os.path.join('propagation_test_files', 'test_2', 'test_dummy_3.txt')
+        test_dummy_1_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'test_dummy_1.txt')
+        test_dummy_2_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'test_dummy_2.txt')
+        test_dummy_3_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'test_dummy_3.txt')
 
         self.assertCountEqual(self.propagation_2.files,
                               [test_dummy_1_file_name, test_dummy_2_file_name, test_dummy_3_file_name])
 
     def test_parameters(self):
         # Test 3
-        input_folder = os.path.join('propagation_test_files', 'test_3')
-        propagation_3 = PropagationInputFiles(input_folder)
- 
+        self.parameters_imt.path_loss_folder = os.path.join(self.my_path, 'propagation_test_files', 'test_3')
+        self.parameters_imt.path_loss_files = \
+            self.parameters_imt.get_path_loss_files(self.parameters_imt.path_loss_folder)
+        propagation_3 = PropagationInputFiles(self.parameters_imt)
+
         self.assertDictEqual(propagation_3.path_loss['DUMMY01'][0],
                              {"ANTENNA": 'DUMMY01',
                               "LOCATION": np.nan,

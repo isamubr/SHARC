@@ -8,7 +8,9 @@ Created on Wed Feb 15 16:05:58 2017
 import pandas as pd
 import geopandas as gpd
 import sys
-from pyproj import Proj
+from glob import glob
+import os
+
 
 class ParametersImt(object):
     def __init__(self):
@@ -39,7 +41,7 @@ class ParametersImt(object):
         try:
             bs_data_df = pd.read_excel(cell_data_file_name)
         except FileNotFoundError as err:
-            sys.stderr.write(str(err) + "\n")
+            sys.stderr.write("\n" + str(err) + "\n")
             sys.exit(1)
 
         bs_data_headers = set(list(bs_data_df.columns))
@@ -78,4 +80,13 @@ class ParametersImt(object):
                 shape_list.append(geom_fix)
 
         return shape_list
+
+    @staticmethod
+    def get_path_loss_files(path_loss_files_folder: str):
+        # Loop through all the txt files in the folder
+        path_loss_files = glob(os.path.join(path_loss_files_folder, '*.txt'))
+        if not path_loss_files:
+            sys.stderr.write("\n No Path Loss input file were found in {}\n".format(path_loss_files_folder))
+            sys.exit(1)
+        return path_loss_files
 

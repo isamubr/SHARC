@@ -7,6 +7,7 @@ Created on Wed Aug  9 19:35:52 2017
 
 import configparser
 import sys
+import os
 
 from sharc.parameters.parameters_general import ParametersGeneral
 from sharc.parameters.parameters_imt import ParametersImt
@@ -39,10 +40,8 @@ class Parameters(object):
         self.haps = ParametersHaps()
         self.rns = ParametersRns()
 
-
     def set_file_name(self, file_name: str):
         self.file_name = file_name
-
 
     def read_params(self):
         config = configparser.ConfigParser()
@@ -86,6 +85,10 @@ class Parameters(object):
         if self.imt.channel_model == "INPUT_FILES":
             if config.has_option("IMT", "propagation_folder"):
                 self.imt.path_loss_folder = config.get("IMT", "propagation_folder")
+                if not os.path.isdir(self.imt.path_loss_folder):
+                    sys.stderr.write("\n Directory {} does not exist!\n".format(self.imt.path_loss_folder))
+                    sys.exit(1)
+                self.imt.path_loss_files = ParametersImt.get_path_loss_files(self.imt.path_loss_folder)
             else:
                 err_msg = "ERROR\nInvalid configuration: For channel model " \
                           "type INPUT_FILES,  the folder containing the " \
