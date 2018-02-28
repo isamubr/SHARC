@@ -156,8 +156,10 @@ class StationFactory(object):
         elevation = (elevation_range[1] - elevation_range[0])*np.random.random(num_ue) + elevation_range[0]
         
         if param.topology == "INPUT_MAP":
+            # TODO: define number of UEs in polygons based on QoS categories
             num_ue_poly = [int(num_ue/len(param.ue_polygons)) 
-                            for k in range(len(param.ue_polygons))]
+                            for k in range(len(param.ue_polygons) - 1)]
+            num_ue_poly.append(num_ue - sum(num_ue_poly))
             topology.distribute_ues(num_ue_poly)
             
             imt_ue.x = topology.x_ue
