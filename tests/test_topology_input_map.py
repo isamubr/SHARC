@@ -52,7 +52,8 @@ class TopologyInputMapTest(unittest.TestCase):
         self.topology_1 = TopologyInputMap(parameters_imt,topo)
         # Test 2
         parameters_imt = ParametersImt()
-        bs_physical_data_file = './topology_input_map_files/cell_data_test_file_2.xlsx'
+        self.our_path = os.path.dirname(__file__)
+        bs_physical_data_file = os.path.join(self.our_path, 'topology_input_map_files', 'cell_data_test_file_2.xlsx')
         parameters_imt.bs_data = parameters_imt.read_input_cell_data_file(bs_physical_data_file)
         topo = Topography()
         topo.low_left = [10.0, 10.0]
@@ -60,8 +61,8 @@ class TopologyInputMapTest(unittest.TestCase):
         topo.resolution = 10.0
         topo.nrows = 5
         topo.ncols = 5
-        topo.topography_grid = np.ones((topo.nrows,topo.ncols))
-        self.topology_2 = TopologyInputMap(parameters_imt,topo)
+        topo.topography_grid = np.ones((topo.nrows, topo.ncols))
+        self.topology_2 = TopologyInputMap(parameters_imt, topo)
 
     def test_coordinates(self):
 
@@ -78,7 +79,7 @@ class TopologyInputMapTest(unittest.TestCase):
         npt.assert_array_equal(self.topology_1.azimuth, azimuth_ref)
         npt.assert_array_equal(self.topology_1.elevation, elevation_ref)
         self.assertEqual(self.topology_1.num_base_stations, num_bs_ref)
-        
+
     def test_map_polygons(self):
         poly_1 = Polygon([(10,10),(10,30),(30,30),(30,10)])
         poly_2 = Polygon([(20,20),(60,50),(60,20),(20,50)])
@@ -102,7 +103,7 @@ class TopologyInputMapTest(unittest.TestCase):
         npt.assert_equal(self.topology_2.poly_points[2][1],np.array([25.0]))
         npt.assert_equal(self.topology_2.poly_points[2][2],np.array([55.0]))
         self.assertEqual(self.topology_2.poly_points[2][3],1)
-        
+
     def test_distribute_ues(self):
         poly_1 = Polygon([(10,10),(10,30),(30,30),(30,10)])
         poly_2 = Polygon([(20,20),(60,50),(60,20),(20,50)])
