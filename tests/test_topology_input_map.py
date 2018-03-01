@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Created on Feb 07 16:53 2018
 
@@ -17,7 +17,6 @@ from shapely.geometry import Polygon
 
 
 class TopologyInputMapTest(unittest.TestCase):
-
     # These are the same parameters that come inside the cell data file
     TEST_VECTOR = {
         'strSiteID': ['DUMMY001', 'DUMMY002', 'DUMMY003', 'DUMMY004'],
@@ -48,8 +47,8 @@ class TopologyInputMapTest(unittest.TestCase):
         topo.resolution = 20.0
         topo.nrows = 276
         topo.ncols = 402
-        topo.topography_grid = np.ones((topo.nrows,topo.ncols))
-        self.topology_1 = TopologyInputMap(parameters_imt,topo)
+        topo.topography_grid = np.ones((topo.nrows, topo.ncols))
+        self.topology_1 = TopologyInputMap(parameters_imt, topo)
         # Test 2
         parameters_imt = ParametersImt()
         self.our_path = os.path.dirname(__file__)
@@ -65,7 +64,6 @@ class TopologyInputMapTest(unittest.TestCase):
         self.topology_2 = TopologyInputMap(parameters_imt, topo)
 
     def test_coordinates(self):
-
         self.topology_1.calculate_coordinates()
 
         x_ref = np.array(self.TEST_VECTOR['dWECoordinateMeter'])
@@ -81,42 +79,42 @@ class TopologyInputMapTest(unittest.TestCase):
         self.assertEqual(self.topology_1.num_base_stations, num_bs_ref)
 
     def test_map_polygons(self):
-        poly_1 = Polygon([(10,10),(10,30),(30,30),(30,10)])
-        poly_2 = Polygon([(20,20),(60,50),(60,20),(20,50)])
-        poly_3 = Polygon([(20,50),(20,70),(40,50)])
-        poly_list = [poly_1,poly_2,poly_3]
+        poly_1 = Polygon([(10, 10), (10, 30), (30, 30), (30, 10)])
+        poly_2 = Polygon([(20, 20), (60, 50), (60, 20), (20, 50)])
+        poly_3 = Polygon([(20, 50), (20, 70), (40, 50)])
+        poly_list = [poly_1, poly_2, poly_3]
         self.topology_2.map_polygons(poly_list)
-        self.assertEqual(self.topology_2.poly_points[0][0],poly_1)
+        self.assertEqual(self.topology_2.poly_points[0][0], poly_1)
         npt.assert_equal(self.topology_2.poly_points[0][1],
-                         np.array([15.0,15.0,25.0,25.0]))
+                         np.array([15.0, 15.0, 25.0, 25.0]))
         npt.assert_equal(self.topology_2.poly_points[0][2],
-                         np.array([15.0,25.0,15.0,25.0]))
-        self.assertEqual(self.topology_2.poly_points[0][3],4)
-        self.assertEqual(self.topology_2.poly_points[1][0],poly_2)
+                         np.array([15.0, 25.0, 15.0, 25.0]))
+        self.assertEqual(self.topology_2.poly_points[0][3], 4)
+        self.assertEqual(self.topology_2.poly_points[1][0], poly_2)
         npt.assert_equal(self.topology_2.poly_points[1][1],
-                         np.array([25.0,25.0,25.0,35.0,45.0,55.0,55.0,55.0]))
+                         np.array([25.0, 25.0, 25.0, 35.0, 45.0, 55.0, 55.0, 55.0]))
         npt.assert_equal(self.topology_2.poly_points[1][2],
-                         np.array([25.0,35.0,45.0,35.0,35.0,25.0,35.0,45.0]))
-        self.assertEqual(self.topology_2.poly_points[1][3],8)
+                         np.array([25.0, 35.0, 45.0, 35.0, 35.0, 25.0, 35.0, 45.0]))
+        self.assertEqual(self.topology_2.poly_points[1][3], 8)
         # Pixel centered at the edege of polygon is not included
-        self.assertEqual(self.topology_2.poly_points[2][0],poly_3)
-        npt.assert_equal(self.topology_2.poly_points[2][1],np.array([25.0]))
-        npt.assert_equal(self.topology_2.poly_points[2][2],np.array([55.0]))
-        self.assertEqual(self.topology_2.poly_points[2][3],1)
+        self.assertEqual(self.topology_2.poly_points[2][0], poly_3)
+        npt.assert_equal(self.topology_2.poly_points[2][1], np.array([25.0]))
+        npt.assert_equal(self.topology_2.poly_points[2][2], np.array([55.0]))
+        self.assertEqual(self.topology_2.poly_points[2][3], 1)
 
     def test_distribute_ues(self):
-        poly_1 = Polygon([(10,10),(10,30),(30,30),(30,10)])
-        poly_2 = Polygon([(20,20),(60,50),(60,20),(20,50)])
-        poly_3 = Polygon([(20,50),(20,70),(40,50)])
-        poly_list = [poly_1,poly_2,poly_3]
-        num_ues = [2,3,1]
+        poly_1 = Polygon([(10, 10), (10, 30), (30, 30), (30, 10)])
+        poly_2 = Polygon([(20, 20), (60, 50), (60, 20), (20, 50)])
+        poly_3 = Polygon([(20, 50), (20, 70), (40, 50)])
+        poly_list = [poly_1, poly_2, poly_3]
+        num_ues = [2, 3, 1]
         self.topology_2.map_polygons(poly_list)
         self.topology_2.distribute_ues(num_ues)
-        self.assertTrue(set(self.topology_2.x_ue[0:2]) <= set([15,25]))
-        self.assertTrue(set(self.topology_2.x_ue[2:5]) <= set([25,35,45,55]))
-        self.assertTrue(set(self.topology_2.x_ue[5:]) <= set([25,35]))
-        self.assertTrue(set(self.topology_2.y_ue[0:2]) <= set([15,25]))
-        self.assertTrue(set(self.topology_2.y_ue[2:5]) <= set([25,35,45]))
+        self.assertTrue(set(self.topology_2.x_ue[0:2]) <= set([15, 25]))
+        self.assertTrue(set(self.topology_2.x_ue[2:5]) <= set([25, 35, 45, 55]))
+        self.assertTrue(set(self.topology_2.x_ue[5:]) <= set([25, 35]))
+        self.assertTrue(set(self.topology_2.y_ue[0:2]) <= set([15, 25]))
+        self.assertTrue(set(self.topology_2.y_ue[2:5]) <= set([25, 35, 45]))
         self.assertTrue(set(self.topology_2.y_ue[5:]) <= set([55]))
 
 
