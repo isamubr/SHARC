@@ -21,8 +21,6 @@ class TopologyInputMap(Topology):
     """
     Generates the coordinates of the BSs based on the base station physical cell data input file.
     """
-
-    # TODO: topography type hint
     def __init__(self, param: ParametersImt, topography: Topography):
         self.param = param
         self.topography = topography
