@@ -32,11 +32,11 @@ class Parameters(object):
         self.antenna_imt = ParametersAntennaImt()
         self.hotspot = ParametersHotspot()
         self.indoor = ParametersIndoor()
-        self.fss_ss = ParametersFssSs()
-        self.fss_es = ParametersFssEs()
-        self.fs = ParametersFs()
-        self.haps = ParametersHaps()
-        self.rns = ParametersRns()
+        self.fss_ss = None
+        self.fss_es = None
+        self.fs = None
+        self.haps = None
+        self.rns = None
 
     def set_file_name(self, file_name: str):
         self.file_name = file_name
@@ -53,63 +53,72 @@ class Parameters(object):
         #######################################################################
         # Read the configuration files for the systems to be studied
         #######################################################################
-        config = configparser.ConfigParser()
+        config_imt = configparser.ConfigParser()
 
-        config.read(self.general.config_files, encoding='utf-8')
+        config_imt.read(self.general.imt_config_file, encoding='utf-8')
 
         #######################################################################
         # IMT
         #######################################################################
-        self.imt.get_params(config)
+        self.imt.get_params(config_imt)
 
         #######################################################################
         # IMT ANTENNA
         #######################################################################
 
-        self.antenna_imt.get_params(config)
+        self.antenna_imt.get_params(config_imt)
 
         #######################################################################
         # HOTSPOT
         #######################################################################
 
-        self.hotspot.get_params(config)
+        self.hotspot.get_params(config_imt)
 
         #######################################################################
         # INDOOR
         #######################################################################
 
-        self.indoor.get_params(config)
+        self.indoor.get_params(config_imt)
 
         #######################################################################
         # SYSTEM PARAMETERS
         #######################################################################
+        config_system = configparser.ConfigParser()
+
+        config_system.read(self.general.system_config_file, encoding='utf-8')
+        self.general.set_system(config_system)
 
         if self.general.system == "FSS_SS":
             #######################################################################
             # FSS space station
             #######################################################################
-            self.fss_ss.get_params(config)
+            self.fss_ss = ParametersFssSs()
+            self.fss_ss.get_params(config_system)
 
         elif self.general.system == "FSS_ES":
             #######################################################################
             # FSS earth station
             #######################################################################
-            self.fss_es.get_params(config)
+            self.fss_es = ParametersFssEs()
+            self.fss_es.get_params(config_system)
 
         elif self.general.system == "FS":
             #######################################################################
             # Fixed wireless service
             #######################################################################
-            self.fs.get_params(config)
+            self.fs = ParametersFs()
+            self.fs.get_params(config_system)
 
         elif self.general.system == "HAPS":
             #######################################################################
             # HAPS (airbone) station
             #######################################################################
-            self.haps.get_params(config)
+            self.haps = ParametersHaps()
+            self.haps.get_params(config_system)
 
         elif self.general.system == "RNS":
             #######################################################################
             # RNS
             #######################################################################
-            self.rns.get_params(config)
+            self.rns = ParametersRns()
+            self.rns.get_params(config_system)
