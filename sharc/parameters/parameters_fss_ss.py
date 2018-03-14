@@ -6,7 +6,7 @@ Created on Thu Apr 13 13:16:02 2017
 """
 
 import configparser
-
+from collections import OrderedDict
 from sharc.parameters.parameter_handler import ParameterHandler
 
 
@@ -15,35 +15,42 @@ class ParametersFssSs(ParameterHandler):
     def __init__(self):
         super().__init__()
 
+        self.default_options = \
+            OrderedDict([('frequency', 27250),
+                         ('bandwidth', 200),
+                         ('altitude', 35780000),
+                         ('lat_deg', 0),
+                         ('elevation', 270),
+                         ('azimuth', 0),
+                         ('tx_power_density', -5),
+                         ('noise_temperature', 950),
+                         ('inr_scaling', 14.95),
+                         ('antenna_gain', 46.6),
+                         ('antenna_pattern', 'FSS_SS'),
+                         ('imt_altitude', 0),
+                         ('imt_lat_deg', 0),
+                         ('imt_long_diff_deg', 0),
+                         ('season', 'SUMMER'),
+                         ('channel_model', 'FSPL'),
+                         ('antenna_l_s', -20),
+                         ('antenna_3_db', 0.65),
+                         ('boltzmann_constant', 1.38064852e-23),
+                         ('earth_radius', 6371000)])
+
         self.valid_options = {
             "antenna_pattern": ["ITU-R S.672", "ITU-R S.1528", "FSS_SS", "OMNI"],
             "channel_model": ["FSPL", "SatelliteSimple", "P619"],
             "season": ["SUMMER", "WINTER"]
         }
 
-        self.frequency = 0.0
-        self.bandwidth = 0.0
-        self.tx_power_density = 0.0
-        self.altitude = 0.0
-        self.lat_deg = 0.0
-        self.elevation = 0.0
-        self.azimuth = 0.0
-        self.noise_temperature = 0.0
-        self.inr_scaling = 0.0
-        self.antenna_gain = 0.0
+        # Initialize class attributes to the default values
+        for key in self.default_options:
+            setattr(self, key, self.default_options[key])
 
-        self.antenna_pattern = ""
-        self.imt_altitude = 0.0
-        self.imt_lat_deg = 0.0
-        self.imt_long_diff_deg = 0.0
-        self.channel_model = ""
-        self.season = ""
-        self.antenna_l_s = 0.0
-        self.antenna_3_dB = 0.0
-        self.BOLTZMANN_CONSTANT = 1.38064852e-23
-        self.EARTH_RADIUS = 6371000.0
+    def read_params(self, config_file: str):
 
-    def get_params(self, config: configparser.ConfigParser):
+        config = configparser.ConfigParser()
+        config.read(config_file, encoding='utf-8')
 
         self.frequency = config.getfloat("FSS_SS", "frequency")
         self.bandwidth = config.getfloat("FSS_SS", "bandwidth")

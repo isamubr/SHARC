@@ -6,6 +6,7 @@ Created on Sat Apr 15 16:29:36 2017
 """
 import configparser
 import sys
+from collections import OrderedDict
 from sharc.support.named_tuples import AntennaPar
 from sharc.parameters.parameter_handler import ParameterHandler
 
@@ -18,47 +19,51 @@ class ParametersAntennaImt(ParameterHandler):
     def __init__(self):
         super().__init__()
 
-        self.bs_tx_element_max_g = 0.0
-        self.bs_tx_element_phi_3db = 0.0
-        self.bs_tx_element_theta_3db = 0.0
-        self.bs_tx_element_am = 0.0
-        self.bs_tx_element_sla_v = 0.0
-        self.bs_tx_n_rows = 0.0
-        self.bs_tx_n_columns = 0.0
-        self.bs_tx_element_horiz_spacing = 0.0
-        self.bs_tx_element_vert_spacing = 0.0
+        self.default_values = \
+            OrderedDict([('ue_rx_element_max_g', 5.0),
+                         ('bs_tx_n_rows', 8.0),
+                         ('ue_rx_n_rows', 4.0),
+                         ('bs_rx_element_theta_3db', 65.0),
+                         ('ue_tx_element_sla_v', 25.0),
+                         ('ue_tx_element_theta_3db', 90.0),
+                         ('ue_tx_element_horiz_spacing', 0.5),
+                         ('bs_rx_element_am', 30.0),
+                         ('bs_rx_element_max_g', 5.0),
+                         ('bs_tx_element_vert_spacing', 0.5),
+                         ('bs_tx_n_columns', 8.0),
+                         ('ue_tx_element_max_g', 5.0),
+                         ('bs_rx_element_vert_spacing', 0.5),
+                         ('ue_tx_element_am', 25.0),
+                         ('bs_rx_element_phi_3db', 65.0),
+                         ('ue_rx_element_phi_3db', 90.0),
+                         ('bs_tx_element_max_g', 5.0),
+                         ('bs_tx_element_horiz_spacing', 0.5),
+                         ('ue_rx_element_sla_v', 25.0),
+                         ('bs_tx_element_theta_3db', 65.0),
+                         ('bs_tx_element_phi_3db', 65.0),
+                         ('bs_rx_n_columns', 8.0),
+                         ('ue_rx_element_am', 25.0),
+                         ('ue_tx_element_vert_spacing', 0.5),
+                         ('bs_rx_element_sla_v', 30.0),
+                         ('ue_rx_element_horiz_spacing', 0.5),
+                         ('bs_rx_n_rows', 8.0),
+                         ('ue_tx_element_phi_3db', 90.0),
+                         ('ue_rx_n_columns', 4.0),
+                         ('ue_tx_n_rows', 4.0),
+                         ('ue_rx_element_vert_spacing', 0.5),
+                         ('bs_rx_element_horiz_spacing', 0.5),
+                         ('ue_rx_element_theta_3db', 90.0),
+                         ('bs_tx_element_sla_v', 30.0),
+                         ('bs_tx_element_am', 30.0),
+                         ('ue_tx_n_columns', 4.0)])
 
-        self.bs_rx_element_max_g = 0.0
-        self.bs_rx_element_phi_3db = 0.0
-        self.bs_rx_element_theta_3db = 0.0
-        self.bs_rx_element_am = 0.0
-        self.bs_rx_element_sla_v = 0.0
-        self.bs_rx_n_rows = 0.0
-        self.bs_rx_n_columns = 0.0
-        self.bs_rx_element_horiz_spacing = 0.0
-        self.bs_rx_element_vert_spacing = 0.0
+        for key in self.default_values:
+            setattr(self, key, self.default_values[key])
 
-        self.ue_tx_element_max_g = 0.0
-        self.ue_tx_element_phi_3db = 0.0
-        self.ue_tx_element_theta_3db = 0.0
-        self.ue_tx_element_am = 0.0
-        self.ue_tx_element_sla_v = 0.0
-        self.ue_tx_n_rows = 0.0
-        self.ue_tx_n_columns = 0.0
-        self.ue_tx_element_horiz_spacing = 0.0
-        self.ue_tx_element_vert_spacing = 0.0
+    def read_params(self, config_file: str):
 
-        self.ue_rx_element_max_g = 0.0
-        self.ue_rx_element_phi_3db = 0.0
-        self.ue_rx_element_theta_3db = 0.0
-        self.ue_rx_element_am = 0.0
-        self.ue_rx_element_sla_v = 0.0
-        self.ue_rx_n_rows = 0.0
-        self.ue_rx_n_columns = 0.0
-        self.ue_rx_element_horiz_spacing = 0.0
-        self.ue_rx_element_vert_spacing = 0.0
-
-    def get_params(self, config: configparser.ConfigParser):
+        config = configparser.ConfigParser(defaults=self.default_values)
+        config.read(config_file, encoding='utf-8')
 
         self.bs_tx_element_max_g = config.getfloat("IMT_ANTENNA", "bs_tx_element_max_g")
         self.bs_tx_element_phi_3db = config.getfloat("IMT_ANTENNA", "bs_tx_element_phi_3db")

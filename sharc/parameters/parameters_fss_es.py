@@ -6,6 +6,7 @@ Created on Mon Jul 24 15:30:49 2017
 """
 
 import configparser
+from collections import OrderedDict
 
 from sharc.parameters.parameter_handler import ParameterHandler
 
@@ -18,31 +19,38 @@ class ParametersFssEs(ParameterHandler):
     def __init__(self):
         super().__init__()
 
+        self.default_options = \
+            OrderedDict([('x', 5000),
+                         ('y', 0),
+                         ('height', 3),
+                         ('elevation', 20),
+                         ('azimuth', 180),
+                         ('frequency', 27250),
+                         ('bandwidth', 200),
+                         ('noise_temperature', 950),
+                         ('inr_scaling', 1),
+                         ('tx_power_density', -68.3),
+                         ('antenna_gain', 62.8),
+                         ('antenna_pattern', 'ITU-R S.465'),
+                         ('diameter', 1.8),
+                         ('channel_model', 'TerrestrialSimple'),
+                         ('line_of_sight_prob', 1),
+                         ('boltzmann_constant', 1.38064852e-23),
+                         ('earth_radius', 6371000)])
+
         self.valid_options = {
             "antenna_pattern": ["ITU-R S.1855", "ITU-R S.465", "ITU-R S.580", "OMNI"],
             "channel_model": ["FSPL", "TerrestrialSimple"],
         }
 
-        self.x = 0.0
-        self.y = 0.0
-        self.height = 0.0
-        self.elevation = 0.0
-        self.azimuth = 0.0
-        self.frequency = 0.0
-        self.bandwidth = 0.0
-        self.tx_power_density = 0.0
-        self.noise_temperature = 0.0
-        self.inr_scaling = 0.0
-        self.antenna_gain = 0.0
+        # Initialize class attributes with default values
+        for key in self.default_options:
+            setattr(self, key, self.default_options[key])
 
-        self.antenna_pattern = ""
-        self.diameter = 0.0
-        self.channel_model = ""
-        self.line_of_sight_prob = 0.0
-        self.BOLTZMANN_CONSTANT = 1.38064852e-23
-        self.EARTH_RADIUS = 6371000.0
+    def read_params(self, config_file: str):
 
-    def get_params(self, config: configparser.ConfigParser):
+        config = configparser.ConfigParser()
+        config.read(config_file, encoding='utf-8')
 
         self.x = config.getfloat("FSS_ES", "x")
         self.y = config.getfloat("FSS_ES", "y")

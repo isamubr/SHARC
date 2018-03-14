@@ -15,6 +15,7 @@ class ParameterHandler(ABC):
     """
 
     valid_options = {}
+    default_options = {}
 
     def __init__(self):
         pass
@@ -36,10 +37,10 @@ class ParameterHandler(ABC):
             sys.exit(1)
 
     @abstractmethod
-    def get_params(self, config: configparser.ConfigParser):
+    def read_params(self, config_file: str):
         """
         Get parameters from configuration
-        :param config: configparser object
+        :param config_file: configuration file
         :return: None
         """
         pass

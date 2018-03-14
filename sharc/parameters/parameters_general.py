@@ -34,7 +34,10 @@ class ParametersGeneral(ParameterHandler):
         self.imt_config_file = ""
         self.system_config_file = ""
 
-    def get_params(self, config_general: configparser.ConfigParser):
+    def read_params(self, config_file: str):
+
+        config_general = configparser.ConfigParser()
+        config_general.read(config_file, encoding='utf-8')
 
         config_options = set(config_general.options("GENERAL"))
         if not self.mandatory_options.issubset(config_options):
@@ -68,16 +71,21 @@ class ParametersGeneral(ParameterHandler):
                           "Configuration file {} does not exist!\n".format(self.system_config_file)
                 sys.stderr.write(err_msg)
                 sys.exit(1)
+            self.set_system()
         else:
             err_msg = "PARAMETER ERROR [GENERAL]: System configuration file parameter [system_config_file] not set " \
                       "in the general section!\n"
             sys.stderr.write(err_msg)
             sys.exit(1)
 
-    def set_system(self, config: configparser.ConfigParser):
+    def set_system(self):
         """
-        Sets the system attribute based on the system's configuration object
-        :param config: configParser object with system configuration
+        Sets the system attribute based on the system's configuration file
         """
-        self.system = config.sections()[0]
+        # TODO: We're being lazy and reading all the configuration file to get just the first section name
+        system_config = configparser.ConfigParser()
+        system_config.read(self.system_config_file, encoding='utf-8')
+
+        # Config file must begin with system general section
+        self.system = system_config.sections()[0]
         self.check_param_option("GENERAL", "system")

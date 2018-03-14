@@ -9,11 +9,61 @@ import pandas as pd
 import sys
 import configparser
 from sharc.parameters.parameter_handler import ParameterHandler
+from collections import OrderedDict
 
 
 class ParametersImt(ParameterHandler):
 
     def __init__(self):
+
+        self.default_values = \
+                          OrderedDict([('topology', 'HOTSPOT'),
+                                       ('bs_physical_data_file', 'parameters/brucuCCO2600.xlsx'),
+                                       ('num_macrocell_sites', 19),
+                                       ('num_clusters', 1),
+                                       ('intersite_distance', 1000),
+                                       ('minimum_separation_distance_bs_ue', 10),
+                                       ('interfered_with', 'false'),
+                                       ('frequency', 27250),
+                                       ('bandwidth', 200),
+                                       ('rb_bandwidth', 0.180),
+                                       ('guard_band_ratio', 0.1),
+                                       ('bs_load_probability', .5),
+                                       ('bs_conducted_power', 10),
+                                       ('bs_height', 6),
+                                       ('bs_aclr', 40),
+                                       ('bs_acs', 30),
+                                       ('bs_noise_figure', 10),
+                                       ('bs_noise_temperature', 290),
+                                       ('bs_ohmic_loss', 3),
+                                       ('ul_attenuation_factor', 0.4),
+                                       ('ul_sinr_min', -10),
+                                       ('ul_sinr_max', 22),
+                                       ('ue_k', 3),
+                                       ('ue_k_m', 1),
+                                       ('ue_indoor_percent', 0),
+                                       ('ue_distribution_distance', 'RAYLEIGH'),
+                                       ('ue_distribution_azimuth', 'UNIFORM'),
+                                       ('ue_tx_power_control', 'ON'),
+                                       ('ue_p_o_pusch', -95),
+                                       ('ue_alfa', 1),
+                                       ('ue_p_cmax', 22),
+                                       ('ue_conducted_power', 10),
+                                       ('ue_height', 1.5),
+                                       ('ue_aclr', 35),
+                                       ('ue_acs', 25),
+                                       ('ue_noise_figure', 10),
+                                       ('ue_ohmic_loss', 3),
+                                       ('ue_body_loss', 4),
+                                       ('dl_attenuation_factor', 0.6),
+                                       ('dl_sinr_min', -10),
+                                       ('dl_sinr_max', 30),
+                                       ('channel_model', 'UMi'),
+                                       ('propagation_folder', 'parameters/measurements'),
+                                       ('line_of_sight_prob', 0.95),
+                                       ('shadowing', 'true'),
+                                       ('noise_temperature', 290),
+                                       ('boltzmann_constant', 1.38064852e-23)])
 
         self.valid_options = {
             "topology": ["MACROCELL", "HOTSPOT", "SINGLE_BS", "INDOOR", "INPUT_MAP"],
@@ -24,58 +74,17 @@ class ParametersImt(ParameterHandler):
             "channel_model": ["FSPL", "CI", "UMa", "UMi", "ABG", "INPUT_FILES"],
         }
 
-        self.topology = ""
-        self.channel_model = ""
-        self.bs_physical_data_file = ""
-        self.bs_data = dict()
-        self.path_loss_folder = ""
-        self.num_macrocell_sites = 0
-        self.num_clusters = 0
-        self.intersite_distance = 0.0
-        self.minimum_separation_distance_bs_ue = 0.0
-        self.interfered_with = False
-        self.frequency = 0.0
-        self.bandwidth = 0.0
-        self.rb_bandwidth = 0.0
-        self.guard_band_ratio = 0.0
-        self.bs_load_probability = 0.0
-        self.bs_conducted_power = 0.0
-        self.bs_height = 0.0
-        self.bs_aclr = 0.0
-        self.bs_acs = 0.0
-        self.bs_noise_figure = 0.0
-        self.bs_noise_temperature = 0.0
-        self.bs_ohmic_loss = 0.0
-        self.ul_attenuation_factor = 0.0
-        self.ul_sinr_min = 0.0
-        self.ul_sinr_max = 0.0
-        self.ue_k = 0
-        self.ue_k_m = 0
-        self.ue_indoor_percent = 0.0
-        self.ue_distribution_distance = ""
-        self.ue_distribution_azimuth = ""
-        self.ue_tx_power_control = ""
-        self.ue_p_o_pusch = 0.0
-        self.ue_alfa = 0.0
-        self.ue_p_cmax = 0.0
-        self.ue_conducted_power = 0.0
-        self.ue_height = 0.0
-        self.ue_aclr = 0.0
-        self.ue_acs = 0.0
-        self.ue_noise_figure = 0.0
-        self.ue_ohmic_loss = 0.0
-        self.ue_body_loss = 0.0
-        self.dl_attenuation_factor = 0.0
-        self.dl_sinr_min = 0.0
-        self.dl_sinr_max = 0.0
-        self.line_of_sight_prob = 0.0
-        self.shadowing = False
-        self.noise_temperature = 0.0
-        self.BOLTZMANN_CONSTANT = 1.38064852e-23
+        # Initialize class attributes to the default values
+        for key in self.default_values:
+            setattr(self, key, self.default_values[key])
 
-    def get_params(self, config: configparser.ConfigParser):
+    def read_params(self, config_file: str):
+
+        config = configparser.ConfigParser(defaults=self.default_values)
+        config.read(config_file, encoding='utf-8')
 
         self.topology = config.get("IMT", "topology")
+        setattr(self, 'topology', config.get('IMT', 'topology'))
         self.check_param_option("IMT", "topology")
 
         self.channel_model = config.get("IMT", "channel_model")
