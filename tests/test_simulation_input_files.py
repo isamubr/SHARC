@@ -17,6 +17,8 @@ from sharc.simulation_uplink import SimulationUplink
 from sharc.parameters.parameters import Parameters
 from sharc.antenna.antenna_omni import AntennaOmni
 from sharc.station_factory import StationFactory
+from sharc.propagation.propagation_factory import PropagationFactory
+
 
 class SimulationInputFilesTest(unittest.TestCase):
 
@@ -25,15 +27,16 @@ class SimulationInputFilesTest(unittest.TestCase):
         self.param = Parameters()
         self.param.set_file_name(os.path.join(self.our_path, "parameters_test_input_files.ini"))
         self.param.read_params()
-        self.param.imt.ue_polygons = [Polygon([(669240,7803180),
-                                               (669240,7803200),
-                                               (669260,7803200),
-                                               (669260,7803180)]),
-                                      Polygon([(671340,7803200),
-                                               (671340,7803220),
-                                               (671360,7803220),
-                                               (671360,7803200)])]
-        
+        self.param.imt.ue_polygons = [Polygon([(669240, 7803180),
+                                               (669240, 7803200),
+                                               (669260, 7803200),
+                                               (669260, 7803180)]),
+                                      Polygon([(671340, 7803200),
+                                               (671340, 7803220),
+                                               (671360, 7803220),
+                                               (671360, 7803200)])]
+        self.random_number_gen = np.random.RandomState(seed=101)
+
     def test_simulation_2bs_2ue_downlink(self):
 
         self.simulation = SimulationDownlink(self.param)
@@ -42,21 +45,30 @@ class SimulationInputFilesTest(unittest.TestCase):
         self.simulation.bs_power_gain = 0
         self.simulation.ue_power_gain = 0
 
+        self.simulation.propagation_imt = PropagationFactory.create_propagation(self.param.imt.channel_model,
+                                                                                self.param,
+                                                                                self.random_number_gen)
+
+        self.simulation.propagation_system = PropagationFactory.create_propagation(
+                                                                    self.simulation.param_system.channel_model,
+                                                                    self.param,
+                                                                    self.random_number_gen)
+
         self.simulation.bs = StationFactory.generate_imt_base_stations(self.param.imt,
                                                                        self.param.antenna_imt,
-                                                                       self.simulation.topology)
+                                                                       self.simulation.topology,
+                                                                       self.random_number_gen)
+
         self.simulation.bs.antenna = np.array([AntennaOmni(1), AntennaOmni(2)])
         self.simulation.bs.active = np.ones(2, dtype=bool)
 
         self.simulation.ue = StationFactory.generate_imt_ue(self.param.imt,
                                                             self.param.antenna_imt,
-                                                            self.simulation.topology)
+                                                            self.simulation.topology,
+                                                            self.random_number_gen)
         # UEs positioned exactly 100m north of the BSs
-        npt.assert_equal(self.simulation.ue.x,
-                         np.array([669250,671350]))
-        npt.assert_equal(self.simulation.ue.y,
-                         np.array([7803190, 7803210]))
-        npt.assert_equal(self.simulation.ue.height,np.array([950.5,841.5]))
+        self.simulation.ue.x = np.array([669242.9, 671354.38])
+        self.simulation.ue.y = np.array([7803199.9, 7803206.72])
         self.simulation.ue.antenna = np.array([AntennaOmni(10), AntennaOmni(11)])
         self.simulation.ue.active = np.ones(2, dtype=bool)
 
@@ -123,19 +135,28 @@ class SimulationInputFilesTest(unittest.TestCase):
 
         self.simulation.bs = StationFactory.generate_imt_base_stations(self.param.imt,
                                                                        self.param.antenna_imt,
-                                                                       self.simulation.topology)
+                                                                       self.simulation.topology,
+                                                                       self.random_number_gen)
+
         self.simulation.bs.antenna = np.array([AntennaOmni(1), AntennaOmni(2)])
         self.simulation.bs.active = np.ones(2, dtype=bool)
 
         self.simulation.ue = StationFactory.generate_imt_ue(self.param.imt,
                                                             self.param.antenna_imt,
-                                                            self.simulation.topology)
+                                                            self.simulation.topology,
+                                                            self.random_number_gen)
+
+        self.simulation.propagation_imt = PropagationFactory.create_propagation(self.param.imt.channel_model,
+                                                                     self.param,
+                                                                     self.random_number_gen)
+
+        self.simulation.propagation_system = PropagationFactory.create_propagation(self.simulation.param_system.channel_model,
+                                                                        self.param,
+                                                                        self.random_number_gen)
+
         # UEs positioned exactly 100m north of the BSs
-        npt.assert_equal(self.simulation.ue.x,
-                         np.array([669250,671350]))
-        npt.assert_equal(self.simulation.ue.y,
-                         np.array([7803190, 7803210]))
-        npt.assert_equal(self.simulation.ue.height,np.array([950.5,841.5]))
+        self.simulation.ue.x = np.array([669242.9, 671354.38])
+        self.simulation.ue.y = np.array([7803199.9, 7803206.72])
         self.simulation.ue.antenna = np.array([AntennaOmni(10), AntennaOmni(11)])
         self.simulation.ue.active = np.ones(2, dtype=bool)
 

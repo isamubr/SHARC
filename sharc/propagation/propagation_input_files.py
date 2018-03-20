@@ -33,7 +33,9 @@ class PropagationInputFiles(Propagation):
         Parameters:
             input_folder (str): path to folder containing the path loss files
         """
-        super().__init__()
+        # This parameter is not used in the PropagationInputFiles class, as the values are read from file, not randomly
+        # generated
+        super().__init__(np.random.RandomState())
 
         self.files = []
         self.path_loss = dict()
@@ -172,7 +174,10 @@ class PropagationInputFiles(Propagation):
 
 
 if __name__ == '__main__':
-    prop = PropagationInputFiles("../parameters/measurements")
+    param_imt = ParametersImt()
+    param_imt.path_loss_folder = "../parameters/measurements"
+    param_imt.path_loss_files = param_imt.get_path_loss_files(param_imt.path_loss_folder)
+    prop = PropagationInputFiles(param_imt)
 
     plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot_r',
                interpolation='nearest',
