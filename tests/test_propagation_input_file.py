@@ -43,7 +43,7 @@ class PropagationInputFilesTest(unittest.TestCase):
         # Test 3
         input_folder = os.path.join('propagation_test_files', 'test_3')
         propagation_3 = PropagationInputFiles(input_folder)
- 
+
         self.assertDictEqual(propagation_3.path_loss['DUMMY01'][0],
                              {"ANTENNA": 'DUMMY01',
                               "LOCATION": np.nan,

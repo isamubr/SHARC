@@ -11,6 +11,8 @@ import math
 from sharc.support.enumerations import StationType
 from sharc.station import Station
 from sharc.antenna.antenna import Antenna
+from sharc.spectral_mask_imt import SpectralMaskImt
+from sharc.spectral_mask_3gpp import SpectralMask3Gpp
 
 class StationManager(object):
     """
@@ -42,6 +44,10 @@ class StationManager(object):
         self.sinr = np.empty(n)
         self.sinr_ext = np.empty(n)
         self.inr = np.empty(n)
+        self.pfd = np.empty(n)
+        self.spectral_mask = np.empty(n, dtype=SpectralMask3Gpp)
+        self.center_freq = np.empty(n)
+        self.spectral_mask = None
         self.station_type = StationType.NONE
         self.station_id = list()
 
