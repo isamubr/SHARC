@@ -9,6 +9,8 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 import math
+from shapely.geometry import Polygon
+import os
 
 from sharc.simulation_downlink import SimulationDownlink
 from sharc.simulation_uplink import SimulationUplink
@@ -18,12 +20,21 @@ from sharc.station_factory import StationFactory
 from sharc.propagation.propagation_factory import PropagationFactory
 
 
-class SimulationDownlinkTest(unittest.TestCase):
+class SimulationInputFilesTest(unittest.TestCase):
 
     def setUp(self):
+        self.our_path = os.path.dirname(__file__)
         self.param = Parameters()
-        self.param.set_file_name("parameters_test_input_files.ini")
+        self.param.set_file_name(os.path.join(self.our_path, "parameters_test_input_files.ini"))
         self.param.read_params()
+        self.param.imt.ue_polygons = [Polygon([(669240, 7803180),
+                                               (669240, 7803200),
+                                               (669260, 7803200),
+                                               (669260, 7803180)]),
+                                      Polygon([(671340, 7803200),
+                                               (671340, 7803220),
+                                               (671360, 7803220),
+                                               (671360, 7803200)])]
         self.random_number_gen = np.random.RandomState(seed=101)
 
     def test_simulation_2bs_2ue_downlink(self):

@@ -7,6 +7,7 @@ Created on Wed Aug  9 19:35:52 2017
 
 import configparser
 import sys
+import os
 
 from sharc.parameters.parameters_general import ParametersGeneral
 from sharc.parameters.parameters_imt import ParametersImt
@@ -41,10 +42,8 @@ class Parameters(object):
         self.rns = ParametersRns()
         self.ras = ParametersRas()
 
-
     def set_file_name(self, file_name: str):
         self.file_name = file_name
-
 
     def read_params(self):
         config = configparser.ConfigParser()
@@ -80,10 +79,23 @@ class Parameters(object):
                           "file must be set in parameter bs_physical_data_file\n"
                 sys.stderr.write(err_msg)
                 sys.exit(1)
+            
+            self.imt.topography_data_file = ""
+            if config.has_option("IMT", "topography_data_file"):
+                self.imt.topography_data_file = config.get("IMT", "topography_data_file")
+            else:
+                err_msg = "ERROR\nInvalid configuration: For topology type INPUT_MAP, the topography data " \
+                          "file must be set in parameter topography_data_file\n"
+                sys.stderr.write(err_msg)
+                sys.exit(1)
 
         if self.imt.channel_model == "INPUT_FILES":
             if config.has_option("IMT", "propagation_folder"):
                 self.imt.path_loss_folder = config.get("IMT", "propagation_folder")
+                if not os.path.isdir(self.imt.path_loss_folder):
+                    sys.stderr.write("\n Directory {} does not exist!\n".format(self.imt.path_loss_folder))
+                    sys.exit(1)
+                self.imt.path_loss_files = ParametersImt.get_path_loss_files(self.imt.path_loss_folder)
             else:
                 err_msg = "ERROR\nInvalid configuration: For channel model " \
                           "type INPUT_FILES,  the folder containing the " \
@@ -99,6 +111,14 @@ class Parameters(object):
                           "value\n"
                 sys.stderr.write(err_msg)
                 sys.exit(1)
+
+            if config.has_option("IMT", "ue_polygon_file"):
+                self.imt.utm_zone = config.get("IMT", "utm_zone")
+                self.imt.ue_polygon_file = config.get("IMT", "ue_polygon_file")
+                self.imt.ue_polygons = ParametersImt.read_input_ue_polygon_kml_file(self.imt.ue_polygon_file,
+                                                                                    self.imt.utm_zone)
+            else:
+                self.imt.ue_polygons = None
 
         self.imt.num_macrocell_sites     = config.getint("IMT", "num_macrocell_sites")
         self.imt.num_clusters            = config.getint("IMT", "num_clusters")

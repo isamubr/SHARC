@@ -13,6 +13,7 @@ from sharc.topology.topology_indoor import TopologyIndoor
 from sharc.topology.topology_single_base_station import TopologySingleBaseStation
 from sharc.topology.topology_input_map import TopologyInputMap
 from sharc.parameters.parameters import Parameters
+from sharc.map.topography import Topography
 
 class TopologyFactory(object):
 
@@ -27,7 +28,11 @@ class TopologyFactory(object):
         elif parameters.imt.topology == "INDOOR":
             return TopologyIndoor(parameters.indoor)
         elif parameters.imt.topology == "INPUT_MAP":
-            return TopologyInputMap(parameters.imt)
+            topography = Topography()
+            topography.parse_raster_data(parameters.imt.topography_data_file)
+            topology = TopologyInputMap(parameters.imt,topography)
+            topology.map_polygons(parameters.imt.ue_polygons)
+            return topology
         else:
             sys.stderr.write("ERROR\nInvalid topology: " + parameters.imt.topology)
             sys.exit(1)

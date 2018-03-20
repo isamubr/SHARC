@@ -6,10 +6,10 @@ Created on Tue Jan 30 14:39:17 2018
 """
 
 from sharc.propagation.propagation import Propagation
+from sharc.parameters.parameters_imt import ParametersImt
 
 import matplotlib.pyplot as plt
 import numpy as np
-from glob import glob
 import sys
 import os
 
@@ -25,7 +25,7 @@ class PropagationInputFiles(Propagation):
             values
     """
 
-    def __init__(self, input_folder: str):
+    def __init__(self, parameters_imt: ParametersImt):
         """
         Constructs PropagationInputFile object, initializing the path_loss
         attribute.
@@ -41,12 +41,7 @@ class PropagationInputFiles(Propagation):
         self.path_loss = dict()
 
         # Loop through all the txt files in the folder
-        path_loss_files = glob(os.path.join(input_folder, '*.txt'))
-        if not path_loss_files:
-            sys.stderr.write("No Path Loss input file were found in {}\n".format(input_folder))
-            sys.exit(1)
-
-        for file in path_loss_files:
+        for file in parameters_imt.path_loss_files:
 
             self.files.append(file)
 
@@ -173,13 +168,16 @@ class PropagationInputFiles(Propagation):
 
             # Fill array
             # Invert signal to match the rest of simulator
-            loss[k:] = self.path_loss[bs][1][lin, col]
+            loss[k,:] = self.path_loss[bs][1][lin, col]
 
         return loss
 
 
 if __name__ == '__main__':
-    prop = PropagationInputFiles("../parameters/measurements")
+    param_imt = ParametersImt()
+    param_imt.path_loss_folder = "../parameters/measurements"
+    param_imt.path_loss_files = param_imt.get_path_loss_files(param_imt.path_loss_folder)
+    prop = PropagationInputFiles(param_imt)
 
     plt.imshow(prop.path_loss["BRCU0010"][1], cmap='hot_r',
                interpolation='nearest',

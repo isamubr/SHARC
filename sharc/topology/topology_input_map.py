@@ -9,19 +9,41 @@ import numpy as np
 import matplotlib.axes
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-import pandas as pd
+from itertools import product
+from shapely.geometry import Point, Polygon
 
 from sharc.topology.topology import Topology
 from sharc.parameters.parameters_imt import ParametersImt
+from sharc.map.topography import Topography
 
 
 class TopologyInputMap(Topology):
     """
     Generates the coordinates of the BSs based on the base station physical cell data input file.
     """
-
-    def __init__(self, param: ParametersImt):
+    def __init__(self, param: ParametersImt, topography: Topography):
         self.param = param
+        self.topography = topography
+
+        # List of all pixel central x and y values
+        self.x_vals = np.arange(self.topography.low_left[0] +
+                                self.topography.resolution / 2,
+                                self.topography.up_right[0],
+                                self.topography.resolution)
+        self.y_vals = np.arange(self.topography.low_left[1] +
+                                self.topography.resolution / 2,
+                                self.topography.up_right[1],
+                                self.topography.resolution)
+
+        # List of polygon-points tuples
+        self.poly_points = []
+        self.polys = []
+
+        # Initialize attributes
+        self.x_ue = np.empty(0)
+        self.y_ue = np.empty(0)
+        self.z_ue = np.empty(0)
+        self.z = np.empty(0)
 
         # FIXME: cells are not supposed to be deffined for this topology
         intersite_distance = 500
@@ -32,9 +54,9 @@ class TopologyInputMap(Topology):
         """
         Read the base station coordinates from Base Station data parsed from file.
         """
-
         self.x = np.array(self.param.bs_data['dWECoordinateMeter'])
         self.y = np.array(self.param.bs_data['dSNCoordinateMeter'])
+        self.z = self.topography.get_z(self.x, self.y)
         self.num_base_stations = len(self.x)
         self.azimuth = np.array(self.param.bs_data['dBearing'])
 
@@ -43,6 +65,52 @@ class TopologyInputMap(Topology):
 
         # No indoor stations
         self.indoor = np.zeros(self.num_base_stations, dtype=bool)
+
+    def map_polygons(self, polys: list):
+        """
+        Maps polygons as mask on grid
+
+        Parameters
+        ----------
+            polys (list): list of shapely.geometry.Polygon objects
+        """
+        self.polys = polys
+        # TODO: try and vectorize this loop
+        for poly in self.polys:
+            # List of points inside polygon
+            x = []
+            y = []
+            num_pts = 0
+            # Loop through all x and y combinations
+            for coord in product(self.x_vals, self.y_vals):
+                pt = Point(coord)
+                # Append pixel center point if inside polygon
+                if poly.contains(pt):
+                    x.append(coord[0])
+                    y.append(coord[1])
+                    num_pts += 1
+            self.poly_points.append((poly, np.array(x), np.array(y), num_pts))
+
+    def distribute_ues(self, num_ues: list):
+        """
+        Uniformly distributes UEs onto polygons
+
+        Parameters
+        ----------
+            num_ues (list): number of UEs in each polygon. Indexing must
+                match the polygon indexing given in map_polygons method
+        """
+        x = np.array([])
+        y = np.array([])
+
+        for k, num in enumerate(num_ues):
+            idxs = np.random.randint(0, self.poly_points[k][3], num)
+            x = np.append(x, self.poly_points[k][1][idxs])
+            y = np.append(y, self.poly_points[k][2][idxs])
+
+        self.x_ue = x
+        self.y_ue = y
+        self.z_ue = self.topography.get_z(self.x_ue, self.y_ue)
 
     def plot(self, ax: matplotlib.axes.Axes):
         # plot base station locations
@@ -53,16 +121,31 @@ class TopologyInputMap(Topology):
             pa = patches.CirclePolygon((x, y), self.cell_radius, 20, fill=False, edgecolor="green", linestyle='solid')
             ax.add_patch(pa)
 
+        # plot UE locations inside delimitation polygons
+        for poly in self.polys:
+            x_poly, y_poly = poly.exterior.xy
+            ax.plot(x_poly, y_poly)
+
+        ax.plot(self.x_ue, self.y_ue, '.r', label="UEs")
+        ax.grid()
+
 
 if __name__ == '__main__':
-
-    parameters_ims = ParametersImt()
+    parameters_imt = ParametersImt()
     # TODO: Add a method to ParamatersImt that reads the input cell data file
-    parameters_ims.bs_physical_data_file = '../parameters/brucuCCO2600.xlsx'
-    bs_data_df = pd.read_excel(parameters_ims.bs_physical_data_file)
-    parameters_ims.bs_data = bs_data_df.to_dict('list')
-    topology = TopologyInputMap(parameters_ims)
+    parameters_imt.bs_physical_data_file = '../parameters/brucuCCO2600.xlsx'
+    parameters_imt.bs_data = ParametersImt.read_input_cell_data_file(parameters_imt.bs_physical_data_file)
+    parameters_imt.ue_polygon_file = '../parameters/polygons/ContornoBrucutu.kml'
+    parameters_imt.ue_polygons = ParametersImt.read_input_ue_polygon_kml_file(parameters_imt.ue_polygon_file, '23K')
+    parameters_imt.topography_data_file = '../parameters/maps/Brucutu_res_20m.asc'
+    topography = Topography()
+    topography.parse_raster_data(parameters_imt.topography_data_file)
+
+    topology = TopologyInputMap(parameters_imt, topography)
     topology.calculate_coordinates()
+    topology.map_polygons(parameters_imt.ue_polygons)
+    num_ues = [100]
+    topology.distribute_ues(num_ues)
 
     fig = plt.figure(figsize=(8, 8), facecolor='w', edgecolor='k')  # create a figure object
     ax = fig.add_subplot(1, 1, 1)  # create an axes object in the figure
@@ -70,14 +153,12 @@ if __name__ == '__main__':
     topology.plot(ax)
 
     plt.axis('image')
-    plt.title("Macro cell topology with hotspots")
+    plt.title("Input map topology")
     plt.xlabel("x-coordinate [m]")
     plt.ylabel("y-coordinate [m]")
     plt.legend(loc="upper left", scatterpoints=1)
     plt.tight_layout()
 
     axes = plt.gca()
-    # axes.set_xlim([-1500, 1000])
 
     plt.show()
-

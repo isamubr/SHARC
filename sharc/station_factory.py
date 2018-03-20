@@ -47,6 +47,7 @@ class StationFactory(object):
                                    param_ant: ParametersAntennaImt,
                                    topology: Topology,
                                    random_number_gen: np.random.RandomState):
+
         num_bs = topology.num_base_stations
         imt_base_stations = StationManager(num_bs)
         imt_base_stations.station_type = StationType.IMT_BS
@@ -58,8 +59,8 @@ class StationFactory(object):
 
         if param.topology == "INPUT_MAP":
             imt_base_stations.station_id = np.array(param.bs_data['strCellID'])
-            imt_base_stations.height = np.array(param.bs_data['dHeight'])
-            # FIXME: Different tx power from conducted power
+            imt_base_stations.height = np.array(param.bs_data['dHeight']) + topology.z
+            # FIXME: Differentiate tx power from conducted power
             imt_base_stations.tx_power = np.array(param.bs_data['dMaxTxPowerdBm'])
         else:
             imt_base_stations.height = param.bs_height*np.ones(num_bs)
@@ -84,10 +85,10 @@ class StationFactory(object):
 
         for i in range(num_bs):
             imt_base_stations.antenna[i] = \
-            AntennaBeamformingImt(par, imt_base_stations.azimuth[i],\
-                                  imt_base_stations.elevation[i])
+                AntennaBeamformingImt(par, imt_base_stations.azimuth[i],
+                                      imt_base_stations.elevation[i])
 
-        #imt_base_stations.antenna = [AntennaOmni(0) for bs in range(num_bs)]
+        # imt_base_stations.antenna = [AntennaOmni(0) for bs in range(num_bs)]
         imt_base_stations.bandwidth = param.bandwidth*np.ones(num_bs)
         imt_base_stations.center_freq = param.frequency*np.ones(num_bs)
         imt_base_stations.noise_figure = param.bs_noise_figure*np.ones(num_bs)
@@ -138,97 +139,111 @@ class StationFactory(object):
         elevation = (elevation_range[1] - elevation_range[0])*random_number_gen.random_sample(num_ue) + \
                     elevation_range[0]
 
-        if param.ue_distribution_type.upper() == "UNIFORM":
+        if param.topology == "INPUT_MAP":
+            # TODO: define number of UEs in polygons based on QoS categories
+            num_ue_poly = [int(num_ue / len(param.ue_polygons))
+                           for k in range(len(param.ue_polygons) - 1)]
+            num_ue_poly.append(num_ue - sum(num_ue_poly))
+            topology.distribute_ues(num_ue_poly)
 
-            if not (type(topology) is TopologyMacrocell):
-                sys.stderr.write("ERROR\nUniform UE distribution is currently supported only with Macrocell topology")
-                sys.exit(1)
+            imt_ue.x = topology.x_ue
+            imt_ue.y = topology.y_ue
+            imt_ue.height = param.ue_height * np.ones(num_ue) + topology.z_ue
 
-            [ue_x, ue_y, theta, distance] = StationFactory.get_random_position(num_ue, topology, random_number_gen,
-                                                                               param.minimum_separation_distance_bs_ue )
-            psi = np.degrees(np.arctan((param.bs_height - param.ue_height) / distance))
-
-            imt_ue.azimuth = (azimuth + theta + np.pi/2)
-            imt_ue.elevation = elevation + psi
-
-        elif param.ue_distribution_type.upper() == "ANGLE_AND_DISTANCE":
-            # The Rayleigh and Normal distribution parameters (mean, scale and cutoff)
-            # were agreed in TG 5/1 meeting (May 2017).
-
-            if param.ue_distribution_distance.upper() == "RAYLEIGH":
-                # For the distance between UE and BS, it is desired that 99% of UE's
-                # are located inside the [soft] cell edge, i.e. Prob(d<d_edge) = 99%.
-                # Since the distance is modeled by a random variable with Rayleigh
-                # distribution, we use the quantile function to find that
-                # sigma = distance/3.0345. So we always distibute UE's in order to meet
-                # the requirement Prob(d<d_edge) = 99% for a given cell radius.
-                radius_scale = topology.cell_radius / 3.0345
-                radius = random_number_gen.rayleigh(radius_scale, num_ue)
-            elif param.ue_distribution_distance.upper() == "UNIFORM":
-                radius = topology.cell_radius * random_number_gen.random_sample(num_ue)
-            else:
-                sys.stderr.write("ERROR\nInvalid UE distance distribution: " + param.ue_distribution_distance)
-                sys.exit(1)
-
-            if param.ue_distribution_azimuth.upper() == "NORMAL":
-                # In case of the angles, we generate N times the number of UE's because
-                # the angle cutoff will discard 5% of the terminals whose angle is
-                # outside the angular sector defined by [-60, 60]. So, N = 1.4 seems to
-                # be a safe choice.
-                N = 1.4
-                angle_scale = 30
-                angle_mean = 0
-                angle_n = random_number_gen.normal(angle_mean, angle_scale, int(N * num_ue))
-
-                angle_cutoff = 60
-                idx = np.where((angle_n < angle_cutoff) & (angle_n > -angle_cutoff))[0][:num_ue]
-                angle = angle_n[idx]
-            elif param.ue_distribution_azimuth.upper() == "UNIFORM":
-                azimuth_range = (-60, 60)
-                angle = (azimuth_range[1] - azimuth_range[0]) * random_number_gen.random_sample(num_ue) \
-                        + azimuth_range[0]
-            else:
-                sys.stderr.write("ERROR\nInvalid UE azimuth distribution: " + param.ue_distribution_distance)
-                sys.exit(1)
-
-            for bs in range(num_bs):
-                idx = [i for i in range(bs * num_ue_per_bs, bs * num_ue_per_bs + num_ue_per_bs)]
-                # theta is the horizontal angle of the UE wrt the serving BS
-                theta = topology.azimuth[bs] + angle[idx]
-                # calculate UE position in x-y coordinates
-                x = topology.x[bs] + radius[idx] * np.cos(np.radians(theta))
-                y = topology.y[bs] + radius[idx] * np.sin(np.radians(theta))
-                ue_x.extend(x)
-                ue_y.extend(y)
-
-                # calculate UE azimuth wrt serving BS
-                imt_ue.azimuth[idx] = (azimuth[idx] + theta + 180) % 360
-
-                # calculate elevation angle
-                # psi is the vertical angle of the UE wrt the serving BS
-                distance = np.sqrt((topology.x[bs] - x) ** 2 + (topology.y[bs] - y) ** 2)
-                psi = np.degrees(np.arctan((param.bs_height - param.ue_height) / distance))
-                imt_ue.elevation[idx] = elevation[idx] + psi
         else:
-            sys.stderr.write("ERROR\nInvalid UE distribution type: " + param.ue_distribution_type)
-            sys.exit(1)
 
-        imt_ue.x = np.array(ue_x)
-        imt_ue.y = np.array(ue_y)
+            if param.ue_distribution_type.upper() == "UNIFORM":
+
+                if not (type(topology) is TopologyMacrocell):
+                    sys.stderr.write("ERROR\nUniform UE distribution is currently supported only with Macrocell topology")
+                    sys.exit(1)
+
+                [ue_x, ue_y, theta, distance] = StationFactory.get_random_position(num_ue, topology, random_number_gen,
+                                                                                   param.minimum_separation_distance_bs_ue )
+                psi = np.degrees(np.arctan((param.bs_height - param.ue_height) / distance))
+
+                imt_ue.azimuth = (azimuth + theta + np.pi/2)
+                imt_ue.elevation = elevation + psi
+
+            elif param.ue_distribution_type.upper() == "ANGLE_AND_DISTANCE":
+                # The Rayleigh and Normal distribution parameters (mean, scale and cutoff)
+                # were agreed in TG 5/1 meeting (May 2017).
+
+                if param.ue_distribution_distance.upper() == "RAYLEIGH":
+                    # For the distance between UE and BS, it is desired that 99% of UE's
+                    # are located inside the [soft] cell edge, i.e. Prob(d<d_edge) = 99%.
+                    # Since the distance is modeled by a random variable with Rayleigh
+                    # distribution, we use the quantile function to find that
+                    # sigma = distance/3.0345. So we always distibute UE's in order to meet
+                    # the requirement Prob(d<d_edge) = 99% for a given cell radius.
+                    radius_scale = topology.cell_radius / 3.0345
+                    radius = random_number_gen.rayleigh(radius_scale, num_ue)
+                elif param.ue_distribution_distance.upper() == "UNIFORM":
+                    radius = topology.cell_radius * random_number_gen.random_sample(num_ue)
+                else:
+                    sys.stderr.write("ERROR\nInvalid UE distance distribution: " + param.ue_distribution_distance)
+                    sys.exit(1)
+
+                if param.ue_distribution_azimuth.upper() == "NORMAL":
+                    # In case of the angles, we generate N times the number of UE's because
+                    # the angle cutoff will discard 5% of the terminals whose angle is
+                    # outside the angular sector defined by [-60, 60]. So, N = 1.4 seems to
+                    # be a safe choice.
+                    N = 1.4
+                    angle_scale = 30
+                    angle_mean = 0
+                    angle_n = random_number_gen.normal(angle_mean, angle_scale, int(N * num_ue))
+
+                    angle_cutoff = 60
+                    idx = np.where((angle_n < angle_cutoff) & (angle_n > -angle_cutoff))[0][:num_ue]
+                    angle = angle_n[idx]
+                elif param.ue_distribution_azimuth.upper() == "UNIFORM":
+                    azimuth_range = (-60, 60)
+                    angle = (azimuth_range[1] - azimuth_range[0]) * random_number_gen.random_sample(num_ue) \
+                            + azimuth_range[0]
+                else:
+                    sys.stderr.write("ERROR\nInvalid UE azimuth distribution: " + param.ue_distribution_distance)
+                    sys.exit(1)
+
+                for bs in range(num_bs):
+                    idx = [i for i in range(bs * num_ue_per_bs, bs * num_ue_per_bs + num_ue_per_bs)]
+                    # theta is the horizontal angle of the UE wrt the serving BS
+                    theta = topology.azimuth[bs] + angle[idx]
+                    # calculate UE position in x-y coordinates
+                    x = topology.x[bs] + radius[idx] * np.cos(np.radians(theta))
+                    y = topology.y[bs] + radius[idx] * np.sin(np.radians(theta))
+                    ue_x.extend(x)
+                    ue_y.extend(y)
+
+                    # calculate UE azimuth wrt serving BS
+                    imt_ue.azimuth[idx] = (azimuth[idx] + theta + 180) % 360
+
+                    # calculate elevation angle
+                    # psi is the vertical angle of the UE wrt the serving BS
+                    distance = np.sqrt((topology.x[bs] - x) ** 2 + (topology.y[bs] - y) ** 2)
+                    psi = np.degrees(np.arctan((param.bs_height - param.ue_height) / distance))
+                    imt_ue.elevation[idx] = elevation[idx] + psi
+
+                imt_ue.x = np.array(ue_x)
+                imt_ue.y = np.array(ue_y)
+                imt_ue.height = param.ue_height * np.ones(num_ue)
+
+            else:
+                sys.stderr.write("ERROR\nInvalid UE distribution type: " + param.ue_distribution_type)
+                sys.exit(1)
 
         imt_ue.active = np.zeros(num_ue, dtype=bool)
-        imt_ue.height = param.ue_height*np.ones(num_ue)
         imt_ue.indoor = random_number_gen.random_sample(num_ue) <= (param.ue_indoor_percent/100)
         imt_ue.rx_interference = -500*np.ones(num_ue)
         imt_ue.ext_interference = -500*np.ones(num_ue)
 
         # TODO: this piece of code works only for uplink
-        par = param_ant.get_antenna_parameters("UE","TX")
+        par = param_ant.get_antenna_parameters("UE", "TX")
         for i in range(num_ue):
             imt_ue.antenna[i] = AntennaBeamformingImt(par, imt_ue.azimuth[i],
                                                            imt_ue.elevation[i])
 
-        #imt_ue.antenna = [AntennaOmni(0) for bs in range(num_ue)]
+        # imt_ue.antenna = [AntennaOmni(0) for bs in range(num_ue)]
         imt_ue.bandwidth = param.bandwidth*np.ones(num_ue)
         imt_ue.center_freq = param.frequency*np.ones(num_ue)
         imt_ue.noise_figure = param.ue_noise_figure*np.ones(num_ue)
@@ -325,12 +340,12 @@ class StationFactory(object):
         imt_ue.ext_interference = -500*np.ones(num_ue)
 
         # TODO: this piece of code works only for uplink
-        par = param_ant.get_antenna_parameters("UE","TX")
+        par = param_ant.get_antenna_parameters("UE", "TX")
         for i in range(num_ue):
             imt_ue.antenna[i] = AntennaBeamformingImt(par, imt_ue.azimuth[i],
                                                          imt_ue.elevation[i])
 
-        #imt_ue.antenna = [AntennaOmni(0) for bs in range(num_ue)]
+        # imt_ue.antenna = [AntennaOmni(0) for bs in range(num_ue)]
         imt_ue.bandwidth = param.bandwidth*np.ones(num_ue)
         imt_ue.center_freq = param.frequency*np.ones(num_ue)
         imt_ue.noise_figure = param.ue_noise_figure*np.ones(num_ue)
@@ -346,7 +361,6 @@ class StationFactory(object):
         imt_ue.spectral_mask.set_mask()
 
         return imt_ue
-
 
     @staticmethod
     def generate_system(parameters: Parameters, topology: Topology, random_number_gen: np.random.RandomState ):
