@@ -12,9 +12,11 @@ import math
 
 from sharc.simulation_downlink import SimulationDownlink
 from sharc.parameters.parameters import Parameters
+from sharc.parameters.parameters_haps import ParametersHaps
 from sharc.antenna.antenna_omni import AntennaOmni
 from sharc.station_factory import StationFactory
 from sharc.propagation.propagation_factory import PropagationFactory
+
 
 class SimulationDownlinkHapsTest(unittest.TestCase):
 
@@ -115,6 +117,7 @@ class SimulationDownlinkHapsTest(unittest.TestCase):
         self.param.antenna_imt.ue_rx_element_horiz_spacing = 1
         self.param.antenna_imt.ue_rx_element_vert_spacing = 1
 
+        self.param.haps = ParametersHaps()
         self.param.haps.frequency = 10000
         self.param.haps.bandwidth = 200
         self.param.haps.altitude = 20000
@@ -231,9 +234,6 @@ class SimulationDownlinkHapsTest(unittest.TestCase):
         npt.assert_allclose(self.simulation.ue.inr,
                             ext_interference - thermal_noise,
                             atol=1e-2)
-
-
-
 
 
 if __name__ == '__main__':

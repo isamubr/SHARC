@@ -38,5 +38,6 @@ class AntennaS1528Test(unittest.TestCase):
         gain30 = self.antenna30.calculate_gain(off_axis_angle_vec=psi) - self.antenna30.peak_gain
         npt.assert_allclose(gain30, ref_gain30, atol=1e-2)
 
+
 if __name__ == '__main__':
     unittest.main()

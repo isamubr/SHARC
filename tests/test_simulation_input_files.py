@@ -20,7 +20,7 @@ from sharc.station_factory import StationFactory
 from sharc.propagation.propagation_factory import PropagationFactory
 
 
-class SimulationInputFilesTest(unittest.TestCase):
+class SimulationDownlinkTest(unittest.TestCase):
 
     def setUp(self):
         self.our_path = os.path.dirname(__file__)
@@ -242,6 +242,7 @@ class SimulationInputFilesTest(unittest.TestCase):
         npt.assert_allclose(self.simulation.bs.sinr[1],
                             rx_power[1] - total_interference[1],
                             atol=1e-2)
+
 
 if __name__ == '__main__':
     unittest.main()

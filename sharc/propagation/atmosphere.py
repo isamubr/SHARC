@@ -182,7 +182,7 @@ class ReferenceAtmosphere:
         return [temperature, pressure, water_vapour_pressure, refractive_index, specific_attenuation]
 
     @staticmethod
-    def get_reference_atmosphere_p835 (latitude, altitude=1000, season="summer"):
+    def get_reference_atmosphere_p835(latitude, altitude=1000, season="summer"):
         """
         Returns reference atmosphere parameters based on ITU-R P835-5
 

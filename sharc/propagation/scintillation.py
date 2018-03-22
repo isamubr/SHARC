@@ -22,7 +22,7 @@ class Scintillation():
         self.atmosphere = ReferenceAtmosphere()
 
 
-    def get_tropospheric_attenuation (self, *args, **kwargs) -> np.array:
+    def get_tropospheric_attenuation(self, *args, **kwargs) -> np.array:
         """
         Calculates tropospheric scintillation based on ITU-R P.619, Appendix D
 

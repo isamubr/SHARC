@@ -43,5 +43,6 @@ class PropagationIndoorTest(unittest.TestCase):
 
         propagation_indoor = PropagationIndoor(np.random.RandomState(), params)
 
+
 if __name__ == '__main__':
     unittest.main()
