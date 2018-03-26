@@ -99,6 +99,7 @@ class ParametersImt(ParameterHandler):
 
         if self.topology == "INPUT_MAP":
             self.bs_data = self.read_input_cell_data_file(self.bs_physical_data_file)
+            self.ue_polygons = self.read_input_ue_polygon_kml_file(self.ue_polygon_file, self.utm_zone)
 
         if self.channel_model == "INPUT_FILES":
             self.path_loss_files = self.get_path_loss_files(self.propagation_folder)
