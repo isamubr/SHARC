@@ -104,7 +104,6 @@ class SimulationUplink(Simulation):
                 cl = self.coupling_loss_imt[bs,ue] + self.ue_power_gain
                 self.ue.tx_power[ue] = np.minimum(p_cmax, 10*np.log10(m_pusch) + p_o_pusch + alpha*cl)
 
-
     def calculate_sinr(self):
         """
         Calculates the uplink SINR for each BS.
@@ -145,7 +144,6 @@ class SimulationUplink(Simulation):
             # calculate SNR and SINR
             self.bs.sinr[bs] = self.bs.rx_power[bs] - self.bs.total_interference[bs]
             self.bs.snr[bs] = self.bs.rx_power[bs] - self.bs.thermal_noise[bs]
-
 
     def calculate_sinr_ext(self):
         """

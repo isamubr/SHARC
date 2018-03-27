@@ -50,7 +50,7 @@ class TopologyInputMap(Topology):
         cell_radius = 100
         super().__init__(intersite_distance, cell_radius)
 
-    def calculate_coordinates(self):
+    def calculate_coordinates(self, random_number_gen=np.random.RandomState()):
         """
         Read the base station coordinates from Base Station data parsed from file.
         """

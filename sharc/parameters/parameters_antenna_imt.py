@@ -4,22 +4,31 @@ Created on Sat Apr 15 16:29:36 2017
 
 @author: Calil
 """
-
+import configparser
+import sys
+from collections import OrderedDict
 from sharc.support.named_tuples import AntennaPar
+from sharc.parameters.parameter_handler import ParameterHandler
 
-class ParametersAntennaImt(object):
+
+class ParametersAntennaImt(ParameterHandler):
     """
     Defines parameters for antenna array.
     """
 
     def __init__(self):
-        pass
+        super().__init__('IMT_ANTENNA')
 
+    def get_antenna_parameters(self, sta_type: str, txrx: str) -> AntennaPar:
+        """
+        Get antenna parameters based on station type and the direction (TX/RX)
 
-    ###########################################################################
-    # Named tuples which contain antenna types
+        :param sta_type: Station type. ["BS", "UE"]
+        :param txrx: Direction of communication ["TX", "RX"]
+        :return: Antenna Parameters named tuple. None if parameters are wrong
+        """
 
-    def get_antenna_parameters(self,sta_type: str, txrx: str)-> AntennaPar:
+        tpl = None
         if sta_type == "BS":
             if txrx == "TX":
                 tpl = AntennaPar(self.bs_element_pattern,
@@ -70,5 +79,9 @@ class ParametersAntennaImt(object):
                                  self.ue_rx_element_horiz_spacing,
                                  self.ue_rx_element_vert_spacing,
                                  0)
+            else:
+                err_msg = "{} Invalid station type {}".format(__file__, sta_type)
+                sys.stderr.write(err_msg)
+                sys.exit(1)
 
         return tpl

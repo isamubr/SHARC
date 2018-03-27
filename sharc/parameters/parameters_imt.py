@@ -8,13 +8,17 @@ Created on Wed Feb 15 16:05:58 2017
 import pandas as pd
 import geopandas as gpd
 import sys
-from glob import glob
 import os
+from glob import glob
+import configparser
+from sharc.parameters.parameter_handler import ParameterHandler
+from collections import OrderedDict
 
 
-class ParametersImt(object):
+class ParametersImt(ParameterHandler):
+
     def __init__(self):
-        pass
+        super().__init__('IMT')
 
     @staticmethod
     def read_input_cell_data_file(cell_data_file_name: str) -> dict:
@@ -90,3 +94,12 @@ class ParametersImt(object):
             sys.exit(1)
         return path_loss_files
 
+    def read_params(self, config_file: str):
+        super().read_params(config_file)
+
+        if self.topology == "INPUT_MAP":
+            self.bs_data = self.read_input_cell_data_file(self.bs_physical_data_file)
+            self.ue_polygons = self.read_input_ue_polygon_kml_file(self.ue_polygon_file, self.utm_zone)
+
+        if self.channel_model == "INPUT_FILES":
+            self.path_loss_files = self.get_path_loss_files(self.propagation_folder)

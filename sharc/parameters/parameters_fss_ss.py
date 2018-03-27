@@ -5,7 +5,12 @@ Created on Thu Apr 13 13:16:02 2017
 @author: edgar
 """
 
-class ParametersFssSs(object):
+import configparser
+from collections import OrderedDict
+from sharc.parameters.parameter_handler import ParameterHandler
+
+
+class ParametersFssSs(ParameterHandler):
 
     def __init__(self):
-        pass
+        super().__init__('FSS_SS')

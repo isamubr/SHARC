@@ -11,10 +11,14 @@ import math
 
 from sharc.simulation_uplink import SimulationUplink
 from sharc.parameters.parameters import Parameters
+from sharc.parameters.parameters_fss_ss import ParametersFssSs
+from sharc.parameters.parameters_fss_es import ParametersFssEs
+from sharc.parameters.parameters_ras import ParametersRas
 from sharc.antenna.antenna_omni import AntennaOmni
 from sharc.antenna.antenna_beamforming_imt import AntennaBeamformingImt
 from sharc.station_factory import StationFactory
 from sharc.propagation.propagation_factory import PropagationFactory
+
 
 class SimulationUplinkTest(unittest.TestCase):
 
@@ -115,6 +119,7 @@ class SimulationUplinkTest(unittest.TestCase):
         self.param.antenna_imt.ue_rx_element_horiz_spacing = 1
         self.param.antenna_imt.ue_rx_element_vert_spacing = 1
 
+        self.param.fss_ss = ParametersFssSs()
         self.param.fss_ss.frequency = 10000
         self.param.fss_ss.bandwidth = 100
         self.param.fss_ss.altitude = 35786000
@@ -138,6 +143,7 @@ class SimulationUplinkTest(unittest.TestCase):
         self.param.fss_ss.BOLTZMANN_CONSTANT = 1.38064852e-23
         self.param.fss_ss.EARTH_RADIUS = 6371000
 
+        self.param.fss_es = ParametersFssEs()
         self.param.fss_es.x = -5000
         self.param.fss_es.y = 0
         self.param.fss_es.location = "FIXED"
@@ -157,6 +163,7 @@ class SimulationUplinkTest(unittest.TestCase):
         self.param.fss_es.BOLTZMANN_CONSTANT = 1.38064852e-23
         self.param.fss_es.EARTH_RADIUS = 6371000
 
+        self.param.ras = ParametersRas()
         self.param.ras.x = -5000
         self.param.ras.y = 0
         self.param.ras.height = 10
@@ -729,6 +736,7 @@ class SimulationUplinkTest(unittest.TestCase):
                                                   self.param.imt.ul_sinr_max,
                                                   self.param.imt.ul_attenuation_factor)
         npt.assert_allclose(tput,ref_tput,atol=eps)
+
 
 if __name__ == '__main__':
     unittest.main()

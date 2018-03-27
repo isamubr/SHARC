@@ -363,9 +363,9 @@ class StationFactory(object):
         return imt_ue
 
     @staticmethod
-    def generate_system(parameters: Parameters, topology: Topology, random_number_gen: np.random.RandomState ):
+    def generate_system(parameters: Parameters, topology: Topology, random_number_gen: np.random.RandomState):
         if parameters.general.system == "FSS_ES":
-            return StationFactory.generate_fss_earth_station(parameters.fss_es, topology, random_number_gen)
+            return StationFactory.generate_fss_earth_station(parameters.fss_es, random_number_gen, topology)
         elif parameters.general.system == "FSS_SS":
             return StationFactory.generate_fss_space_station(parameters.fss_ss)
         elif parameters.general.system == "FS":
@@ -461,7 +461,7 @@ class StationFactory(object):
             fss_earth_station.x = np.array(x)
             fss_earth_station.y = np.array(y)
         elif param.location.upper() == "UNIFORM_DIST":
-            dist = random_number_gen.uniform( param.min_dist_to_bs, param.max_dist_to_bs)
+            dist = random_number_gen.uniform(param.min_dist_to_bs, param.max_dist_to_bs)
             angle = random_number_gen.uniform(-np.pi, np.pi)
             fss_earth_station.x[0] = np.array(dist * np.cos(angle))
             fss_earth_station.y[0] = np.array(dist * np.sin(angle))

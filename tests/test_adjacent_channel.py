@@ -13,6 +13,7 @@ import math
 from sharc.simulation_downlink import SimulationDownlink
 from sharc.simulation_uplink import SimulationUplink
 from sharc.parameters.parameters import Parameters
+from sharc.parameters.parameters_fss_ss import ParametersFssSs
 from sharc.antenna.antenna_omni import AntennaOmni
 from sharc.station_factory import StationFactory
 from sharc.propagation.propagation_factory import PropagationFactory
@@ -117,6 +118,7 @@ class SimulationAdjacentTest(unittest.TestCase):
         self.param.antenna_imt.ue_rx_element_horiz_spacing = 1
         self.param.antenna_imt.ue_rx_element_vert_spacing = 1
 
+        self.param.fss_ss = ParametersFssSs()
         self.param.fss_ss.frequency = 5000
         self.param.fss_ss.bandwidth = 100
         self.param.fss_ss.altitude = 35786000

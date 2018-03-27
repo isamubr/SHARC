@@ -12,9 +12,13 @@ import math
 
 from sharc.simulation_downlink import SimulationDownlink
 from sharc.parameters.parameters import Parameters
+from sharc.parameters.parameters_fss_ss import ParametersFssSs
+from sharc.parameters.parameters_fss_es import ParametersFssEs
+from sharc.parameters.parameters_ras import ParametersRas
 from sharc.antenna.antenna_omni import AntennaOmni
 from sharc.station_factory import StationFactory
 from sharc.propagation.propagation_factory import PropagationFactory
+
 
 class SimulationDownlinkTest(unittest.TestCase):
 
@@ -114,6 +118,7 @@ class SimulationDownlinkTest(unittest.TestCase):
         self.param.antenna_imt.ue_rx_element_horiz_spacing = 1
         self.param.antenna_imt.ue_rx_element_vert_spacing = 1
 
+        self.param.fss_ss = ParametersFssSs()
         self.param.fss_ss.frequency = 10000
         self.param.fss_ss.bandwidth = 100
         self.param.fss_ss.acs = 0
@@ -138,6 +143,7 @@ class SimulationDownlinkTest(unittest.TestCase):
         self.param.fss_ss.BOLTZMANN_CONSTANT = 1.38064852e-23
         self.param.fss_ss.EARTH_RADIUS = 6371000
 
+        self.param.fss_es = ParametersFssEs()
         self.param.fss_es.x = -5000
         self.param.fss_es.y = 0
         self.param.fss_es.location = "FIXED"
@@ -157,6 +163,7 @@ class SimulationDownlinkTest(unittest.TestCase):
         self.param.fss_es.BOLTZMANN_CONSTANT = 1.38064852e-23
         self.param.fss_es.EARTH_RADIUS = 6371000
 
+        self.param.ras = ParametersRas()
         self.param.ras.x = -5000
         self.param.ras.y = 0
         self.param.ras.height = 10
@@ -189,12 +196,14 @@ class SimulationDownlinkTest(unittest.TestCase):
         self.simulation.bs_power_gain = 0
         self.simulation.ue_power_gain = 0
 
+
         random_number_gen = np.random.RandomState()
 
         self.simulation.bs = StationFactory.generate_imt_base_stations(self.param.imt,
                                                                        self.param.antenna_imt,
                                                                        self.simulation.topology,
                                                                        random_number_gen)
+
         self.simulation.bs.antenna = np.array([AntennaOmni(1), AntennaOmni(2)])
         self.simulation.bs.active = np.ones(2, dtype=bool)
 
@@ -202,6 +211,7 @@ class SimulationDownlinkTest(unittest.TestCase):
                                                             self.param.antenna_imt,
                                                             self.simulation.topology,
                                                             random_number_gen)
+
         self.simulation.ue.x = np.array([20, 70, 110, 170])
         self.simulation.ue.y = np.array([ 0,  0,   0,   0])
         self.simulation.ue.antenna = np.array([AntennaOmni(10), AntennaOmni(11), AntennaOmni(22), AntennaOmni(23)])
@@ -232,7 +242,8 @@ class SimulationDownlinkTest(unittest.TestCase):
         npt.assert_allclose(self.simulation.coupling_loss_imt,
                             coupling_loss_imt,
                             atol=1e-2)
-#        npt.assert_allclose(self.simulation.coupling_loss_imt,
+
+#       npt.assert_allclose(self.simulation.coupling_loss_imt,
 #                            np.array([[78.47-1-10,  89.35-1-11,  93.27-1-22,  97.05-1-23],
 #                                      [97.55-2-10,  94.72-2-11,  91.53-2-22,  81.99-2-23]]),
 #                            atol=1e-2)
@@ -318,9 +329,6 @@ class SimulationDownlinkTest(unittest.TestCase):
                                delta=.01)
 
         # check INR at FSS space station
-#        self.assertAlmostEqual(self.simulation.system.inr,
-#                               np.array([ -147.448 - (-88.821) ]),
-#                               delta=.01)
         self.assertAlmostEqual(self.simulation.system.inr,
                                np.array([ rx_interference - thermal_noise ]),
                                delta=.01)
@@ -450,13 +458,11 @@ class SimulationDownlinkTest(unittest.TestCase):
                                np.array([ rx_interference - thermal_noise ]),
                                delta=.01)
 
-
     def test_simulation_2bs_4ue_ras(self):
         self.param.general.system = "RAS"
 
         self.simulation = SimulationDownlink(self.param)
         self.simulation.initialize()
-
 
         self.simulation.bs_power_gain = 0
         self.simulation.ue_power_gain = 0

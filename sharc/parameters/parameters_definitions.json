@@ -1,0 +1,1469 @@
+{
+    "GENERAL": {
+        "num_snapshots": {
+            "param_options": "",
+            "default_value": 100,
+            "data_type": "int"
+        },
+        "imt_link": {
+            "param_options": ["DOWNLINK", "UPLINK"],
+            "default_value": "DOWNLINK",
+            "data_type": "str"
+        },
+        "imt_config_file": {
+            "param_options": "",
+            "default_value": "parameters/parameters_imt.ini",
+            "data_type": "str"
+        },
+        "system_config_file": {
+            "param_options": "",
+            "default_value": "",
+            "data_type": "str"
+        },
+        "system": {
+            "param_options": ["FSS_SS", "FSS_ES", "FS", "RNS", "HAPS", "RAS"],
+            "default_value": "",
+            "data_type": "str"
+        },
+        "enable_cochannel": {
+            "param_options": ["true", "false"],
+            "default_value": "true",
+            "data_type": "bool"
+        },
+        "enable_adjacent_channel": {
+            "param_options": ["true", "false"],
+            "default_value": "true",
+            "data_type": "bool"
+        },
+        "seed": {
+            "param_options": "",
+            "default_value": 101,
+            "data_type": "int"
+        },
+        "overwrite_output": {
+            "param_options": ["true", "false"],
+            "default_value": "false",
+            "data_type": "bool"
+        }
+    },
+    "IMT": {
+        "topology": {
+            "data_type": "str",
+            "default_value": "HOTSPOT",
+            "param_options": ["MACROCELL", "HOTSPOT", "SINGLE_BS", "INDOOR", "INPUT_MAP"]
+        },
+        "bs_physical_data_file": {
+            "data_type": "str",
+            "default_value": "parameters/brucuCCO2600.xlsx",
+            "param_options": ""
+        },
+        "topography_data_file": {
+            "data_type": "str",
+            "default_value": "parameters/Brucutu_res_20m.asc",
+            "param_options": ""
+        },
+        "propagation_folder": {
+            "data_type": "str",
+            "default_value": "parameters/measurements",
+            "param_options": ""
+        },
+        "num_macrocell_sites": {
+            "data_type": "int",
+            "default_value": 19,
+            "param_options": ""
+        },
+        "num_clusters": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "intersite_distance": {
+            "data_type": "int",
+            "default_value": 1000,
+            "param_options": ""
+        },
+        "minimum_separation_distance_bs_ue": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "interfered_with": {
+            "data_type": "bool",
+            "default_value": "false",
+            "param_options": ["true", "false"]
+        },
+        "frequency": {
+            "data_type": "int",
+            "default_value": 43000,
+            "param_options": ""
+        },
+        "bandwidth": {
+            "data_type": "int",
+            "default_value": 200,
+            "param_options": ""
+        },
+        "rb_bandwidth": {
+            "data_type": "float",
+            "default_value": 0.18,
+            "param_options": ""
+        },
+        "spectral_mask": {
+            "data_type": "str",
+            "default_value": "ITU 265-E",
+            "param_options": ["ITU 265-E", "3GPP 36.104"]
+        },
+        "guard_band_ratio": {
+            "data_type": "float",
+            "default_value": 0.1,
+            "param_options": ""
+        },
+        "bs_load_probability": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "bs_conducted_power": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "bs_height": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "bs_noise_figure": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "bs_noise_temperature": {
+            "data_type": "int",
+            "default_value": 290,
+            "param_options": ""
+        },
+        "bs_ohmic_loss": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "ul_attenuation_factor": {
+            "data_type": "float",
+            "default_value": 0.4,
+            "param_options": ""
+        },
+        "ul_sinr_min": {
+            "data_type": "int",
+            "default_value": -10,
+            "param_options": ""
+        },
+        "ul_sinr_max": {
+            "data_type": "int",
+            "default_value": 22,
+            "param_options": ""
+        },
+        "utm_zone": {
+            "data_type": "str",
+            "default_value": "23K",
+            "param_options": ""
+        },
+        "ue_polygon_file": {
+            "data_type": "str",
+            "default_value": "./parameters/polygons/PolygonBrucutuTest.kml",
+            "param_options": ""
+        },
+        "ue_k": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "ue_k_m": {
+            "data_type": "int",
+            "default_value": 2,
+            "param_options": ""
+        },
+        "ue_indoor_percent": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "ue_distribution_type": {
+            "data_type": "str",
+            "default_value": "ANGLE_AND_DISTANCE",
+            "param_options": ["UNIFORM", "ANGLE_AND_DISTANCE"]
+        },
+        "ue_distribution_distance": {
+            "data_type": "str",
+            "default_value": "RAYLEIGH",
+            "param_options": ["UNIFORM", "RAYLEIGH"]
+        },
+        "ue_distribution_azimuth": {
+            "data_type": "str",
+            "default_value": "NORMAL",
+            "param_options": ["UNIFORM", "NORMAL"]
+        },
+        "ue_tx_power_control": {
+            "data_type": "str",
+            "default_value": "off",
+            "param_options": ["on", "off"]
+        },
+        "ue_p_o_pusch": {
+            "data_type": "int",
+            "default_value": -95,
+            "param_options": ""
+        },
+        "ue_alpha": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "ue_p_cmax": {
+            "data_type": "int",
+            "default_value": 22,
+            "param_options": ""
+        },
+        "ue_height": {
+            "data_type": "float",
+            "default_value": 1.5,
+            "param_options": ""
+        },
+        "ue_noise_figure": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "ue_ohmic_loss": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "ue_body_loss": {
+            "data_type": "int",
+            "default_value": 4,
+            "param_options": ""
+        },
+        "dl_attenuation_factor": {
+            "data_type": "float",
+            "default_value": 0.6,
+            "param_options": ""
+        },
+        "dl_sinr_min": {
+            "data_type": "int",
+            "default_value": -10,
+            "param_options": ""
+        },
+        "dl_sinr_max": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "channel_model": {
+            "data_type": "str",
+            "default_value": "UMi",
+            "param_options": ["FSPL", "CI", "UMa", "UMi", "ABG", "INPUT_FILES"]
+        },
+        "propagation_folder": {
+            "data_type": "str",
+            "default_value": "parameters/measurements",
+            "param_options": ""
+        },
+        "line_of_sight_prob": {
+            "data_type": "float",
+            "default_value": 0.95,
+            "param_options": ""
+        },
+        "shadowing": {
+            "data_type": "bool",
+            "default_value": "true",
+            "param_options": ["true", "false"]
+        },
+        "noise_temperature": {
+            "data_type": "int",
+            "default_value": 290,
+            "param_options": ""
+        },
+        "BOLTZMANN_CONSTANT": {
+            "data_type": "float",
+            "default_value": 1.38064852e-23,
+            "param_options": ""
+        }
+    },
+    "IMT_ANTENNA": {
+        "bs_element_pattern": {
+            "data_type": "str",
+            "default_value": "F1336",
+            "param_options": ["M2101", "F1336", "FIXED"]
+        },
+        "ue_element_pattern": {
+            "data_type": "str",
+            "default_value": "FIXED",
+            "param_options": ["M2101", "F1336", "FIXED"]
+        },
+        "bs_tx_element_max_g": {
+            "data_type": "int",
+            "default_value": 15,
+            "param_options": ""
+        },
+        "bs_rx_element_max_g": {
+            "data_type": "int",
+            "default_value": 15,
+            "param_options": ""
+        },
+        "ue_rx_element_max_g": {
+            "data_type": "int",
+            "default_value": -3,
+            "param_options": ""
+        },
+        "ue_tx_element_max_g": {
+            "data_type": "int",
+            "default_value": 5,
+            "param_options": ""
+        },
+        "bs_tx_n_rows": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "bs_rx_n_rows": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "ue_tx_n_rows": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "ue_rx_n_rows": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "bs_tx_n_columns": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "bs_rx_n_columns": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "ue_tx_n_columns": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "ue_rx_n_columns": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "bs_tx_element_horiz_spacing": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "bs_rx_element_horiz_spacing": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "ue_tx_element_horiz_spacing": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "ue_rx_element_horiz_spacing": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "bs_tx_element_vert_spacing": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "bs_rx_element_vert_spacing": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "ue_tx_element_vert_spacing": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "ue_rx_element_vert_spacing": {
+            "data_type": "float",
+            "default_value": 0.5,
+            "param_options": ""
+        },
+        "bs_tx_element_phi_deg_3db": {
+            "data_type": "int",
+            "default_value": 65,
+            "param_options": ""
+        },
+        "bs_rx_element_phi_deg_3db": {
+            "data_type": "int",
+            "default_value": 65,
+            "param_options": ""
+        },
+        "ue_tx_element_phi_deg_3db": {
+            "data_type": "int",
+            "default_value": 90,
+            "param_options": ""
+        },
+        "ue_rx_element_phi_deg_3db": {
+            "data_type": "int",
+            "default_value": 90,
+            "param_options": ""
+        },
+        "bs_tx_element_theta_deg_3db": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "bs_rx_element_theta_deg_3db": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "ue_tx_element_theta_deg_3db": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "ue_rx_element_theta_deg_3db": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "bs_tx_element_am": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "bs_rx_element_am": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "ue_tx_element_am": {
+            "data_type": "int",
+            "default_value": 25,
+            "param_options": ""
+        },
+        "ue_rx_element_am": {
+            "data_type": "int",
+            "default_value": 25,
+            "param_options": ""
+        },
+        "bs_tx_element_sla_v": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "bs_rx_element_sla_v": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "ue_tx_element_sla_v": {
+            "data_type": "int",
+            "default_value": 25,
+            "param_options": ""
+        },
+        "ue_rx_element_sla_v": {
+            "data_type": "int",
+            "default_value": 25,
+            "param_options": ""
+        },
+        "bs_downtilt_deg": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        }
+    },
+    "HOTSPOT": {
+        "num_hotspots_per_cell": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "max_dist_hotspot_ue": {
+            "data_type": "int",
+            "default_value": 100,
+            "param_options": ""
+        },
+        "min_dist_bs_hotspot": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "min_dist_hotspots": {
+            "data_type": "int",
+            "default_value": 200,
+            "param_options": ""
+        }
+    },
+    "INDOOR": {
+        "basic_path_loss": {
+            "data_type": "str",
+            "default_value": "INH_OFFICE",
+            "param_options": ["FSPL", "INH_OFFICE"]
+        },
+        "n_rows": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "n_colums": {
+            "data_type": "int",
+            "default_value": 2,
+            "param_options": ""
+        },
+        "street_width": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "ue_indoor_percent": {
+            "data_type": "float",
+            "default_value": 0.95,
+            "param_options": ""
+        },
+        "building_class": {
+            "data_type": "str",
+            "default_value": "TRADITIONAL",
+            "param_options": ["TRADITIONAL", "THERMALLY_EFFICIENT"]
+        }
+    },
+    "FSS_SS": {
+        "frequency": {
+            "data_type": "int",
+            "default_value": 27250,
+            "param_options": ""
+        },
+        "bandwidth": {
+            "data_type": "int",
+            "default_value": 200,
+            "param_options": ""
+        },
+        "altitude": {
+            "data_type": "int",
+            "default_value": 35780000,
+            "param_options": ""
+        },
+        "lat_deg": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "elevation": {
+            "data_type": "int",
+            "default_value": 270,
+            "param_options": ""
+        },
+        "azimuth": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "tx_power_density": {
+            "data_type": "int",
+            "default_value": -5,
+            "param_options": ""
+        },
+        "noise_temperature": {
+            "data_type": "int",
+            "default_value": 950,
+            "param_options": ""
+        },
+        "inr_scaling": {
+            "data_type": "float",
+            "default_value": 14.95,
+            "param_options": ""
+        },
+        "adjacent_ch_selectivity": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "antenna_gain": {
+            "data_type": "float",
+            "default_value": 46.6,
+            "param_options": ""
+        },
+        "antenna_pattern": {
+            "data_type": "str",
+            "default_value": "FSS_SS",
+            "param_options": ["ITU-R S.672", "ITU-R S.1528", "FSS_SS", "OMNI"]
+        },
+        "imt_altitude": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "imt_lat_deg": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "imt_long_diff_deg": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "season": {
+            "data_type": "str",
+            "default_value": "SUMMER",
+            "param_options": ["SUMMER", "WINTER"]
+        },
+        "channel_model": {
+            "data_type": "str",
+            "default_value": "FSPL",
+            "param_options": ["FSPL", "SatelliteSimple", "P619"]
+        },
+        "antenna_l_s": {
+            "data_type": "int",
+            "default_value": -20,
+            "param_options": ""
+        },
+        "antenna_3_dB": {
+            "data_type": "float",
+            "default_value": 0.65,
+            "param_options": ""
+        },
+        "BOLTZMANN_CONSTANT": {
+            "data_type": "float",
+            "default_value": 1.38064852e-23,
+            "param_options": ""
+        },
+        "EARTH_RADIUS": {
+            "data_type": "int",
+            "default_value": 6371000,
+            "param_options": ""
+        }
+    },
+    "FSS_ES": {
+        "location": {
+            "data_type": "str",
+            "default_value": "UNIFORM_DIST",
+            "param_options": ["FIXED", "CELL", "NETWORK", "UNIFORM_DIST"]
+        },
+        "x": {
+            "data_type": "int",
+            "default_value": 10000,
+            "param_options": ""
+        },
+        "y": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "min_dist_to_bs": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "max_dist_to_bs": {
+            "data_type": "int",
+            "default_value": 600,
+            "param_options": ""
+        },
+        "height": {
+            "data_type": "int",
+            "default_value": 6,
+            "param_options": ""
+        },
+        "elevation_min": {
+            "data_type": "int",
+            "default_value": 48,
+            "param_options": ""
+        },
+        "elevation_max": {
+            "data_type": "int",
+            "default_value": 80,
+            "param_options": ""
+        },
+        "azimuth": {
+            "data_type": "str",
+            "default_value": "RANDOM",
+            "param_options": ["RANDOM"]
+        },
+        "frequency": {
+            "data_type": "int",
+            "default_value": 3628,
+            "param_options": ""
+        },
+        "bandwidth": {
+            "data_type": "int",
+            "default_value": 6,
+            "param_options": ""
+        },
+        "noise_temperature": {
+            "data_type": "int",
+            "default_value": 950,
+            "param_options": ""
+        },
+        "adjacent_ch_selectivity": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "inr_scaling": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "tx_power_density": {
+            "data_type": "float",
+            "default_value": -68.3,
+            "param_options": ""
+        },
+        "antenna_gain": {
+            "data_type": "int",
+            "default_value": 32,
+            "param_options": ""
+        },
+        "antenna_pattern": {
+            "data_type": "str",
+            "default_value": "Modified ITU-R S.465",
+            "param_options": ["ITU-R S.1855", "ITU-R S.465", "ITU-R S.580", "OMNI", "Modified ITU-R S.465"]
+        },
+        "diameter": {
+            "data_type": "float",
+            "default_value": 1.8,
+            "param_options": ""
+        },
+        "antenna_envelope_gain": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "channel_model": {
+            "data_type": "str",
+            "default_value": "TVRO",
+            "param_options": ["FSPL", "TerrestrialSimple","P452", "TVRO"]
+        },
+        "line_of_sight_prob": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "BOLTZMANN_CONSTANT": {
+            "data_type": "float",
+            "default_value": 1.38064852e-23,
+            "param_options": ""
+        },
+        "EARTH_RADIUS": {
+            "data_type": "int",
+            "default_value": 6371000,
+            "param_options": ""
+        },
+        "atmospheric_pressure": {
+            "data_type": "int",
+            "default_value": 1013,
+            "param_options": ""
+        },
+        "air_temperature": {
+            "data_type": "int",
+            "default_value": 288,
+            "param_options": ""
+        },
+        "water_vapour": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "theta_tx": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "theta_rx": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "N0": {
+            "data_type": "int",
+            "default_value": 355,
+            "param_options": ""
+        },
+        "delta_N": {
+            "data_type": "int",
+            "default_value": 60,
+            "param_options": ""
+        },
+        "percentage_p": {
+            "data_type": "int",
+            "default_value": 40,
+            "param_options": ""
+        },
+        "Dlt": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "Dlr": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "Dct": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "Dcr": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "Hts": {
+            "data_type": "int",
+            "default_value": 120,
+            "param_options": ""
+        },
+        "Hrs": {
+            "data_type": "int",
+            "default_value": 103,
+            "param_options": ""
+        },
+        "Hst": {
+            "data_type": "int",
+            "default_value": 100,
+            "param_options": ""
+        },
+        "Hsr": {
+            "data_type": "int",
+            "default_value": 100,
+            "param_options": ""
+        },
+        "H0": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "Hn": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "Hte": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "Hre": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "omega": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "phi": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "dtm": {
+            "data_type": "float",
+            "default_value": 0.8,
+            "param_options": ""
+        },
+        "dlm": {
+            "data_type": "float",
+            "default_value": 0.8,
+            "param_options": ""
+        },
+        "epsilon": {
+            "data_type": "float",
+            "default_value": 3.5,
+            "param_options": ""
+        },
+        "hm": {
+            "data_type": "int",
+            "default_value": 15,
+            "param_options": ""
+        },
+        "elevation_angle_facade": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "probability_loss_notExceeded": {
+            "data_type": "float",
+            "default_value": 0.9,
+            "param_options": ""
+        },
+        "thetaJ": {
+            "data_type": "float",
+            "default_value": 0.3,
+            "param_options": ""
+        },
+        "par_ep": {
+            "data_type": "float",
+            "default_value": 0.8,
+            "param_options": ""
+        },
+        "clutter_loss": {
+            "data_type": "str",
+            "default_value": "true",
+            "param_options": ["true", "false"]
+        },
+        "eta": {
+            "data_type": "float",
+            "default_value": 2.5,
+            "param_options": ""
+        },
+        "Beta_0": {
+            "data_type": "int",
+            "default_value": 60,
+            "param_options": ""
+        }
+    },
+    "FS": {
+        "x": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "y": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "height": {
+            "data_type": "int",
+            "default_value": 15,
+            "param_options": ""
+        },
+        "elevation": {
+            "data_type": "int",
+            "default_value": -10,
+            "param_options": ""
+        },
+        "azimuth": {
+            "data_type": "int",
+            "default_value": 180,
+            "param_options": ""
+        },
+        "frequency": {
+            "data_type": "int",
+            "default_value": 27250,
+            "param_options": ""
+        },
+        "bandwidth": {
+            "data_type": "int",
+            "default_value": 112,
+            "param_options": ""
+        },
+        "noise_temperature": {
+            "data_type": "int",
+            "default_value": 290,
+            "param_options": ""
+        },
+        "adjacent_ch_selectivity": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "inr_scaling": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "tx_power_density": {
+            "data_type": "float",
+            "default_value": -68.3,
+            "param_options": ""
+        },
+        "antenna_gain": {
+            "data_type": "float",
+            "default_value": 36.9,
+            "param_options": ""
+        },
+        "antenna_pattern": {
+            "data_type": "str",
+            "default_value": "ITU-R F.699",
+            "param_options": ["ITU-R F.699", "OMNI"]
+        },
+        "diameter": {
+            "data_type": "float",
+            "default_value": 0.3,
+            "param_options": ""
+        },
+        "channel_model": {
+            "data_type": "str",
+            "default_value": "FSPL",
+            "param_options": ["FSPL", "TerrestrialSimple"]
+        },
+        "line_of_sight_prob": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "BOLTZMANN_CONSTANT": {
+            "data_type": "float",
+            "default_value": 1.38064852e-23,
+            "param_options": ""
+        },
+        "EARTH_RADIUS": {
+            "data_type": "int",
+            "default_value": 6371000,
+            "param_options": ""
+        }
+    },
+    "HAPS": {
+        "frequency": {
+            "data_type": "int",
+            "default_value": 27250,
+            "param_options": ""
+        },
+        "bandwidth": {
+            "data_type": "int",
+            "default_value": 200,
+            "param_options": ""
+        },
+        "altitude": {
+            "data_type": "int",
+            "default_value": 20000,
+            "param_options": ""
+        },
+        "lat_deg": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "elevation": {
+            "data_type": "int",
+            "default_value": 270,
+            "param_options": ""
+        },
+        "azimuth": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "eirp_density": {
+            "data_type": "float",
+            "default_value": 4.4,
+            "param_options": ""
+        },
+        "inr_scaling": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "antenna_gain": {
+            "data_type": "float",
+            "default_value": 28.1,
+            "param_options": ""
+        },
+        "acs": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "antenna_pattern": {
+            "data_type": "str",
+            "default_value": "ITU-R F.1891",
+            "param_options": ["ITU-R F.1891", "OMNI"]
+        },
+        "imt_altitude": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "imt_lat_deg": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "imt_long_diff_deg": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "season": {
+            "data_type": "str",
+            "default_value": "SUMMER",
+            "param_options": ["SUMMER", "WINTER"]
+        },
+        "channel_model": {
+            "data_type": "str",
+            "default_value": "P619",
+            "param_options": ["FSPL", "SatelliteSimple", "P619"]
+        },
+        "antenna_l_n": {
+            "data_type": "int",
+            "default_value": -25,
+            "param_options": ""
+        },
+        "BOLTZMANN_CONSTANT": {
+            "data_type": "float",
+            "default_value": 1.38064852e-23,
+            "param_options": ""
+        },
+        "EARTH_RADIUS": {
+            "data_type": "int",
+            "default_value": 6371000,
+            "param_options": ""
+        }
+    },
+    "RNS": {
+        "x": {
+            "data_type": "int",
+            "default_value": 660,
+            "param_options": ""
+        },
+        "y": {
+            "data_type": "int",
+            "default_value": -370,
+            "param_options": ""
+        },
+        "altitude": {
+            "data_type": "int",
+            "default_value": 150,
+            "param_options": ""
+        },
+        "frequency": {
+            "data_type": "int",
+            "default_value": 32000,
+            "param_options": ""
+        },
+        "bandwidth": {
+            "data_type": "int",
+            "default_value": 60,
+            "param_options": ""
+        },
+        "noise_temperature": {
+            "data_type": "int",
+            "default_value": 1154,
+            "param_options": ""
+        },
+        "inr_scaling": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "tx_power_density": {
+            "data_type": "float",
+            "default_value": -70.79,
+            "param_options": ""
+        },
+        "antenna_gain": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "acs": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "antenna_pattern": {
+            "data_type": "str",
+            "default_value": "ITU-R M.1466",
+            "param_options": ["ITU-R M.1466", "OMNI"]
+        },
+        "channel_model": {
+            "data_type": "str",
+            "default_value": "P619",
+            "param_options": ["FSPL", "SatelliteSimple", "P619"]
+        },
+        "season": {
+            "data_type": "str",
+            "default_value": "SUMMER",
+            "param_options": ["SUMMER", "WINTER"]
+        },
+        "imt_altitude": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "imt_lat_deg": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "BOLTZMANN_CONSTANT": {
+            "data_type": "float",
+            "default_value": 1.38064852e-23,
+            "param_options": ""
+        },
+        "EARTH_RADIUS": {
+            "data_type": "int",
+            "default_value": 6371000,
+            "param_options": ""
+        }
+    },
+    "RAS": {
+        "x": {
+            "data_type": "int",
+            "default_value": 5000,
+            "param_options": ""
+        },
+        "y": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "height": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "elevation": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "azimuth": {
+            "data_type": "int",
+            "default_value": 180,
+            "param_options": ""
+        },
+        "frequency": {
+            "data_type": "int",
+            "default_value": 43000,
+            "param_options": ""
+        },
+        "bandwidth": {
+            "data_type": "int",
+            "default_value": 1000,
+            "param_options": ""
+        },
+        "antenna_noise_temperature": {
+            "data_type": "int",
+            "default_value": 25,
+            "param_options": ""
+        },
+        "receiver_noise_temperature": {
+            "data_type": "int",
+            "default_value": 65,
+            "param_options": ""
+        },
+        "adjacent_ch_selectivity": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "inr_scaling": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "antenna_efficiency": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "antenna_pattern": {
+            "data_type": "str",
+            "default_value": "ITU-R SA.509",
+            "param_options": ["ITU-R SA.509", "OMNI"]
+        },
+        "antenna_gain": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "diameter": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "line_of_sight_prob": {
+            "data_type": "int",
+            "default_value": 1,
+            "param_options": ""
+        },
+        "BOLTZMANN_CONSTANT": {
+            "data_type": "float",
+            "default_value": 1.38064852e-23,
+            "param_options": ""
+        },
+        "EARTH_RADIUS": {
+            "data_type": "int",
+            "default_value": 6371000,
+            "param_options": ""
+        },
+        "SPEED_OF_LIGHT": {
+            "data_type": "int",
+            "default_value": 299792458,
+            "param_options": ""
+        },
+        "channel_model": {
+            "data_type": "str",
+            "default_value": "P452",
+            "param_options": ["FSPL", "TerrestrialSimple", "P452"]
+        },
+        "atmospheric_pressure": {
+            "data_type": "int",
+            "default_value": 1013,
+            "param_options": ""
+        },
+        "air_temperature": {
+            "data_type": "int",
+            "default_value": 288,
+            "param_options": ""
+        },
+        "water_vapour": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "theta_tx": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "theta_rx": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "N0": {
+            "data_type": "int",
+            "default_value": 355,
+            "param_options": ""
+        },
+        "delta_N": {
+            "data_type": "int",
+            "default_value": 60,
+            "param_options": ""
+        },
+        "percentage_p": {
+            "data_type": "int",
+            "default_value": 40,
+            "param_options": ""
+        },
+        "Dlt": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "Dlr": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "Dct": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "Dcr": {
+            "data_type": "int",
+            "default_value": 10,
+            "param_options": ""
+        },
+        "Hts": {
+            "data_type": "int",
+            "default_value": 120,
+            "param_options": ""
+        },
+        "Hrs": {
+            "data_type": "int",
+            "default_value": 103,
+            "param_options": ""
+        },
+        "Hst": {
+            "data_type": "int",
+            "default_value": 100,
+            "param_options": ""
+        },
+        "Hsr": {
+            "data_type": "int",
+            "default_value": 100,
+            "param_options": ""
+        },
+        "H0": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "Hn": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "Hte": {
+            "data_type": "int",
+            "default_value": 20,
+            "param_options": ""
+        },
+        "Hre": {
+            "data_type": "int",
+            "default_value": 3,
+            "param_options": ""
+        },
+        "omega": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "phi": {
+            "data_type": "int",
+            "default_value": 30,
+            "param_options": ""
+        },
+        "dtm": {
+            "data_type": "float",
+            "default_value": 0.8,
+            "param_options": ""
+        },
+        "dlm": {
+            "data_type": "float",
+            "default_value": 0.8,
+            "param_options": ""
+        },
+        "epsilon": {
+            "data_type": "float",
+            "default_value": 3.5,
+            "param_options": ""
+        },
+        "hm": {
+            "data_type": "int",
+            "default_value": 15,
+            "param_options": ""
+        },
+        "elevation_angle_facade": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
+        "probability_loss_notExceeded": {
+            "data_type": "float",
+            "default_value": 0.9,
+            "param_options": ""
+        },
+        "thetaJ": {
+            "data_type": "float",
+            "default_value": 0.3,
+            "param_options": ""
+        },
+        "par_ep": {
+            "data_type": "float",
+            "default_value": 0.8,
+            "param_options": ""
+        },
+        "clutter_loss": {
+            "data_type": "bool",
+            "default_value": "true",
+            "param_options": "true"
+        },
+        "Beta_0": {
+            "data_type": "int",
+            "default_value": 60,
+            "param_options": ""
+        }
+    }
+}

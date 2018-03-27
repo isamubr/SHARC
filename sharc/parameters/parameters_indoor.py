@@ -4,11 +4,16 @@ Created on Tue Dec  5 17:50:05 2017
 
 @author: edgar
 """
+import configparser
+from collections import OrderedDict
 
-class ParametersIndoor(object):
+from sharc.parameters.parameter_handler import ParameterHandler
+
+
+class ParametersIndoor(ParameterHandler):
     """
     Simulation parameters for indoor network topology.
     """
-    
+
     def __init__(self):
-        pass
+        super().__init__('INDOOR')
