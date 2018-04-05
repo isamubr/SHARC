@@ -54,14 +54,14 @@ class TopologyInputMap(Topology):
         """
         Read the base station coordinates from Base Station data parsed from file.
         """
-        self.x = np.array(self.param.bs_data['dWECoordinateMeter'])
-        self.y = np.array(self.param.bs_data['dSNCoordinateMeter'])
+        self.x = self.param.x_bs
+        self.y = self.param.y_bs
         self.z = self.topography.get_z(self.x, self.y)
         self.num_base_stations = len(self.x)
-        self.azimuth = np.array(self.param.bs_data['dBearing'])
+        self.azimuth = self.param.azimuth
 
         # Taking the Mechanical Down-tilt
-        self.elevation = np.array(self.param.bs_data['dMDownTilt'])
+        self.elevation = self.param.elevation
 
         # No indoor stations
         self.indoor = np.zeros(self.num_base_stations, dtype=bool)

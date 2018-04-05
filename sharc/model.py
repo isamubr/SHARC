@@ -12,6 +12,7 @@ from sharc.simulation_downlink import SimulationDownlink
 from sharc.simulation_uplink import SimulationUplink
 from sharc.simulation_imt_single_downlink import SimulationImtSingleDownlink
 from sharc.simulation_imt_single_uplink import SimulationImtSingleUplink
+from sharc.simulation_imt_vale_downlink import SimulationImtValeDownlink
 from sharc.parameters.parameters import Parameters
 
 import random
@@ -60,8 +61,12 @@ class Model(Observable):
                 self.simulation = SimulationImtSingleUplink(self.parameters)
 
         elif self.parameters.general.simulation_type == 'IMT_VALE':
-            print("[{}] SimulationImtVale NOT IMPLEMENTED".format(self.__name__))
-            exit(0)
+            if self.parameters.general.imt_link == "DOWNLINK":
+                self.simulation = SimulationImtValeDownlink(self.parameters)
+            else:
+                # self.simulation = SimulationImtSingleUplink(self.parameters)
+                print("[{}] SimulationImtVale NOT IMPLEMENTED".format(self.__name__))
+                exit(0)
 
         self.simulation.add_observer_list(self.observers)
 
