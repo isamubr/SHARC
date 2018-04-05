@@ -5,6 +5,11 @@
             "default_value": 100,
             "data_type": "int"
         },
+        "simulation_type": {
+            "param_options": ["IMT_SHARING", "IMT_SINGLE", "IMT_VALE"],
+            "default_value": "IMT_SHARING",
+            "data_type": "str"
+        },
         "imt_link": {
             "param_options": ["DOWNLINK", "UPLINK"],
             "default_value": "DOWNLINK",

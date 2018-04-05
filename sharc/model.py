@@ -10,10 +10,13 @@ from sharc.support.observer import Observer
 from sharc.support.enumerations import State
 from sharc.simulation_downlink import SimulationDownlink
 from sharc.simulation_uplink import SimulationUplink
+from sharc.simulation_imt_single_downlink import SimulationImtSingleDownlink
+from sharc.simulation_imt_single_uplink import SimulationImtSingleUplink
 from sharc.parameters.parameters import Parameters
 
 import random
 import sys
+
 
 class Model(Observable):
     """
@@ -44,22 +47,35 @@ class Model(Observable):
         self.parameters.set_file_name(self.param_file)
         self.parameters.read_params()
 
-        if self.parameters.general.imt_link == "DOWNLINK":
-            self.simulation = SimulationDownlink(self.parameters)
-        else:
-            self.simulation = SimulationUplink(self.parameters)
+        if self.parameters.general.simulation_type == 'IMT_SHARING':
+            if self.parameters.general.imt_link == "DOWNLINK":
+                self.simulation = SimulationDownlink(self.parameters)
+            else:
+                self.simulation = SimulationUplink(self.parameters)
+
+        elif self.parameters.general.simulation_type == 'IMT_SINGLE':
+            if self.parameters.general.imt_link == "DOWNLINK":
+                self.simulation = SimulationImtSingleDownlink(self.parameters)
+            else:
+                self.simulation = SimulationImtSingleUplink(self.parameters)
+
+        elif self.parameters.general.simulation_type == 'IMT_VALE':
+            print("[{}] SimulationImtVale NOT IMPLEMENTED".format(self.__name__))
+            exit(0)
+
         self.simulation.add_observer_list(self.observers)
 
-        description = self.get_description()
+        description = self.simulation.get_simulation_description()
 
         self.notify_observers(source=__name__,
                               message=description + "\nSimulation is running...",
                               state=State.RUNNING)
+
         self.current_snapshot = 0
 
         self.simulation.initialize()
 
-        random.seed( self.parameters.general.seed)
+        random.seed(self.parameters.general.seed)
 
         self.secondary_seeds = [None] * self.parameters.general.num_snapshots
 
@@ -67,24 +83,6 @@ class Model(Observable):
 
         for index in range(self.parameters.general.num_snapshots):
             self.secondary_seeds[index] = random.randint(1, max_seed)
-
-    def get_description(self) -> str:
-        param_system = self.simulation.param_system
-
-        description = "\nIMT:\n" \
-                            + "\tinterfered with: {:s}\n".format(str(self.parameters.imt.interfered_with)) \
-                            + "\tdirection: {:s}\n".format(self.parameters.general.imt_link) \
-                            + "\tfrequency: {:.3f} GHz\n".format(self.parameters.imt.frequency*1e-3) \
-                            + "\tbandwidth: {:.0f} MHz\n".format(self.parameters.imt.bandwidth) \
-                            + "\ttopology: {:s}\n".format(self.parameters.imt.topology) \
-                            + "\tpath loss model: {:s}\n".format(self.parameters.imt.channel_model)  \
-                    + "{:s}:\n".format(self.parameters.general.system) \
-                            + "\tfrequency: {:.3f} GHz\n".format(param_system.frequency*1e-3) \
-                            + "\tbandwidth: {:.0f} MHz\n".format(param_system.bandwidth) \
-                            + "\tpath loss model: {:s}\n".format(param_system.channel_model) \
-                            + "\tantenna pattern: {:s}\n".format(param_system.antenna_pattern)
-
-        return description
 
     def snapshot(self):
         """
