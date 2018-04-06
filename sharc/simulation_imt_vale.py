@@ -201,7 +201,7 @@ class SimulationImtVale(ABC, Observable):
         bs_active = np.where(self.bs.active)[0]
         for bs in bs_active:
             ue = self.link[bs]
-            self.bs.bandwidth[bs] = self.num_rb_per_ue[bs]*self.parameters.imt.rb_bandwidth
+            self.bs.bandwidth[bs] = self.num_rb_per_bs[bs]*self.parameters.imt.rb_bandwidth
             self.ue.bandwidth[ue] = self.num_rb_per_ue[bs]*self.parameters.imt.rb_bandwidth
 
     def calculate_gains(self, station_1: StationManager, station_2: StationManager) -> np.array:

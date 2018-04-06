@@ -11,32 +11,14 @@ import numpy.testing as npt
 from array import array
 import os
 
-from sharc.parameters.parameters_imt import ParametersImtVale
+from sharc.parameters.parameters_imt_vale import ParametersImtVale
 
 
 class ParametersImtTest(unittest.TestCase):
 
-    # These are the same parameters that come inside the cell data file
-    TEST_VECTOR = {
-        'strSiteID': ['DUMMY001', 'DUMMY002', 'DUMMY003', 'DUMMY004'],
-        'strCellID': ['DUMMY0010', 'DUMMY0020', 'DUMMY0030', 'DUMMY0040'],
-        'dDLCarrierMHz': [2600, 2601, 2602, 2603],
-        'bDeleted': [0, 0, 0, 0],
-        'dDLBWMHz': [5, 6, 7, 8],
-        'dHeight': [10, 11, 12, 13],
-        'NodeType': ['Macro1', 'Pico', 'Macro1', 'Pico'],
-        'PilotPower': [0, -1, -2, -3], 'dBearing': [0, 0, 0, 0],
-        'pattern': ['omni_10dBi', 'omni_10dBi', 'omni_10dBi', 'omni_10dBi'],
-        'dWECoordinateMeter': [669242.9, 671354.38, 671354.38, 669242.9],
-        'dMaxTxPowerdBm': [20, 21, 22, 23],
-        'dEDownTilt': [0, 0, 0, 0],
-        'dMDownTilt': [0, -1, -2, -3],
-        'dSNCoordinateMeter': [7803099.9, 7803206.72, 7803099.9, 7803206.72]
-    }
-
     def setUp(self):
         self.our_dir = os.path.dirname(__file__)
-        self.parameters_imt = ParametersImtVale()
+        self.parameters_imt = ParametersImtVale(imt_link='DOWNLINK')
         self.parameters_imt.utm_zone = '23K'
         self.parameters_imt.ue_polygon_file = os.path.join(self.our_dir,
                                                            'kml_polygon_test_files',
@@ -46,12 +28,6 @@ class ParametersImtTest(unittest.TestCase):
                                                                  'cell_data_test_file.xlsx')
         self.parameters_imt.path_loss_folder = os.path.join(self.our_dir, 'propagation_test_files', 'test_1')
         pass
-
-    def test_read_input_cell_data_file(self):
-
-        bs_data = self.parameters_imt.read_input_cell_data_file(self.parameters_imt.bs_physical_data_file)
-
-        self.assertDictEqual(bs_data, self.TEST_VECTOR)
 
     def test_read_input_ue_polygon_kml_file(self):
         poly_list = self.parameters_imt.read_input_ue_polygon_kml_file(self.parameters_imt.ue_polygon_file,

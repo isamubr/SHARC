@@ -10,7 +10,7 @@ import numpy as np
 import numpy.testing as npt
 import os
 
-from sharc.parameters.parameters_imt import ParametersImtVale
+from sharc.parameters.parameters_imt_vale import ParametersImtVale
 from sharc.topology.topology_input_map import TopologyInputMap
 from sharc.map.topography import Topography
 from shapely.geometry import Polygon
@@ -37,7 +37,7 @@ class TopologyInputMapTest(unittest.TestCase):
 
     def setUp(self):
         # Test 1
-        parameters_imt = ParametersImtVale()
+        parameters_imt = ParametersImtVale(imt_link='DOWNLINK')
         self.our_path = os.path.dirname(__file__)
         bs_physical_data_file = os.path.join(self.our_path, 'topology_input_map_files', 'cell_data_test_file.xlsx')
         parameters_imt.bs_data = parameters_imt.read_input_cell_data_file(bs_physical_data_file)
@@ -50,7 +50,7 @@ class TopologyInputMapTest(unittest.TestCase):
         topo.topography_grid = np.ones((topo.nrows, topo.ncols))
         self.topology_1 = TopologyInputMap(parameters_imt, topo)
         # Test 2
-        parameters_imt = ParametersImtVale()
+        parameters_imt = ParametersImtVale(imt_link='DOWNLINK')
         self.our_path = os.path.dirname(__file__)
         bs_physical_data_file = os.path.join(self.our_path, 'topology_input_map_files', 'cell_data_test_file_2.xlsx')
         parameters_imt.bs_data = parameters_imt.read_input_cell_data_file(bs_physical_data_file)
