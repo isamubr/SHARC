@@ -552,21 +552,6 @@ class StationFactory(object):
 
         imt_ue.noise_figure = param.ue_noise_figure * np.ones(num_ue)
 
-        # Those values are set later when the UE is connected to the BS
-        # imt_ue.bandwidth = param.bandwidth*np.ones(num_ue)
-        # imt_ue.center_freq = param.frequency*np.ones(num_ue)
-        # imt_ue.noise_figure = param.ue_noise_figure*np.ones(num_ue)
-        #
-        # if param.spectral_mask == "ITU 265-E":
-        #     imt_ue.spectral_mask = SpectralMaskImt(StationType.IMT_UE,param.frequency,\
-        #                                            param.bandwidth,scenario = "OUTDOOR")
-        #
-        # elif param.spectral_mask == "3GPP 36.104":
-        #     imt_ue.spectral_mask = SpectralMask3Gpp(StationType.IMT_UE,param.frequency,\
-        #                                            param.bandwidth)
-        #
-        # imt_ue.spectral_mask.set_mask()
-
         return imt_ue
 
     @staticmethod
