@@ -58,7 +58,7 @@ class Parameters(object):
         # IMT
         #######################################################################
         if self.general.simulation_type == 'IMT_VALE':
-            self.imt = ParametersImtVale()
+            self.imt = ParametersImtVale(self.general.imt_link)
 
         self.imt.read_params(self.general.imt_config_file)
 

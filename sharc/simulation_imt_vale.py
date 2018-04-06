@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from sharc.support.enumerations import StationType
 from sharc.topology.topology_factory import TopologyFactory
 from sharc.parameters.parameters import Parameters
-from sharc.parameters.parameters_imt import ParametersImt
+from sharc.parameters.parameters_imt_vale import ParametersImtVale
 from sharc.propagation.propagation import Propagation
 from sharc.station_manager import StationManager
 from sharc.results import Results
@@ -139,7 +139,7 @@ class SimulationImtVale(ABC, Observable):
 
         return coupling_loss
 
-    def connect_ue_to_bs(self, param: ParametersImt):
+    def connect_ue_to_bs(self, param: ParametersImtVale):
         """
         Link the UE's to the serving BS. It is assumed that each group of K*M
         user equipments are distributed and pointed to a certain base station

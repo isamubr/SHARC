@@ -11,7 +11,7 @@ import numpy.testing as npt
 from array import array
 import os
 
-from sharc.parameters.parameters_imt import ParametersImt
+from sharc.parameters.parameters_imt import ParametersImtVale
 
 
 class ParametersImtTest(unittest.TestCase):
@@ -36,7 +36,7 @@ class ParametersImtTest(unittest.TestCase):
 
     def setUp(self):
         self.our_dir = os.path.dirname(__file__)
-        self.parameters_imt = ParametersImt()
+        self.parameters_imt = ParametersImtVale()
         self.parameters_imt.utm_zone = '23K'
         self.parameters_imt.ue_polygon_file = os.path.join(self.our_dir,
                                                            'kml_polygon_test_files',

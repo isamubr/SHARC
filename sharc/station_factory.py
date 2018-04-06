@@ -12,6 +12,7 @@ import math
 from sharc.support.enumerations import StationType
 from sharc.parameters.parameters import Parameters
 from sharc.parameters.parameters_imt import ParametersImt
+from sharc.parameters.parameters_imt_vale import ParametersImtVale
 from sharc.parameters.parameters_antenna_imt import ParametersAntennaImt
 from sharc.parameters.parameters_fs import ParametersFs
 from sharc.parameters.parameters_fss_ss import ParametersFssSs
@@ -104,7 +105,7 @@ class StationFactory(object):
         return imt_base_stations
 
     @staticmethod
-    def generate_imt_vale_base_stations(param: ParametersImt,
+    def generate_imt_vale_base_stations(param: ParametersImtVale,
                                         param_ant: ParametersAntennaImt,
                                         topology: Topology):
 
@@ -116,7 +117,7 @@ class StationFactory(object):
         imt_base_stations.y = topology.y
         imt_base_stations.azimuth = topology.azimuth
         imt_base_stations.elevation = topology.elevation
-        imt_base_stations.station_id = param.station_id
+        imt_base_stations.station_id = param.cell_id
         imt_base_stations.height = param.bs_height + topology.z
         imt_base_stations.tx_power = param.bs_conducted_power
 
@@ -422,7 +423,7 @@ class StationFactory(object):
         return imt_ue
 
     @staticmethod
-    def generate_imt_ue_vale_outdoor(param: ParametersImt,
+    def generate_imt_ue_vale_outdoor(param: ParametersImtVale,
                                      param_ant: ParametersAntennaImt,
                                      random_number_gen: np.random.RandomState,
                                      topology: Topology) -> StationManager:

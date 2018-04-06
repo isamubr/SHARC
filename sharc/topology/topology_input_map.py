@@ -13,7 +13,7 @@ from itertools import product
 from shapely.geometry import Point, Polygon
 
 from sharc.topology.topology import Topology
-from sharc.parameters.parameters_imt import ParametersImt
+from sharc.parameters.parameters_imt_vale import ParametersImtVale
 from sharc.map.topography import Topography
 
 
@@ -21,7 +21,7 @@ class TopologyInputMap(Topology):
     """
     Generates the coordinates of the BSs based on the base station physical cell data input file.
     """
-    def __init__(self, param: ParametersImt, topography: Topography):
+    def __init__(self, param: ParametersImtVale, topography: Topography):
         self.param = param
         self.topography = topography
 
@@ -131,12 +131,12 @@ class TopologyInputMap(Topology):
 
 
 if __name__ == '__main__':
-    parameters_imt = ParametersImt()
+    parameters_imt = ParametersImtVale()
     # TODO: Add a method to ParamatersImt that reads the input cell data file
-    parameters_imt.bs_physical_data_file = '../parameters/brucuCCO2600.xlsx'
-    parameters_imt.bs_data = ParametersImt.read_input_cell_data_file(parameters_imt.bs_physical_data_file)
+    parameters_imt.bs_physical_data_file = '../parameters/bs_data/brucutu-2Macros-1Small.xls'
+    parameters_imt.bs_data = parameters_imt.read_input_cell_data_file(parameters_imt.bs_physical_data_file)
     parameters_imt.ue_polygon_file = '../parameters/polygons/ContornoBrucutu.kml'
-    parameters_imt.ue_polygons = ParametersImt.read_input_ue_polygon_kml_file(parameters_imt.ue_polygon_file, '23K')
+    parameters_imt.ue_polygons = ParametersImtVale.read_input_ue_polygon_kml_file(parameters_imt.ue_polygon_file, '23K')
     parameters_imt.topography_data_file = '../parameters/maps/Brucutu_res_20m.asc'
     topography = Topography()
     topography.parse_raster_data(parameters_imt.topography_data_file)

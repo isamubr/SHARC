@@ -19,33 +19,36 @@ class ParametersImtVale(ParameterHandler):
     Loads IMT parameters for IMT_VALE simulation
     """
 
-    def __init__(self):
+    def __init__(self, imt_link: str):
         super().__init__('IMT')
+        self.imt_link = imt_link
 
     def read_input_cell_data_file(self, cell_data_file_name: str):
         """
         Read cell data excel file with base station parameters and load IMT parameters accordingly
         :param cell_data_file_name: file name
+        :param imt_dir: IMT Direction DOWNLINK or UPLINK
         :return: None
         """
 
         # This is the minimal set of parameters that the file must contain. This is used for a minimal sanity check
         param_min_set = {
-            'strSiteID',
-            'strCellID',
-            'dWECoordinateMeter',
-            'dSNCoordinateMeter',
-            'dBearing',
-            'dMDownTilt',
-            'dEDownTilt',
-            'bDeleted',
-            'dMaxTxPowerdBm',
-            'dDLCarrierMHz',
-            'dHeight',
-            'NodeType',
-            'pattern',
-            'dDLBWMHz',
-            'PilotPower'
+            "strSiteID",
+            "strCellID",
+            "dWECoordinateMeter",
+            "dSNCoordinateMeter",
+            "dBearing",
+            "dMDownTilt",
+            "dEDownTilt",
+            "bDeleted",
+            "dMaxTxPowerdBm",
+            "dDLCarrierMHz",
+            "dULCarrierMHz",
+            "dHeight",
+            "BSCat",
+            "pattern",
+            "dDLBWMHz",
+            "PilotPower"
         }
 
         try:
@@ -63,15 +66,24 @@ class ParametersImtVale(ParameterHandler):
 
         bs_data = bs_data_df.to_dict('list')
         self.num_macrocell_sites = len(bs_data['strCellID'])
-        self.station_id = bs_data['strCellID']
-        self.bs_height = np.array(bs_data['dHeight'])
-        self.bs_conducted_power = np.array(bs_data['dMaxTxPowerdBm'])
-        self.bandwidth = np.array(bs_data['dDLBWMHz'])
-        self.frequency = np.array(bs_data['dDLCarrierMHz'])
+        self.site_id = bs_data['strSiteID']
+        self.cell_id = bs_data['strCellID']
         self.x_bs = np.array(bs_data['dWECoordinateMeter'])
         self.y_bs = np.array(bs_data['dSNCoordinateMeter'])
         self.azimuth = np.array(bs_data['dBearing'])
         self.elevation = np.array(bs_data['dMDownTilt'])
+        self.electrical_dt = np.array(bs_data['dEDownTilt'])
+        self.is_deleted = np.bool(bs_data['bDeleted'])
+        self.bs_conducted_power = np.array(bs_data['dMaxTxPowerdBm'])
+        if self.imt_link == 'DOWNLINK':
+            self.frequency = np.array(bs_data['dDLCarrierMHz'])
+        else:
+            self.frequency = np.array(bs_data['dULCarrierMHz'])
+        self.bs_height = np.array(bs_data['dHeight'])
+        self.bs_category = bs_data['BSCat']
+        self.bs_antenna_pattern = bs_data['pattern']
+        self.bandwidth = np.array(bs_data['dDLBWMHz'])
+        self.bs_pilot_pow = np.array(bs_data['PilotPower'])
 
     @staticmethod
     def read_input_ue_polygon_kml_file(ue_polygon_file: str, utm_zone: str) -> list:
