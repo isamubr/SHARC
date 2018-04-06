@@ -144,11 +144,24 @@ class SimulationImtVale(ABC, Observable):
         Link the UE's to the serving BS. It is assumed that each group of K*M
         user equipments are distributed and pointed to a certain base station
         """
-        # TODO: Connect to the BS based on RSSI
-        num_ue_per_bs = self.parameters.imt.ue_k*self.parameters.imt.ue_k_m
-        for bs in range(self.bs.num_stations):
-            ue_list = [i for i in range(bs*num_ue_per_bs, bs*num_ue_per_bs + num_ue_per_bs)]
-            self.link[bs] = ue_list
+        # array with the path losses.
+        path_loss = self.propagation_imt.get_loss(bs_id=self.bs.station_id, ue_position_x=self.ue.x,
+                                                  ue_position_y=self.ue.y)
+        num_bs = path_loss.shape[0]
+        num_ue = path_loss.shape[1]
+
+        # forming the links between UEs and BSs based on the path loss
+        ue_path_loss = {}
+        ue_to_bs = {}
+
+        for ue_index in range(0, num_ue):
+            ue_path_loss[ue_index] = [path_loss[row, ue_index] for row in range(0, num_bs)]
+
+            bs_index = ue_path_loss[ue_index].index(min(ue_path_loss[ue_index]))
+
+            ue_to_bs[ue_index] = bs_index
+
+            self.link[bs_index].append(ue_index)
 
         # UE BW and frequency is the same of it's connected BS.
         for bs in self.link.keys():
