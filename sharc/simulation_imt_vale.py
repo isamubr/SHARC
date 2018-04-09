@@ -198,11 +198,11 @@ class SimulationImtVale(ABC, Observable):
                 self.ue.active[self.link[bs]] = np.ones(K, dtype=bool)
                 for ue in self.link[bs]:
                     # add beam to BS antennas
-                    self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs,ue],
-                                             self.bs_to_ue_theta[bs,ue])
+                    self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
+                                                 self.bs_to_ue_theta[bs, ue])
                     # add beam to UE antennas
-                    self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs,ue] - 180,
-                                             180 - self.bs_to_ue_theta[bs,ue])
+                    self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs, ue] - 180,
+                                                 180 - self.bs_to_ue_theta[bs, ue])
                     # set beam resource block group
                     self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
 

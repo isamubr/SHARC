@@ -106,7 +106,7 @@ class SimulationImtValeDownlink(SimulationImtVale):
             # calculate intra system interference
             for bi in bs_interf:
                 interference = self.bs.tx_power[bi] - self.parameters.imt.bs_ohmic_loss \
-                                 - self.coupling_loss_imt[bi,ue] \
+                                 - self.coupling_loss_imt[bi, ue] \
                                  - self.parameters.imt.ue_body_loss - self.parameters.imt.ue_ohmic_loss
 
                 self.ue.rx_interference[ue] = 10*np.log10( \
