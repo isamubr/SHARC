@@ -43,13 +43,31 @@ class SimulationImtValeUplink(SimulationImtVale):
         self.bs = StationFactory.generate_imt_vale_base_stations(self.parameters.imt,
                                                                  self.parameters.antenna_imt,
                                                                  self.topology)
-        # Create IMT user equipments
-        self.ue = StationFactory.generate_imt_ue_vale_outdoor(self.parameters.imt,
-                                                              self.parameters.antenna_imt,
-                                                              random_number_gen,
-                                                              self.topology)
 
-        self.connect_ue_to_bs(self.parameters.imt)
+        minimum_ue_per_bs = True
+        while minimum_ue_per_bs:
+            # Create IMT user equipments
+            self.ue = StationFactory.generate_imt_ue_vale_outdoor(self.parameters.imt,
+                                                                  self.parameters.antenna_imt,
+                                                                  random_number_gen,
+                                                                  self.topology)
+
+            self.connect_ue_to_bs(self.parameters.imt)
+
+            # checking if the minimum number of UEs (K) is connected to each active BS
+            bs_active = list(np.where(self.bs.active)[0])
+            ues_per_bs = []
+            for bs in bs_active:
+                ues_per_bs.append(len(self.link[bs]))
+
+            # minimum_ue_per_bs is True if at last one  of the BSs is associated with less than K UEs
+            minimum_ue_per_bs = any(element < self.parameters.imt.ue_k for element in ues_per_bs)
+
+            if minimum_ue_per_bs:
+                num_bs = self.topology.num_base_stations
+                del self.ue
+                self.link = dict([(bs, list()) for bs in range(num_bs)])
+
         self.select_ue(random_number_gen)
 
         # Calculate coupling loss after beams are created
