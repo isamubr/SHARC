@@ -134,16 +134,23 @@ class StationFactory(object):
         imt_base_stations.sinr_ext = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
         imt_base_stations.inr = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
 
-        # TODO: Not always the IMT antenna has beamforming
-        imt_base_stations.antenna = np.empty(num_bs, dtype=AntennaBeamformingImt)
-        par = param_ant.get_antenna_parameters("BS", "RX")
+        # TODO: The default case is to use a beamforming antenna. Need to validate all antenna types from input file
+        # Generate the antenas for all base stations
+        for ant_idx, antenna_pattern in enumerate(param.bs_antenna_pattern):
+            if antenna_pattern == 'omni_10dBi':
+                imt_base_stations.antenna[ant_idx] = AntennaOmni(10)
+            else:
+                err_msg = '[StationFactory] ERROR! Invalid antenna type {}\n'.format(antenna_pattern)
+                sys.stderr.write(err_msg)
+                exit(1)
 
-        for i in range(num_bs):
-            imt_base_stations.antenna[i] = \
-                AntennaBeamformingImt(par, imt_base_stations.azimuth[i],
-                                      imt_base_stations.elevation[i])
-
-        # imt_base_stations.antenna = [AntennaOmni(0) for bs in range(num_bs)]
+            # TODO: Add this commented code to add beamforming antenna
+            # else:
+            #     par = param_ant.get_antenna_parameters("BS", "RX")
+            #     for i in range(num_bs):
+            #         imt_base_stations.antenna[i] = \
+            #             AntennaBeamformingImt(par, imt_base_stations.azimuth[i],
+            #                                   imt_base_stations.elevation[i])
 
         imt_base_stations.bandwidth = param.bandwidth
         imt_base_stations.center_freq = param.frequency

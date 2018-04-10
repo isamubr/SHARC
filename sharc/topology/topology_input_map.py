@@ -54,6 +54,7 @@ class TopologyInputMap(Topology):
     def calculate_coordinates(self, random_number_gen=np.random.RandomState()):
         """
         Read the base station coordinates from Base Station data parsed from file.
+        :param random_number_gen is ignored but is added to function signature for compatibility
         """
         self.x = self.param.x_bs
         self.y = self.param.y_bs
