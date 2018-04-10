@@ -144,6 +144,7 @@ class StationFactory(object):
                                       imt_base_stations.elevation[i])
 
         # imt_base_stations.antenna = [AntennaOmni(0) for bs in range(num_bs)]
+
         imt_base_stations.bandwidth = param.bandwidth
         imt_base_stations.center_freq = param.frequency
         imt_base_stations.noise_figure = param.bs_noise_figure * np.ones(num_bs)
@@ -403,7 +404,7 @@ class StationFactory(object):
         par = param_ant.get_antenna_parameters("UE", "TX")
         for i in range(num_ue):
             imt_ue.antenna[i] = AntennaBeamformingImt(par, imt_ue.azimuth[i],
-                                                         imt_ue.elevation[i])
+                                                      imt_ue.elevation[i])
 
         # imt_ue.antenna = [AntennaOmni(0) for bs in range(num_ue)]
         imt_ue.bandwidth = param.bandwidth*np.ones(num_ue)
@@ -411,12 +412,12 @@ class StationFactory(object):
         imt_ue.noise_figure = param.ue_noise_figure*np.ones(num_ue)
 
         if param.spectral_mask == "ITU 265-E":
-            imt_ue.spectral_mask = SpectralMaskImt(StationType.IMT_UE,param.frequency,\
-                                                   param.bandwidth,scenario = "INDOOR")
+            imt_ue.spectral_mask = SpectralMaskImt(StationType.IMT_UE, param.frequency,
+                                                   param.bandwidth, scenario="INDOOR")
 
         elif param.spectral_mask == "3GPP 36.104":
-            imt_ue.spectral_mask = SpectralMask3Gpp(StationType.IMT_UE,param.frequency,\
-                                                   param.bandwidth)
+            imt_ue.spectral_mask = SpectralMask3Gpp(StationType.IMT_UE, param.frequency,
+                                                    param.bandwidth)
 
         imt_ue.spectral_mask.set_mask()
 
@@ -445,14 +446,14 @@ class StationFactory(object):
         # Remove the randomness from azimuth and you will have a perfect pointing
         elevation_range = (-90, 90)
         elevation = (elevation_range[1] - elevation_range[0])*random_number_gen.random_sample(num_ue) + \
-                    elevation_range[0]
+                     elevation_range[0]
 
         if param.topology == "INPUT_MAP":
             # TODO: define number of UEs in polygons based on QoS categories
             num_ue_poly = [int(num_ue / len(param.ue_polygons))
                            for k in range(len(param.ue_polygons) - 1)]
             num_ue_poly.append(num_ue - sum(num_ue_poly))
-            topology.distribute_ues(num_ue_poly)
+            topology.distribute_ues(num_ue_poly, random_number_gen)
 
             imt_ue.x = topology.x_ue
             imt_ue.y = topology.y_ue
@@ -463,11 +464,15 @@ class StationFactory(object):
             if param.ue_distribution_type.upper() == "UNIFORM":
 
                 if not (type(topology) is TopologyMacrocell):
-                    sys.stderr.write("ERROR\nUniform UE distribution is currently supported only with Macrocell topology")
+                    sys.stderr.write("ERROR\n"
+                                     "Uniform UE distribution is currently supported only with Macrocell topology")
                     sys.exit(1)
 
-                [ue_x, ue_y, theta, distance] = StationFactory.get_random_position(num_ue, topology, random_number_gen,
-                                                                                   param.minimum_separation_distance_bs_ue )
+                [ue_x, ue_y, theta, distance] = \
+                    StationFactory.get_random_position(num_ue, topology,
+                                                       random_number_gen,
+                                                       param.minimum_separation_distance_bs_ue)
+
                 psi = np.degrees(np.arctan((param.bs_height - param.ue_height) / distance))
 
                 imt_ue.azimuth = (azimuth + theta + np.pi/2)

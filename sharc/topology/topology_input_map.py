@@ -12,6 +12,7 @@ import matplotlib.patches as patches
 from itertools import product
 from shapely.geometry import Point, Polygon
 
+
 from sharc.topology.topology import Topology
 from sharc.parameters.parameters_imt_vale import ParametersImtVale
 from sharc.map.topography import Topography
@@ -91,7 +92,7 @@ class TopologyInputMap(Topology):
                     num_pts += 1
             self.poly_points.append((poly, np.array(x), np.array(y), num_pts))
 
-    def distribute_ues(self, num_ues: list):
+    def distribute_ues(self, num_ues: list, random_number_gen: np.random.RandomState):
         """
         Uniformly distributes UEs onto polygons
 
@@ -104,7 +105,7 @@ class TopologyInputMap(Topology):
         y = np.array([])
 
         for k, num in enumerate(num_ues):
-            idxs = np.random.randint(0, self.poly_points[k][3], num)
+            idxs = random_number_gen.randint(0, self.poly_points[k][3], num)
             x = np.append(x, self.poly_points[k][1][idxs])
             y = np.append(y, self.poly_points[k][2][idxs])
 
@@ -131,7 +132,8 @@ class TopologyInputMap(Topology):
 
 
 if __name__ == '__main__':
-    parameters_imt = ParametersImtVale()
+    random_number_gen = np.random.RandomState(seed=200)
+    parameters_imt = ParametersImtVale(imt_link='DOWNLINK')
     # TODO: Add a method to ParamatersImt that reads the input cell data file
     parameters_imt.bs_physical_data_file = '../parameters/bs_data/brucutu-2Macros-1Small.xls'
     parameters_imt.bs_data = parameters_imt.read_input_cell_data_file(parameters_imt.bs_physical_data_file)
@@ -145,7 +147,7 @@ if __name__ == '__main__':
     topology.calculate_coordinates()
     topology.map_polygons(parameters_imt.ue_polygons)
     num_ues = [100]
-    topology.distribute_ues(num_ues)
+    topology.distribute_ues(num_ues, random_number_gen)
 
     fig = plt.figure(figsize=(8, 8), facecolor='w', edgecolor='k')  # create a figure object
     ax = fig.add_subplot(1, 1, 1)  # create an axes object in the figure

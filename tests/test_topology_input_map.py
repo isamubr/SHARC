@@ -36,6 +36,7 @@ class TopologyInputMapTest(unittest.TestCase):
     }
 
     def setUp(self):
+        self.random_number_gen = np.random.RandomState(seed=200)
         # Test 1
         parameters_imt = ParametersImtVale(imt_link='DOWNLINK')
         self.our_path = os.path.dirname(__file__)
@@ -109,7 +110,7 @@ class TopologyInputMapTest(unittest.TestCase):
         poly_list = [poly_1, poly_2, poly_3]
         num_ues = [2, 3, 1]
         self.topology_2.map_polygons(poly_list)
-        self.topology_2.distribute_ues(num_ues)
+        self.topology_2.distribute_ues(num_ues, self.random_number_gen)
         self.assertTrue(set(self.topology_2.x_ue[0:2]) <= set([15, 25]))
         self.assertTrue(set(self.topology_2.x_ue[2:5]) <= set([25, 35, 45, 55]))
         self.assertTrue(set(self.topology_2.x_ue[5:]) <= set([25, 35]))
