@@ -6,12 +6,11 @@ Created on Tue Jan 30 14:39:17 2018
 """
 
 from sharc.propagation.propagation import Propagation
-from sharc.parameters.parameters_imt import ParametersImt
+from sharc.parameters.parameters_imt_vale import ParametersImtVale
 
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-import os
 
 
 class PropagationInputFiles(Propagation):
@@ -25,7 +24,7 @@ class PropagationInputFiles(Propagation):
             values
     """
 
-    def __init__(self, parameters_imt: ParametersImt):
+    def __init__(self, parameters_imt: ParametersImtVale):
         """
         Constructs PropagationInputFile object, initializing the path_loss
         attribute.
@@ -174,7 +173,7 @@ class PropagationInputFiles(Propagation):
 
 
 if __name__ == '__main__':
-    param_imt = ParametersImt()
+    param_imt = ParametersImtVale()
     param_imt.path_loss_folder = "../parameters/measurements"
     param_imt.path_loss_files = param_imt.get_path_loss_files(param_imt.path_loss_folder)
     prop = PropagationInputFiles(param_imt)

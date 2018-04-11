@@ -12,13 +12,13 @@ import os
 from glob import glob
 
 from sharc.propagation.propagation_input_files import PropagationInputFiles
-from sharc.parameters.parameters_imt import ParametersImt
+from sharc.parameters.parameters_imt_vale import ParametersImtVale
 
 
 class PropagationInputFilesTest(unittest.TestCase):
 
     def setUp(self):
-        self.parameters_imt = ParametersImt()
+        self.parameters_imt = ParametersImtVale(imt_link='DOWNLINK')
         self.my_path = os.path.dirname(__file__)
         # Test 1
         self.parameters_imt.path_loss_folder = os.path.join(self.my_path, 'propagation_test_files', 'test_1')

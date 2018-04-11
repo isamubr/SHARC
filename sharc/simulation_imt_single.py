@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 11 19:04:03 2017
+Created on Apr 05 10:37 2018
 
-@author: edgar
+@author: Bruno Faria (bruno.faria@ektrum.com)
 """
-
 from abc import ABC, abstractmethod
 from sharc.support.observable import Observable
 
@@ -19,10 +18,9 @@ from sharc.parameters.parameters import Parameters
 from sharc.propagation.propagation import Propagation
 from sharc.station_manager import StationManager
 from sharc.results import Results
-from sharc.propagation.propagation_factory import PropagationFactory
 
 
-class Simulation(ABC, Observable):
+class SimulationImtSingle(ABC, Observable):
 
     def __init__(self, parameters: Parameters):
         ABC.__init__(self)
@@ -31,27 +29,8 @@ class Simulation(ABC, Observable):
         self.parameters = parameters
         self.parameters_filename = parameters.file_name
 
-        if self.parameters.general.system == "FSS_SS":
-            self.param_system = self.parameters.fss_ss
-        elif self.parameters.general.system == "FSS_ES":
-            self.param_system = self.parameters.fss_es
-        elif self.parameters.general.system == "FS":
-            self.param_system = self.parameters.fs
-        elif self.parameters.general.system == "HAPS":
-            self.param_system = self.parameters.haps
-        elif self.parameters.general.system == "RNS":
-            self.param_system = self.parameters.rns
-        elif self.parameters.general.system == "RAS":
-            self.param_system = self.parameters.ras
-
         self.co_channel = self.parameters.general.enable_cochannel
         self.adjacent_channel = self.parameters.general.enable_adjacent_channel
-
-        # self.propagation_imt = PropagationFactory.create_propagation(self.parameters.imt.channel_model,
-        #                                                              self.parameters)
-        #
-        # self.propagation_system = PropagationFactory.create_propagation(self.param_system.channel_model,
-        #                                                                 self.parameters)
 
         self.topology = TopologyFactory.createTopology(self.parameters)
 
@@ -60,13 +39,9 @@ class Simulation(ABC, Observable):
 
         self.imt_bs_antenna_gain = list()
         self.imt_ue_antenna_gain = list()
-        self.system_imt_antenna_gain = list()
-        self.imt_system_antenna_gain = list()
 
         self.path_loss_imt = np.empty(0)
         self.coupling_loss_imt = np.empty(0)
-        self.coupling_loss_imt_system = np.empty(0)
-        self.coupling_loss_imt_system_adjacent = np.empty(0)
 
         self.bs_to_ue_phi = np.empty(0)
         self.bs_to_ue_theta = np.empty(0)
@@ -74,7 +49,6 @@ class Simulation(ABC, Observable):
 
         self.ue = np.empty(0)
         self.bs = np.empty(0)
-        self.system = np.empty(0)
 
         self.link = dict()
 
@@ -83,27 +57,7 @@ class Simulation(ABC, Observable):
 
         self.results = None
 
-        imt_min_freq = self.parameters.imt.frequency - self.parameters.imt.bandwidth / 2
-        imt_max_freq = self.parameters.imt.frequency + self.parameters.imt.bandwidth / 2
-        system_min_freq = self.param_system.frequency - self.param_system.bandwidth / 2
-        system_max_freq = self.param_system.frequency + self.param_system.bandwidth / 2
-
-        max_min_freq = np.maximum(imt_min_freq, system_min_freq)
-        min_max_freq = np.minimum(imt_max_freq, system_max_freq)
-
-        self.overlapping_bandwidth = min_max_freq - max_min_freq
-        if self.overlapping_bandwidth < 0:
-            self.overlapping_bandwidth = 0
-
-        if (self.overlapping_bandwidth == self.param_system.bandwidth and
-            not self.parameters.imt.interfered_with) or \
-           (self.overlapping_bandwidth == self.parameters.imt.bandwidth and
-            self.parameters.imt.interfered_with):
-
-            self.adjacent_channel = False
-
         self.propagation_imt = None
-        self.propagation_system = None
 
     def add_observer_list(self, observers: list):
         for o in observers:
@@ -118,15 +72,14 @@ class Simulation(ABC, Observable):
         num_bs = self.topology.num_base_stations
         num_ue = num_bs*self.parameters.imt.ue_k*self.parameters.imt.ue_k_m
 
-        self.bs_power_gain = 10*math.log10(self.parameters.antenna_imt.bs_tx_n_rows*
+        self.bs_power_gain = 10*math.log10(self.parameters.antenna_imt.bs_tx_n_rows *
                                            self.parameters.antenna_imt.bs_tx_n_columns)
-        self.ue_power_gain = 10*math.log10(self.parameters.antenna_imt.ue_tx_n_rows*
+        self.ue_power_gain = 10*math.log10(self.parameters.antenna_imt.ue_tx_n_rows *
                                            self.parameters.antenna_imt.ue_tx_n_columns)
         self.imt_bs_antenna_gain = list()
         self.imt_ue_antenna_gain = list()
         self.path_loss_imt = np.empty([num_bs, num_ue])
         self.coupling_loss_imt = np.empty([num_bs, num_ue])
-        self.coupling_loss_imt_system = np.empty(num_ue)
 
         self.bs_to_ue_phi = np.empty([num_bs, num_ue])
         self.bs_to_ue_theta = np.empty([num_bs, num_ue])
@@ -134,16 +87,16 @@ class Simulation(ABC, Observable):
 
         self.ue = np.empty(num_ue)
         self.bs = np.empty(num_bs)
-        self.system = np.empty(1)
 
         # this attribute indicates the list of UE's that are connected to each
         # base station. The position the the list indicates the resource block
         # group that is allocated to the given UE
-        self.link = dict([(bs,list()) for bs in range(num_bs)])
+        self.link = dict([(bs, list()) for bs in range(num_bs)])
 
         # calculates the number of RB per BS
-        self.num_rb_per_bs = math.trunc((1-self.parameters.imt.guard_band_ratio)* \
-                            self.parameters.imt.bandwidth /self.parameters.imt.rb_bandwidth)
+        self.num_rb_per_bs = math.trunc((1 - self.parameters.imt.guard_band_ratio) *
+                                             self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
+
         # calculates the number of RB per UE on a given BS
         self.num_rb_per_ue = math.trunc(self.num_rb_per_bs/self.parameters.imt.ue_k)
 
@@ -485,21 +438,13 @@ class Simulation(ABC, Observable):
         sys.exit(0)
 
     def get_simulation_description(self) -> str:
-        param_system = self.param_system
 
-        description = "\nRunning IMT sharing study simulation\n" \
-                      "\nIMT:\n" \
-                            + "\tinterfered with: {:s}\n".format(str(self.parameters.imt.interfered_with)) \
+        description = "\nIMT Standalone Simulation:\n" \
                             + "\tdirection: {:s}\n".format(self.parameters.general.imt_link) \
                             + "\tfrequency: {:.3f} GHz\n".format(self.parameters.imt.frequency*1e-3) \
                             + "\tbandwidth: {:.0f} MHz\n".format(self.parameters.imt.bandwidth) \
                             + "\ttopology: {:s}\n".format(self.parameters.imt.topology) \
-                            + "\tpath loss model: {:s}\n".format(self.parameters.imt.channel_model)  \
-                    + "{:s}:\n".format(self.parameters.general.system) \
-                            + "\tfrequency: {:.3f} GHz\n".format(param_system.frequency*1e-3) \
-                            + "\tbandwidth: {:.0f} MHz\n".format(param_system.bandwidth) \
-                            + "\tpath loss model: {:s}\n".format(param_system.channel_model) \
-                            + "\tantenna pattern: {:s}\n".format(param_system.antenna_pattern)
+                            + "\tpath loss model: {:s}\n".format(self.parameters.imt.channel_model)
 
         return description
 

@@ -47,7 +47,6 @@ class StationManager(object):
         self.pfd = np.empty(n)
         self.spectral_mask = np.empty(n, dtype=SpectralMask3Gpp)
         self.center_freq = np.empty(n)
-        self.spectral_mask = None
         self.station_type = StationType.NONE
         self.station_id = list()
 

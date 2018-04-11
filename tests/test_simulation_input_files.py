@@ -12,8 +12,8 @@ import math
 from shapely.geometry import Polygon
 import os
 
-from sharc.simulation_downlink import SimulationDownlink
-from sharc.simulation_uplink import SimulationUplink
+from sharc.simulation_imt_vale_downlink import SimulationImtValeDownlink
+from sharc.simulation_imt_vale_uplink import SimulationImtValeUplink
 from sharc.parameters.parameters import Parameters
 from sharc.antenna.antenna_omni import AntennaOmni
 from sharc.station_factory import StationFactory
@@ -39,7 +39,7 @@ class SimulationDownlinkTest(unittest.TestCase):
 
     def test_simulation_2bs_2ue_downlink(self):
 
-        self.simulation = SimulationDownlink(self.param)
+        self.simulation = SimulationImtValeDownlink(self.param)
         self.simulation.initialize()
 
         self.simulation.bs_power_gain = 0
@@ -49,23 +49,18 @@ class SimulationDownlinkTest(unittest.TestCase):
                                                                                 self.param,
                                                                                 self.random_number_gen)
 
-        self.simulation.propagation_system = PropagationFactory.create_propagation(
-                                                                    self.simulation.param_system.channel_model,
-                                                                    self.param,
-                                                                    self.random_number_gen)
-
-        self.simulation.bs = StationFactory.generate_imt_base_stations(self.param.imt,
-                                                                       self.param.antenna_imt,
-                                                                       self.simulation.topology,
-                                                                       self.random_number_gen)
+        self.simulation.bs = StationFactory.generate_imt_vale_base_stations(self.param.imt,
+                                                                            self.param.antenna_imt,
+                                                                            self.simulation.topology)
 
         self.simulation.bs.antenna = np.array([AntennaOmni(1), AntennaOmni(2)])
         self.simulation.bs.active = np.ones(2, dtype=bool)
 
-        self.simulation.ue = StationFactory.generate_imt_ue(self.param.imt,
-                                                            self.param.antenna_imt,
-                                                            self.simulation.topology,
-                                                            self.random_number_gen)
+        self.simulation.ue = StationFactory.generate_imt_ue_vale_outdoor(self.param.imt,
+                                                                         self.param.antenna_imt,
+                                                                         self.random_number_gen,
+                                                                         self.simulation.topology)
+
         # UEs positioned exactly 100m north of the BSs
         self.simulation.ue.x = np.array([669242.9, 671354.38])
         self.simulation.ue.y = np.array([7803199.9, 7803206.72])
@@ -73,7 +68,7 @@ class SimulationDownlinkTest(unittest.TestCase):
         self.simulation.ue.active = np.ones(2, dtype=bool)
 
         # test connection method
-        self.simulation.connect_ue_to_bs()
+        self.simulation.connect_ue_to_bs(self.param.imt)
         self.assertEqual(self.simulation.link, {0: [0], 1: [1]})
 
         # We do not test the selection method here because in this specific
@@ -91,32 +86,35 @@ class SimulationDownlinkTest(unittest.TestCase):
 
         # test scheduler and bandwidth allocation
         self.simulation.scheduler()
-        bandwidth_per_ue = math.trunc((1 - 0.1)*100)
+        bandwidth_per_ue = [4.5, 4.5]
         npt.assert_allclose(self.simulation.ue.bandwidth, bandwidth_per_ue*np.ones(2), atol=1e-2)
 
         # there is no power control, so BS's will transmit at maximum power
         self.simulation.power_control()
-        tx_power = 10
-        npt.assert_allclose(self.simulation.bs.tx_power[0], np.array([tx_power]), atol=1e-2)
-        npt.assert_allclose(self.simulation.bs.tx_power[1], np.array([tx_power]), atol=1e-2)
+        tx_power = self.param.imt.bs_conducted_power
+        npt.assert_allclose(self.simulation.bs.tx_power[0], np.array(tx_power[0]), atol=1e-2)
+        npt.assert_allclose(self.simulation.bs.tx_power[1], np.array(tx_power[1]), atol=1e-2)
 
         # test method that calculates SINR
         self.simulation.calculate_sinr()
 
         # check UE received power
-        rx_power = np.array([tx_power-3-(91.32490-10-1)-4-3, tx_power-3-(61.05490-11-2)-4-3])
+        rx_power = np.array([tx_power[0]-3-(91.32490-10-1)-4-3, tx_power[1]-3-(61.05490-11-2)-4-3])
         npt.assert_allclose(self.simulation.ue.rx_power, rx_power, atol=1e-2)
 
         # check UE received interference
-        rx_interference = np.array([tx_power-3-(150.8591-10-2)-4-3,  tx_power-3-(142.0268-11-1)-4-3])
-        npt.assert_allclose(self.simulation.ue.rx_interference, rx_interference, atol=1e-2)
+        rx_interference = np.array([tx_power[1]-3-(150.8591-10-2)-4-3,  tx_power[0]-3-(142.0268-11-1)-4-3])
+        npt.assert_allclose(self.simulation.ue.rx_interference, rx_interference,
+                            atol=1e-2)
 
         # check UE thermal noise
-        thermal_noise = 10*np.log10(1.38064852e-23*290*bandwidth_per_ue*1e3*1e6) + 9
+        thermal_noise = np.array([10*np.log10(1.38064852e-23*290*bandwidth_per_ue[ue]*1e3*1e6) + 9
+                         for ue in range(self.simulation.ue.num_stations)])
         npt.assert_allclose(self.simulation.ue.thermal_noise, thermal_noise, atol=1e-2)
 
         # check UE thermal noise + interference
-        total_interference = 10*np.log10(np.power(10, 0.1*rx_interference) + np.power(10, 0.1*thermal_noise))
+        total_interference = 10*np.log10(np.power(10, 0.1*rx_interference) +
+                                         np.power(10, 0.1*thermal_noise))
         npt.assert_allclose(self.simulation.ue.total_interference, total_interference, atol=1e-2)
 
         # check SNR
@@ -127,32 +125,27 @@ class SimulationDownlinkTest(unittest.TestCase):
 
     def test_simulation_2bs_2ue_uplink(self):
 
-        self.simulation = SimulationUplink(self.param)
+        self.simulation = SimulationImtValeUplink(self.param)
         self.simulation.initialize()
 
         self.simulation.bs_power_gain = 0
         self.simulation.ue_power_gain = 0
 
-        self.simulation.bs = StationFactory.generate_imt_base_stations(self.param.imt,
-                                                                       self.param.antenna_imt,
-                                                                       self.simulation.topology,
-                                                                       self.random_number_gen)
+        self.simulation.bs = StationFactory.generate_imt_vale_base_stations(self.param.imt,
+                                                                            self.param.antenna_imt,
+                                                                            self.simulation.topology)
 
         self.simulation.bs.antenna = np.array([AntennaOmni(1), AntennaOmni(2)])
         self.simulation.bs.active = np.ones(2, dtype=bool)
 
-        self.simulation.ue = StationFactory.generate_imt_ue(self.param.imt,
-                                                            self.param.antenna_imt,
-                                                            self.simulation.topology,
-                                                            self.random_number_gen)
+        self.simulation.ue = StationFactory.generate_imt_ue_vale_outdoor(self.param.imt,
+                                                                         self.param.antenna_imt,
+                                                                         self.random_number_gen,
+                                                                         self.simulation.topology)
 
         self.simulation.propagation_imt = PropagationFactory.create_propagation(self.param.imt.channel_model,
                                                                      self.param,
                                                                      self.random_number_gen)
-
-        self.simulation.propagation_system = PropagationFactory.create_propagation(self.simulation.param_system.channel_model,
-                                                                        self.param,
-                                                                        self.random_number_gen)
 
         # UEs positioned exactly 100m north of the BSs
         self.simulation.ue.x = np.array([669242.9, 671354.38])
@@ -161,7 +154,7 @@ class SimulationDownlinkTest(unittest.TestCase):
         self.simulation.ue.active = np.ones(2, dtype=bool)
 
         # test connection method
-        self.simulation.connect_ue_to_bs()
+        self.simulation.connect_ue_to_bs(self.param.imt)
         self.assertEqual(self.simulation.link, {0: [0], 1: [1]})
 
         # We do not test the selection method here because in this specific
@@ -179,8 +172,8 @@ class SimulationDownlinkTest(unittest.TestCase):
 
         # test scheduler and bandwidth allocation
         self.simulation.scheduler()
-        bandwidth_per_ue = math.trunc((1 - 0.1)*100)
-        npt.assert_allclose(self.simulation.ue.bandwidth, bandwidth_per_ue*np.ones(2), atol=1e-2)
+        bandwidth_per_ue = [4.5, 4.5]
+        npt.assert_allclose(self.simulation.ue.bandwidth, bandwidth_per_ue, atol=1e-2)
 
         # there is no power control, so UE's will transmit at maximum power
         self.simulation.power_control()
@@ -212,14 +205,15 @@ class SimulationDownlinkTest(unittest.TestCase):
                             atol=1e-2)
 
         # check BS thermal noise
-        thermal_noise = 10*np.log10(1.38064852e-23*290*bandwidth_per_ue*1e3*1e6) + 7
+        thermal_noise = [10*np.log10(1.38064852e-23*290*1e3) + 10*np.log10(self.simulation.bs.bandwidth[ue]*1e6) + 7
+                         for ue in range(self.simulation.bs.num_stations)]
         npt.assert_allclose(self.simulation.bs.thermal_noise,
-                            thermal_noise,
+                            thermal_noise*np.ones(self.simulation.bs.num_stations),
                             atol=1e-2)
 
         # check BS thermal noise + interference
-        total_interference = { 0: 10*np.log10(np.power(10, 0.1*rx_interference[0]) + np.power(10, 0.1*thermal_noise)),
-                               1: 10*np.log10(np.power(10, 0.1*rx_interference[1]) + np.power(10, 0.1*thermal_noise))}
+        total_interference = {0: 10*np.log10(np.power(10, 0.1*rx_interference[0]) + np.power(10, 0.1*thermal_noise[0])),
+                              1: 10*np.log10(np.power(10, 0.1*rx_interference[1]) + np.power(10, 0.1*thermal_noise[1]))}
         npt.assert_allclose(self.simulation.bs.total_interference[0],
                             total_interference[0],
                             atol=1e-2)
@@ -229,10 +223,10 @@ class SimulationDownlinkTest(unittest.TestCase):
 
         # check SNR
         npt.assert_allclose(self.simulation.bs.snr[0],
-                            rx_power[0] - thermal_noise,
+                            rx_power[0] - thermal_noise[0],
                             atol=1e-2)
         npt.assert_allclose(self.simulation.bs.snr[1],
-                            rx_power[1] - thermal_noise,
+                            rx_power[1] - thermal_noise[1],
                             atol=1e-2)
 
         # check SINR

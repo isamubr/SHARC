@@ -30,7 +30,7 @@ class TopologyFactory(object):
         elif parameters.imt.topology == "INPUT_MAP":
             topography = Topography()
             topography.parse_raster_data(parameters.imt.topography_data_file)
-            topology = TopologyInputMap(parameters.imt,topography)
+            topology = TopologyInputMap(parameters.imt, topography)
             topology.map_polygons(parameters.imt.ue_polygons)
             return topology
         else:

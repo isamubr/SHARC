@@ -8,6 +8,7 @@ Created on Wed Aug  9 19:35:52 2017
 import sys
 from sharc.parameters.parameters_general import ParametersGeneral
 from sharc.parameters.parameters_imt import ParametersImt
+from sharc.parameters.parameters_imt_vale import ParametersImtVale
 from sharc.parameters.parameters_hotspot import ParametersHotspot
 from sharc.parameters.parameters_indoor import ParametersIndoor
 from sharc.parameters.parameters_antenna_imt import ParametersAntennaImt
@@ -56,6 +57,8 @@ class Parameters(object):
         #######################################################################
         # IMT
         #######################################################################
+        if self.general.simulation_type == 'IMT_VALE':
+            self.imt = ParametersImtVale(self.general.imt_link)
 
         self.imt.read_params(self.general.imt_config_file)
 
@@ -77,51 +80,53 @@ class Parameters(object):
 
         self.indoor.read_params(self.general.imt_config_file)
 
-        #######################################################################
-        # SYSTEM PARAMETERS
-        #######################################################################
+        if self.general.simulation_type == 'IMT_SHARING':
 
-        self.general.set_system()
+            #######################################################################
+            # SYSTEM PARAMETERS
+            #######################################################################
 
-        if self.general.system == "FSS_SS":
-            #######################################################################
-            # FSS space station
-            #######################################################################
-            self.fss_ss = ParametersFssSs()
-            self.fss_ss.read_params(self.general.system_config_file)
+            self.general.set_system()
 
-        elif self.general.system == "FSS_ES":
-            #######################################################################
-            # FSS earth station
-            #######################################################################
-            self.fss_es = ParametersFssEs()
-            self.fss_es.read_params(self.general.system_config_file)
+            if self.general.system == "FSS_SS":
+                #######################################################################
+                # FSS space station
+                #######################################################################
+                self.fss_ss = ParametersFssSs()
+                self.fss_ss.read_params(self.general.system_config_file)
 
-        elif self.general.system == "FS":
-            #######################################################################
-            # Fixed wireless service
-            #######################################################################
-            self.fs = ParametersFs()
-            self.fs.read_params(self.general.system_config_file)
+            elif self.general.system == "FSS_ES":
+                #######################################################################
+                # FSS earth station
+                #######################################################################
+                self.fss_es = ParametersFssEs()
+                self.fss_es.read_params(self.general.system_config_file)
 
-        elif self.general.system == "HAPS":
-            #######################################################################
-            # HAPS (airbone) station
-            #######################################################################
-            self.haps = ParametersHaps()
-            self.haps.read_params(self.general.system_config_file)
+            elif self.general.system == "FS":
+                #######################################################################
+                # Fixed wireless service
+                #######################################################################
+                self.fs = ParametersFs()
+                self.fs.read_params(self.general.system_config_file)
 
-        elif self.general.system == "RNS":
-            #######################################################################
-            # RNS
-            #######################################################################
-            self.rns = ParametersRns()
-            self.rns.read_params(self.general.system_config_file)
+            elif self.general.system == "HAPS":
+                #######################################################################
+                # HAPS (airbone) station
+                #######################################################################
+                self.haps = ParametersHaps()
+                self.haps.read_params(self.general.system_config_file)
 
-        elif self.general.system_config_file == "RAS":
-            #######################################################################
-            # RAS
-            #######################################################################
-            self.ras = ParametersRas()
-            self.ras.read_parames(self.general.system_config_file)
+            elif self.general.system == "RNS":
+                #######################################################################
+                # RNS
+                #######################################################################
+                self.rns = ParametersRns()
+                self.rns.read_params(self.general.system_config_file)
+
+            elif self.general.system_config_file == "RAS":
+                #######################################################################
+                # RAS
+                #######################################################################
+                self.ras = ParametersRas()
+                self.ras.read_parames(self.general.system_config_file)
 
