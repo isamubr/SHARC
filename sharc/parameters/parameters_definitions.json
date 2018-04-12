@@ -182,6 +182,11 @@
             "default_value": "./parameters/polygons/PolygonBrucutuTest.kml",
             "param_options": ""
         },
+        "num_ue": {
+            "data_type": "int",
+            "default_value": 18,
+            "param_options": ""
+        },
         "ue_k": {
             "data_type": "int",
             "default_value": 3,
