@@ -70,20 +70,20 @@ class ParametersImtVale(ParameterHandler):
         self.cell_id = bs_data['strCellID']
         self.x_bs = np.array(bs_data['dWECoordinateMeter'])
         self.y_bs = np.array(bs_data['dSNCoordinateMeter'])
-        self.azimuth = np.array(bs_data['dBearing'])
-        self.elevation = np.array(bs_data['dMDownTilt'])
-        self.electrical_dt = np.array(bs_data['dEDownTilt'])
+        self.azimuth = np.array(bs_data['dBearing']).astype(float)
+        self.elevation = np.array(bs_data['dMDownTilt']).astype(float)
+        self.electrical_dt = np.array(bs_data['dEDownTilt']).astype(float)
         self.is_deleted = np.bool(bs_data['bDeleted'])
-        self.bs_conducted_power = np.array(bs_data['dMaxTxPowerdBm'])
+        self.bs_conducted_power = np.array(bs_data['dMaxTxPowerdBm']).astype(float)
         if self.imt_link == 'DOWNLINK':
-            self.frequency = np.array(bs_data['dDLCarrierMHz'])
+            self.frequency = np.array(bs_data['dDLCarrierMHz']).astype(float)
         else:
-            self.frequency = np.array(bs_data['dULCarrierMHz'])
-        self.bs_height = np.array(bs_data['dHeight'])
+            self.frequency = np.array(bs_data['dULCarrierMHz']).astype(float)
+        self.bs_height = np.array(bs_data['dHeight']).astype(float)
         self.bs_category = bs_data['BSCat']
         self.bs_antenna_pattern = bs_data['pattern']
-        self.bandwidth = np.array(bs_data['dDLBWMHz'])
-        self.bs_pilot_pow = np.array(bs_data['PilotPower'])
+        self.bandwidth = np.array(bs_data['dDLBWMHz']).astype(float)
+        self.bs_pilot_pow = np.array(bs_data['PilotPower']).astype(float)
 
     @staticmethod
     def read_input_ue_polygon_kml_file(ue_polygon_file: str, utm_zone: str) -> list:
