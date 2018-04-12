@@ -73,7 +73,7 @@ class SimulationImtVale(ABC, Observable):
 
         self.topology.calculate_coordinates()
         num_bs = self.topology.num_base_stations
-        num_ue = num_bs*self.parameters.imt.ue_k*self.parameters.imt.ue_k_m
+        num_ue = self.parameters.imt.num_ue
 
         self.bs_power_gain = 10*math.log10(self.parameters.antenna_imt.bs_tx_n_rows *
                                            self.parameters.antenna_imt.bs_tx_n_columns)
@@ -101,7 +101,7 @@ class SimulationImtVale(ABC, Observable):
                                              self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
 
         # calculates the number of RB per UE on a given BS
-        self.num_rb_per_ue = np.trunc(self.num_rb_per_bs/self.parameters.imt.ue_k)
+        #self.num_rb_per_ue = np.trunc(self.num_rb_per_bs/self.parameters.imt.ue_k)
 
         self.results = Results(self.parameters_filename, self.parameters.general.overwrite_output)
 
@@ -179,43 +179,89 @@ class SimulationImtVale(ABC, Observable):
 
                 self.ue.spectral_mask[ue].set_mask()
 
-    def select_ue(self, random_number_gen: np.random.RandomState):
-        """
-        Select K UEs randomly from all the UEs linked to one BS as “chosen”
-        UEs. These K “chosen” UEs will be scheduled during this snapshot.
-        """
-        self.bs_to_ue_phi, self.bs_to_ue_theta = \
-            self.bs.get_pointing_vector_to(self.ue)
+    # def select_ue(self, random_number_gen: np.random.RandomState):
+    #     """
+    #     Select K UEs randomly from all the UEs linked to one BS as “chosen”
+    #     UEs. These K “chosen” UEs will be scheduled during this snapshot.
+    #     """
+    #     self.bs_to_ue_phi, self.bs_to_ue_theta = \
+    #         self.bs.get_pointing_vector_to(self.ue)
+    #
+    #     bs_active = np.where(self.bs.active)[0]
+    #     for bs in bs_active:
+    #         # select K UE's among the ones that are connected to BS
+    #         random_number_gen.shuffle(self.link[bs])
+    #         K = self.parameters.imt.ue_k
+    #         del self.link[bs][K:]
+    #         # Activate the selected UE's and create beams
+    #         if self.bs.active[bs]:
+    #             self.ue.active[self.link[bs]] = np.ones(K, dtype=bool)
+    #             for ue in self.link[bs]:
+    #                 # add beam to BS antennas
+    #                 self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
+    #                                              self.bs_to_ue_theta[bs, ue])
+    #                 # add beam to UE antennas
+    #                 self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs, ue] - 180,
+    #                                              180 - self.bs_to_ue_theta[bs, ue])
+    #                 # set beam resource block group
+    #                 self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
+    #
+    # def scheduler_old(self):
+    #     """
+    #     This scheduler divides the available resource blocks among UE's for
+    #     a given BS
+    #     """
+    #     bs_active = np.where(self.bs.active)[0]
+    #     for bs in bs_active:
+    #         ue = self.link[bs]
+    #         self.bs.bandwidth[bs] = self.num_rb_per_bs[bs]*self.parameters.imt.rb_bandwidth
+    #         self.ue.bandwidth[ue] = self.num_rb_per_ue[bs]*self.parameters.imt.rb_bandwidth
 
+    def scheduler(self, random_number_gen: np.random.RandomState):
+        """
+        This scheduler allocates and activates the UEs according to the number of
+        RBs available at the BS and the RB requirements for the UEs
+        """
         bs_active = np.where(self.bs.active)[0]
+
         for bs in bs_active:
-            # select K UE's among the ones that are connected to BS
-            random_number_gen.shuffle(self.link[bs])
-            K = self.parameters.imt.ue_k
-            del self.link[bs][K:]
-            # Activate the selected UE's and create beams
+            # shuffled list of UEs connected to the current BS
+            ue_list = self.link[bs]
+            random_number_gen.shuffle(ue_list)
+
+            # number of available RB for the current BS
+            num_available_rbs = self.num_rb_per_bs[bs]
+
+            # activation of UEs based on the number of available RBs in the BS
+            for i in range(len(ue_list)):
+                # checking if there are still available RBs in the BS
+                if num_available_rbs > self.parameters.imt.rb_per_ue:
+                    # allocates the UE
+                    num_available_rbs = num_available_rbs - self.parameters.imt.rb_per_ue
+                else:
+                    self.link[bs] = self.link[bs][:i]
+
+            # creation of beams
+            # TODO: adapt this part to the case of antennas Omni
             if self.bs.active[bs]:
-                self.ue.active[self.link[bs]] = np.ones(K, dtype=bool)
+                self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
                 for ue in self.link[bs]:
                     # add beam to BS antennas
                     self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
-                                                 self.bs_to_ue_theta[bs, ue])
+                                                     self.bs_to_ue_theta[bs, ue])
                     # add beam to UE antennas
                     self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs, ue] - 180,
-                                                 180 - self.bs_to_ue_theta[bs, ue])
+                                                     180 - self.bs_to_ue_theta[bs, ue])
                     # set beam resource block group
                     self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
 
-    def scheduler(self):
-        """
-        This scheduler divides the available resource blocks among UE's for
-        a given BS
-        """
-        bs_active = np.where(self.bs.active)[0]
-        for bs in bs_active:
-            ue = self.link[bs]
-            self.bs.bandwidth[bs] = self.num_rb_per_bs[bs]*self.parameters.imt.rb_bandwidth
-            self.ue.bandwidth[ue] = self.num_rb_per_ue[bs]*self.parameters.imt.rb_bandwidth
+            # calculating the bandwidths
+            # TODO: check if it should be the total BS bandwidth or only the occupied bandwidth
+            self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
+            ue_active = self.link[bs]
+            self.ue.bandwidth[ue_active] = self.parameters.imt.rb_per_ue * self.parameters.imt.rb_bandwidth
+
+        print('ae')
 
     def calculate_gains(self, station_1: StationManager, station_2: StationManager) -> np.array:
         """

@@ -44,37 +44,22 @@ class SimulationImtValeDownlink(SimulationImtVale):
                                                                  self.parameters.antenna_imt,
                                                                  self.topology)
 
-        minimum_ue_per_bs = True
-        while minimum_ue_per_bs:
-            # Create IMT user equipments
-            self.ue = StationFactory.generate_imt_ue_vale_outdoor(self.parameters.imt,
-                                                                self.parameters.antenna_imt,
-                                                                random_number_gen,
-                                                                self.topology)
+        # Create IMT user equipments
+        self.ue = StationFactory.generate_imt_ue_vale_outdoor(self.parameters.imt,
+                                                              self.parameters.antenna_imt,
+                                                              random_number_gen,
+                                                              self.topology)
+        # Associating UEs and BSs based on the RSSI
+        self.connect_ue_to_bs(self.parameters.imt)
 
-            self.connect_ue_to_bs(self.parameters.imt)
-
-            # checking if the minimum number of UEs (K) is connected to each active BS
-            bs_active = list(np.where(self.bs.active)[0])
-            ues_per_bs = []
-            for bs in bs_active:
-                ues_per_bs.append(len(self.link[bs]))
-
-            # minimum_ue_per_bs is True if at last one  of the BSs is associated with less than K UEs
-            minimum_ue_per_bs = any(element < self.parameters.imt.ue_k for element in ues_per_bs)
-
-            if minimum_ue_per_bs:
-                num_bs = self.topology.num_base_stations
-                del self.ue
-                self.link = dict([(bs, list()) for bs in range(num_bs)])
-
-        self.select_ue(random_number_gen)
+        # Activating and allocating UEs
+        self.scheduler(random_number_gen)
 
         # Calculate coupling loss after beams are created
         self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,
                                                               self.ue,
                                                               self.propagation_imt)
-        self.scheduler()
+
         self.power_control()
 
         self.calculate_sinr()
@@ -113,8 +98,13 @@ class SimulationImtValeDownlink(SimulationImtVale):
         bs_active = np.where(self.bs.active)[0]
         for bs in bs_active:
             ue = self.link[bs]
-            self.ue.rx_power[ue] = self.bs.tx_power[bs] - self.parameters.imt.bs_ohmic_loss \
-                                       - self.coupling_loss_imt[bs, ue] \
+            #self.ue.rx_power[ue] = self.bs.tx_power[bs] - self.parameters.imt.bs_ohmic_loss \
+            #                           - self.coupling_loss_imt[bs, ue] \
+            #                           - self.parameters.imt.ue_body_loss \
+            #                           - self.parameters.imt.ue_ohmic_loss
+            for ue_index in ue:
+                self.ue.rx_power[ue_index] = self.bs.tx_power[bs] - self.parameters.imt.bs_ohmic_loss \
+                                       - self.coupling_loss_imt[bs, ue_index] \
                                        - self.parameters.imt.ue_body_loss \
                                        - self.parameters.imt.ue_ohmic_loss
 

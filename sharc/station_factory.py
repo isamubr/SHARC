@@ -437,9 +437,8 @@ class StationFactory(object):
                                      topology: Topology) -> StationManager:
 
         num_bs = topology.num_base_stations
-        num_ue_per_bs = param.ue_k*param.ue_k_m
-
-        num_ue = num_bs * num_ue_per_bs
+        # num_ue_per_bs = param.ue_k*param.ue_k_m
+        num_ue = param.num_ue
 
         imt_ue = StationManager(num_ue)
         imt_ue.station_type = StationType.IMT_UE
