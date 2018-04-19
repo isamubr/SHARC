@@ -78,13 +78,21 @@ class SimulationImtValeDownlink(SimulationImtVale):
         # divided among the selected UEs
         total_power = self.parameters.imt.bs_conducted_power + self.bs_power_gain
 
-        tx_power = total_power - 10 * math.log10(self.parameters.imt.ue_k)
+        #tx_power = total_power - 10 * math.log10(self.parameters.imt.ue_k)
+
+        bs_active = np.where(self.bs.active)[0]
+        tx_power = dict([(bs, list()) for bs in bs_active])
+        self.bs.tx_power = dict([(bs, list()) for bs in bs_active])
+        for bs in bs_active:
+            tx_power[bs] = total_power[bs] - 10*np.log10(len(self.link[bs]))
+            self.bs.tx_power[bs] = tx_power[bs]*np.ones(len(self.link[bs]))
+
         # calculate transmit powers to have a structure such as
         # {bs_1: [pwr_1, pwr_2,...], ...}, where bs_1 is the base station id,
         # pwr_1 is the transmit power from bs_1 to ue_1, pwr_2 is the transmit
         # power from bs_1 to ue_2, etc
-        bs_active = np.where(self.bs.active)[0]
-        self.bs.tx_power = dict([(bs, tx_power[bs]*np.ones(self.parameters.imt.ue_k)) for bs in bs_active])
+        #bs_active = np.where(self.bs.active)[0]
+        #self.bs.tx_power = dict([(bs, tx_power[bs]*np.ones(self.parameters.imt.ue_k)) for bs in bs_active])
 
         # Update the spectral mask
         if self.adjacent_channel:
@@ -98,13 +106,8 @@ class SimulationImtValeDownlink(SimulationImtVale):
         bs_active = np.where(self.bs.active)[0]
         for bs in bs_active:
             ue = self.link[bs]
-            #self.ue.rx_power[ue] = self.bs.tx_power[bs] - self.parameters.imt.bs_ohmic_loss \
-            #                           - self.coupling_loss_imt[bs, ue] \
-            #                           - self.parameters.imt.ue_body_loss \
-            #                           - self.parameters.imt.ue_ohmic_loss
-            for ue_index in ue:
-                self.ue.rx_power[ue_index] = self.bs.tx_power[bs] - self.parameters.imt.bs_ohmic_loss \
-                                       - self.coupling_loss_imt[bs, ue_index] \
+            self.ue.rx_power[ue] = self.bs.tx_power[bs] - self.parameters.imt.bs_ohmic_loss \
+                                       - self.coupling_loss_imt[bs, ue] \
                                        - self.parameters.imt.ue_body_loss \
                                        - self.parameters.imt.ue_ohmic_loss
 
