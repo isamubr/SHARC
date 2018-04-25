@@ -261,7 +261,76 @@ class SimulationImtVale(ABC, Observable):
             ue_active = self.link[bs]
             self.ue.bandwidth[ue_active] = self.parameters.imt.rb_per_ue * self.parameters.imt.rb_bandwidth
 
-        print('ae')
+    def new_scheduler(self):
+
+        if self.parameters.general.imt_link == "DOWNLINK":
+
+            bs_active = np.where(self.bs.active)[0]
+            for bs in bs_active:
+                ue_list = self.link[bs]
+
+                # estimating the SINR for the first allocation
+                sinr_vector = self.estimate_dl_sinr(bs, ue_list)
+
+                # sort self.link[bs] in descending order of SINR
+                self.link[bs] = [x for _, x in sorted(zip(sinr_vector, self.link[bs]))][::-1]
+
+        else:
+
+            bs_active = np.where(self.bs.active)[0]
+            for bs in bs_active:
+                ue_list = self.link[bs]
+
+            
+
+    def estimate_dl_sinr(self, current_bs, ue_list):
+        """
+        This method estimates the DL SINR for the first allocation done by the scheduler
+        """
+        # initializing the variables
+        interference = -500 * np.ones(len(ue_list))
+
+        # determining the TX power for each BS
+        total_power = self.parameters.imt.bs_conducted_power + self.bs_power_gain
+
+        bs_active = np.where(self.bs.active)[0]
+        tx_power = dict([(bs, list()) for bs in bs_active])
+        bs_tx_power = dict([(bs, list()) for bs in bs_active])
+        for bs in bs_active:
+            # TX power equally divided among the RBs
+            tx_power[bs] = total_power[bs] - 10 * np.log10(self.num_rb_per_bs[bs])
+            # TX power to each UE connected to the current BS
+            bs_tx_power[bs] = tx_power[bs] * np.ones(len(self.link[bs]))
+
+        # array with the received power for each UE connected to the current BS
+        ue_rx_power = bs_tx_power[current_bs] \
+                        - self.parameters.imt.bs_ohmic_loss \
+                        - self.parameters.imt.ue_body_loss \
+                        - self.parameters.imt.ue_ohmic_loss \
+                        - self.coupling_loss_imt[current_bs, ue_list]
+
+        # create a list with base stations that generate interference in ue_list
+        bs_interf = [b for b in bs_active if b not in [current_bs]]
+
+        # calculate intra system interference
+        for bi in bs_interf:
+            interference = bs_tx_power[bi][0] - self.parameters.imt.bs_ohmic_loss \
+                            - self.coupling_loss_imt[bi, ue_list] \
+                            - self.parameters.imt.ue_body_loss - self.parameters.imt.ue_ohmic_loss
+
+        # thermal noise (per RB)
+        thermal_noise = \
+            10 * np.log10(self.parameters.imt.BOLTZMANN_CONSTANT * self.parameters.imt.noise_temperature * 1e3) + \
+            10 * np.log10(self.parameters.imt.rb_bandwidth * 1e6) + \
+            self.ue.noise_figure[ue_list]
+
+        # total interference per UE
+        total_interference = 10 * np.log10(np.power(10, 0.1*interference) + np.power(10, 0.1*thermal_noise))
+
+        # calculating the SINR for each UE
+        sinr_vector = ue_rx_power - total_interference
+
+        return sinr_vector
 
     def calculate_gains(self, station_1: StationManager, station_2: StationManager) -> np.array:
         """

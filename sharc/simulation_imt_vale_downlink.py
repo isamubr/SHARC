@@ -53,7 +53,12 @@ class SimulationImtValeDownlink(SimulationImtVale):
         self.connect_ue_to_bs(self.parameters.imt)
 
         # Activating and allocating UEs
-        self.scheduler(random_number_gen)
+        #self.scheduler(random_number_gen)
+        self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,
+                                                              self.ue,
+                                                              self.propagation_imt)
+
+        self.new_scheduler()
 
         # Calculate coupling loss after beams are created
         self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,
