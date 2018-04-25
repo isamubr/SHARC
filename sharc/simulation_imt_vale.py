@@ -274,6 +274,7 @@ class SimulationImtVale(ABC, Observable):
 
                 # sort self.link[bs] in descending order of SINR
                 self.link[bs] = [x for _, x in sorted(zip(sinr_vector, self.link[bs]))][::-1]
+                sinr_vector = np.sort(sinr_vector)[::-1]
 
         else:
 
@@ -281,16 +282,22 @@ class SimulationImtVale(ABC, Observable):
             for bs in bs_active:
                 ue_list = self.link[bs]
 
-            
+                # estimating the SINR for the first allocation
+                sinr_vector = self.estimate_ul_sinr(bs, ue_list)
+
+                # sort self.link[bs] in descending order of SINR
+                self.link[bs] = [x for _, x in sorted(zip(sinr_vector, self.link[bs]))][::-1]
+                sinr_vector = np.sort(sinr_vector)[::-1]
+
 
     def estimate_dl_sinr(self, current_bs, ue_list):
         """
         This method estimates the DL SINR for the first allocation done by the scheduler
         """
-        # initializing the variables
-        interference = -500 * np.ones(len(ue_list))
+        # initializing the interference variable
+        rx_interference = -500 * np.ones(len(ue_list))
 
-        # determining the TX power for each BS
+        # determining the TX power of each BS
         total_power = self.parameters.imt.bs_conducted_power + self.bs_power_gain
 
         bs_active = np.where(self.bs.active)[0]
@@ -318,6 +325,10 @@ class SimulationImtVale(ABC, Observable):
                             - self.coupling_loss_imt[bi, ue_list] \
                             - self.parameters.imt.ue_body_loss - self.parameters.imt.ue_ohmic_loss
 
+            rx_interference = 10*np.log10( \
+                    np.power(10, 0.1*rx_interference)
+                    + np.power(10, 0.1*interference))
+
         # thermal noise (per RB)
         thermal_noise = \
             10 * np.log10(self.parameters.imt.BOLTZMANN_CONSTANT * self.parameters.imt.noise_temperature * 1e3) + \
@@ -325,12 +336,66 @@ class SimulationImtVale(ABC, Observable):
             self.ue.noise_figure[ue_list]
 
         # total interference per UE
-        total_interference = 10 * np.log10(np.power(10, 0.1*interference) + np.power(10, 0.1*thermal_noise))
+        total_interference = 10 * np.log10(np.power(10, 0.1*rx_interference) + np.power(10, 0.1*thermal_noise))
 
         # calculating the SINR for each UE
         sinr_vector = ue_rx_power - total_interference
 
         return sinr_vector
+
+    def estimate_ul_sinr(self, current_bs, ue_list):
+        """
+        This method estimates the DL SINR for the first allocation done by the scheduler
+        """
+        # initializing the interference variable
+        rx_interference = -500 * np.ones(len(ue_list))
+
+        # determining the TX power of each UE (no power control considered)
+        ue_tx_power = self.parameters.imt.ue_p_cmax * np.ones(len(ue_list))
+
+        # array with the received power of the BS from each UE
+        bs_rx_power = ue_tx_power  \
+                     - self.parameters.imt.ue_ohmic_loss \
+                     - self.parameters.imt.ue_body_loss \
+                     - self.coupling_loss_imt[current_bs, ue_list] \
+                     - self.parameters.imt.bs_ohmic_loss
+
+        # create a list with base stations that generate interference in the current BS
+        bs_active = np.where(self.bs.active)[0]
+        bs_interf = [b for b in bs_active if b not in [current_bs]]
+
+        # calculate intra system interference (consider only the UE closest to the current BS)
+        for bi in bs_interf:
+            ui = self.link[bi]
+
+            # coupling loss from the interfering UEs to the current BS
+            ui_losses = self.coupling_loss_imt[current_bs, ui]
+
+            # minimum coupling loss between the current BS and an adjacent UE
+            min_ui_loss = min(ui_losses)
+
+            interference = ue_tx_power - self.parameters.imt.ue_ohmic_loss \
+                           - self.parameters.imt.ue_body_loss \
+                           - min_ui_loss - self.parameters.imt.bs_ohmic_loss
+
+            rx_interference = 10*np.log10( \
+                    np.power(10, 0.1*rx_interference)
+                    + np.power(10, 0.1*interference))
+
+        # calculate N
+        thermal_noise = \
+            10 * np.log10(self.parameters.imt.BOLTZMANN_CONSTANT * self.parameters.imt.noise_temperature * 1e3) + \
+            10 * np.log10(self.parameters.imt.rb_bandwidth * self.num_rb_per_bs[current_bs] * 1e6) + \
+            self.bs.noise_figure[current_bs]
+
+        # total interference per UE
+        total_interference = 10 * np.log10(np.power(10, 0.1 * rx_interference) + np.power(10, 0.1 * thermal_noise))
+
+        # calculating the SINR for each UE
+        sinr_vector = bs_rx_power - total_interference
+
+        return sinr_vector
+
 
     def calculate_gains(self, station_1: StationManager, station_2: StationManager) -> np.array:
         """

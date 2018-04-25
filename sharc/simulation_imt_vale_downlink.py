@@ -61,9 +61,9 @@ class SimulationImtValeDownlink(SimulationImtVale):
         self.new_scheduler()
 
         # Calculate coupling loss after beams are created
-        self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,
-                                                              self.ue,
-                                                              self.propagation_imt)
+        #self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,
+        #                                                      self.ue,
+        #                                                      self.propagation_imt)
 
         self.power_control()
 
