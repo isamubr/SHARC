@@ -112,9 +112,14 @@
             "default_value": 0.18,
             "param_options": ""
         },
-        "rb_per_ue": {
-            "data_type": "int",
-            "default_value": 2,
+        "min_ue_data_rate": {
+            "data_type": "float",
+            "default_value": 100e3,
+            "param_options": ""
+        },
+        "bs_rb_load_factor": {
+            "data_type": "float",
+            "default_value": 0.9,
             "param_options": ""
         },
         "spectral_mask": {

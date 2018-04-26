@@ -11,6 +11,7 @@ import numpy as np
 import math
 import sys
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 from sharc.support.enumerations import StationType
 from sharc.topology.topology_factory import TopologyFactory
@@ -276,6 +277,28 @@ class SimulationImtVale(ABC, Observable):
                 self.link[bs] = [x for _, x in sorted(zip(sinr_vector, self.link[bs]))][::-1]
                 sinr_vector = np.sort(sinr_vector)[::-1]
 
+                # number of available RB for the current BS
+                num_available_rbs = math.ceil(self.parameters.imt.bs_rb_load_factor*self.num_rb_per_bs[bs])
+
+                allocated_ues = list()
+
+                # allocation through the ue_list
+                for i in range(len(self.link[bs])):
+
+                    # get the throughput per RB for the current UE
+                    ue_tput = self.get_throughput_dl(sinr_vector[i])*1e3
+
+                    # calculate the number of RB required for the current UE
+                    ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate/ue_tput)
+
+                    # checking if there are still available RBs in the current BS
+                    if num_available_rbs > ue_num_rb:
+                        # allocates the UE
+                        num_available_rbs = num_available_rbs - ue_num_rb
+                        allocated_ues.append(self.link[bs][i])
+
+                self.link[bs] = allocated_ues
+
         else:
 
             bs_active = np.where(self.bs.active)[0]
@@ -289,6 +312,26 @@ class SimulationImtVale(ABC, Observable):
                 self.link[bs] = [x for _, x in sorted(zip(sinr_vector, self.link[bs]))][::-1]
                 sinr_vector = np.sort(sinr_vector)[::-1]
 
+                # number of available RB for the current BS
+                num_available_rbs = math.ceil(self.parameters.imt.bs_rb_load_factor * self.num_rb_per_bs[bs])
+
+                allocated_ues = list()
+                # allocation through the ue_list
+                for i in range(len(self.link[bs])):
+
+                    # get the throughput per RB for the current UE
+                    ue_tput = self.get_throughput_ul(sinr_vector[i])
+
+                    # calculate the number of RB required for the current UE
+                    ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate / ue_tput)
+
+                    # checking if there are still available RBs in the current BS
+                    if num_available_rbs > ue_num_rb:
+                        # allocates the UE
+                        num_available_rbs = num_available_rbs - ue_num_rb
+                        allocated_ues.append(self.link[bs][i])
+
+                self.link[bs] = allocated_ues
 
     def estimate_dl_sinr(self, current_bs, ue_list):
         """
@@ -396,6 +439,50 @@ class SimulationImtVale(ABC, Observable):
 
         return sinr_vector
 
+    def get_throughput_dl(self, ue_sinr):
+        """
+        This method returns the throughput per RB in kbps for a given SINR in the DL
+        """
+        sinr_vals = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                     21, 22, 23, 24, 25]
+        tput_vals = [39.7154, 48.2521, 58.2422, 69.7951, 82.9873, 97.8559, 114.3942, 132.5529, 152.2445, 173.3518,
+                     195.7379, 219.2562, 243.7591, 269.1051, 295.1634, 321.8168, 348.9628, 376.5132, 404.5830, 442.8072,
+                     481.8425, 521.5469, 561.7995, 602.4986, 643.5594, 684.9121, 726.4998, 768.2760, 810.2032, 852.2511,
+                     894.3953, 936.6164]
+
+        if ue_sinr > 25:
+            ue_tput = 936.6164
+        elif ue_sinr < - 6:
+            ue_tput = 10^(-50)
+        else:
+            # interpolate and generate MCS curve
+            mcs_curve = interp1d(sinr_vals, tput_vals)
+
+            # throughput per RB for the given MCS
+            ue_tput = mcs_curve(ue_sinr)
+
+        return ue_tput
+
+    def get_throughput_ul(self, ue_sinr):
+        """
+        This method returns the throughput per RB in kbps (??) for a given SINR in the UL
+        """
+        sinr_vals = [-30, -14, -11.5, -10, -6, -2, 2, 6, 10, 14, 18, 22, 24.1, 30]
+        tput_vals = [0, 0, 4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
+                     720.702]
+
+        if ue_sinr > 30:
+            ue_tput = 720.702
+        elif ue_sinr < - 30:
+            ue_tput = 10^(-50)
+        else:
+            # interpolate and generate MCS curve
+            mcs_curve = interp1d(sinr_vals, tput_vals)
+
+            # throughput per RB for the given MCS
+            ue_tput = mcs_curve(ue_sinr)
+
+        return ue_tput
 
     def calculate_gains(self, station_1: StationManager, station_2: StationManager) -> np.array:
         """
