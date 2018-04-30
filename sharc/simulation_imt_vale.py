@@ -373,9 +373,12 @@ class SimulationImtVale(ABC, Observable):
 
         # create a list with base stations that generate interference in ue_list
         bs_interf = [b for b in bs_active if b not in [current_bs]]
+        # eliminating BSs that don't have associated UEs
+        bs_interf = [b for b in bs_interf if self.link[b]]
 
         # calculate intra system interference
         for bi in bs_interf:
+            print("interf")
             interference = bs_tx_power[bi][0] - self.parameters.imt.bs_ohmic_loss \
                             - self.coupling_loss_imt[bi, ue_list] \
                             - self.parameters.imt.ue_body_loss - self.parameters.imt.ue_ohmic_loss

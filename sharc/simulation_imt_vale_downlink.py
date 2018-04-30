@@ -118,6 +118,8 @@ class SimulationImtValeDownlink(SimulationImtVale):
 
             # create a list with base stations that generate interference in ue_list
             bs_interf = [b for b in bs_active if b not in [bs]]
+            # eliminating BSs that don't have associated UEs
+            bs_interf = [b for b in bs_interf if self.link[b]]
 
             # calculate intra system interference
             for bi in bs_interf:
