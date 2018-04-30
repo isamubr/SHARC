@@ -265,7 +265,7 @@ class SimulationImtVale(ABC, Observable):
     def new_scheduler(self):
 
         if self.parameters.general.imt_link == "DOWNLINK":
-
+            print("drop")
             bs_active = np.where(self.bs.active)[0]
             for bs in bs_active:
                 ue_list = self.link[bs]
@@ -297,7 +297,13 @@ class SimulationImtVale(ABC, Observable):
                         num_available_rbs = num_available_rbs - ue_num_rb
                         allocated_ues.append(self.link[bs][i])
 
+                        # calculating the UE's bandwidth
+                        self.ue.bandwidth[self.link[bs][i]] = ue_num_rb * self.parameters.imt.rb_bandwidth
+
+                # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
+                # activating the allocated UEs
+                self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
 
         else:
 
@@ -320,7 +326,7 @@ class SimulationImtVale(ABC, Observable):
                 for i in range(len(self.link[bs])):
 
                     # get the throughput per RB for the current UE
-                    ue_tput = self.get_throughput_ul(sinr_vector[i])
+                    ue_tput = self.get_throughput_ul(sinr_vector[i])*1e3
 
                     # calculate the number of RB required for the current UE
                     ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate / ue_tput)
@@ -331,7 +337,13 @@ class SimulationImtVale(ABC, Observable):
                         num_available_rbs = num_available_rbs - ue_num_rb
                         allocated_ues.append(self.link[bs][i])
 
+                        # calculating the UE's bandwidth
+                        self.ue.bandwidth[self.link[bs][i]] = ue_num_rb * self.parameters.imt.rb_bandwidth
+
+                # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
+                # activating the allocated UEs
+                self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
 
     def estimate_dl_sinr(self, current_bs, ue_list):
         """
@@ -453,7 +465,9 @@ class SimulationImtVale(ABC, Observable):
         if ue_sinr > 25:
             ue_tput = 936.6164
         elif ue_sinr < - 6:
-            ue_tput = 10^(-50)
+            # negligible value to represent a throughput equal to zero. Cannot set to zero due to the division done in
+            # the scheduler method
+            ue_tput = np.power(0.1, 50)
         else:
             # interpolate and generate MCS curve
             mcs_curve = interp1d(sinr_vals, tput_vals)
@@ -465,7 +479,7 @@ class SimulationImtVale(ABC, Observable):
 
     def get_throughput_ul(self, ue_sinr):
         """
-        This method returns the throughput per RB in kbps (??) for a given SINR in the UL
+        This method returns the throughput per RB in kbps for a given SINR in the UL
         """
         sinr_vals = [-30, -14, -11.5, -10, -6, -2, 2, 6, 10, 14, 18, 22, 24.1, 30]
         tput_vals = [0, 0, 4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
@@ -474,7 +488,9 @@ class SimulationImtVale(ABC, Observable):
         if ue_sinr > 30:
             ue_tput = 720.702
         elif ue_sinr < - 30:
-            ue_tput = 10^(-50)
+            # negligible value to represent a throughput equal to zero. Cannot set to zero due to the division done in
+            # the scheduler method
+            ue_tput = np.power(0.1, 50)
         else:
             # interpolate and generate MCS curve
             mcs_curve = interp1d(sinr_vals, tput_vals)
