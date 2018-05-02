@@ -124,15 +124,15 @@ class StationFactory(object):
         imt_base_stations.indoor = topology.indoor
         imt_base_stations.active = np.random.rand(num_bs) < param.bs_load_probability
 
-        imt_base_stations.rx_power = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
-        imt_base_stations.rx_interference = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
-        imt_base_stations.ext_interference = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
-        imt_base_stations.total_interference = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
+        imt_base_stations.rx_power = dict([(bs, -500) for bs in range(num_bs)])
+        imt_base_stations.rx_interference = dict([(bs, -500) for bs in range(num_bs)])
+        imt_base_stations.ext_interference = dict([(bs, -500) for bs in range(num_bs)])
+        imt_base_stations.total_interference = dict([(bs, -500) for bs in range(num_bs)])
 
-        imt_base_stations.snr = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
-        imt_base_stations.sinr = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
-        imt_base_stations.sinr_ext = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
-        imt_base_stations.inr = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
+        imt_base_stations.snr = dict([(bs, -500) for bs in range(num_bs)])
+        imt_base_stations.sinr = dict([(bs, -500) for bs in range(num_bs)])
+        imt_base_stations.sinr_ext = dict([(bs, -500) for bs in range(num_bs)])
+        imt_base_stations.inr = dict([(bs, -500) for bs in range(num_bs)])
 
         # TODO: The default case is to use a beamforming antenna. Need to validate all antenna types from input file
         # Generate the antenas for all base stations

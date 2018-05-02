@@ -52,13 +52,12 @@ class SimulationImtValeDownlink(SimulationImtVale):
         # Associating UEs and BSs based on the RSSI
         self.connect_ue_to_bs(self.parameters.imt)
 
-        # Activating and allocating UEs
-        #self.scheduler(random_number_gen)
+        # Calculate coupling loss
         self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,
                                                               self.ue,
                                                               self.propagation_imt)
-
-        self.new_scheduler()
+        # Allocating and activating the UEs
+        self.scheduler()
 
         # Calculate coupling loss after beams are created
         #self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,

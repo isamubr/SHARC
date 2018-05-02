@@ -52,18 +52,14 @@ class SimulationImtValeUplink(SimulationImtVale):
 
         self.connect_ue_to_bs(self.parameters.imt)
 
-
-        #self.select_ue(random_number_gen)
-
         # Calculate coupling loss after beams are created
         self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,
                                                               self.ue,
                                                               self.propagation_imt)
-        self.new_scheduler()
+        self.scheduler()
 
-
-        #self.scheduler()
         self.power_control()
+
         self.calculate_sinr()
 
         self.collect_results(write_to_file, snapshot_number)
@@ -80,12 +76,12 @@ class SimulationImtValeUplink(SimulationImtVale):
             for bs in bs_active:
                 ue = self.link[bs]
                 p_cmax = self.parameters.imt.ue_p_cmax
-                m_pusch = self.num_rb_per_ue
+                m_pusch = self.num_rb_per_ue[ue]
                 p_o_pusch = self.parameters.imt.ue_p_o_pusch
                 alpha = self.parameters.imt.ue_alpha
                 pl = self.coupling_loss_imt[bs, ue] + self.parameters.imt.bs_ohmic_loss \
                     + self.parameters.imt.ue_ohmic_loss + self.parameters.imt.ue_body_loss
-                self.ue.tx_power[ue] = np.minimum(p_cmax, 10*np.log10(m_pusch[bs]) + p_o_pusch + alpha*pl)
+                self.ue.tx_power[ue] = np.minimum(p_cmax, 10*np.log10(m_pusch) + p_o_pusch + alpha*pl)
 
     def calculate_sinr(self):
         """
@@ -102,6 +98,8 @@ class SimulationImtValeUplink(SimulationImtVale):
                                         - self.coupling_loss_imt[bs,ue] - self.parameters.imt.bs_ohmic_loss
             # create a list of BSs that serve the interfering UEs
             bs_interf = [b for b in bs_active if b not in [bs]]
+            # eliminating BSs that don't have associated UEs
+            bs_interf = [b for b in bs_interf if self.link[b]]
 
             # calculate intra system interference
             for bi in bs_interf:
@@ -109,6 +107,12 @@ class SimulationImtValeUplink(SimulationImtVale):
                 interference = self.ue.tx_power[ui] - self.parameters.imt.ue_ohmic_loss  \
                                 - self.parameters.imt.ue_body_loss \
                                 - self.coupling_loss_imt[bs,ui] - self.parameters.imt.bs_ohmic_loss
+
+                # summing all the interferences
+                interference_linear = np.power(10, 0.1*interference)
+                interference_linear = sum(interference_linear)
+                interference = 10*np.log10(interference_linear)
+
                 self.bs.rx_interference[bs] = 10*np.log10( \
                     np.power(10, 0.1*self.bs.rx_interference[bs])
                     + np.power(10, 0.1*interference))
@@ -145,8 +149,10 @@ class SimulationImtValeUplink(SimulationImtVale):
             self.results.imt_ul_tput.extend(tput.tolist())
 
             self.results.imt_ul_tx_power.extend(self.ue.tx_power[ue].tolist())
+            #imt_ul_tx_power_density = 10 * np.log10(np.power(10, 0.1 * self.ue.tx_power[ue]) / (
+            #        self.num_rb_per_ue[bs] * self.parameters.imt.rb_bandwidth * 1e6))
             imt_ul_tx_power_density = 10 * np.log10(np.power(10, 0.1 * self.ue.tx_power[ue]) / (
-                    self.num_rb_per_ue[bs] * self.parameters.imt.rb_bandwidth * 1e6))
+                self.ue.bandwidth[ue]))
             self.results.imt_ul_tx_power_density.extend(imt_ul_tx_power_density.tolist())
             self.results.imt_ul_sinr.extend(self.bs.sinr[bs].tolist())
             self.results.imt_ul_snr.extend(self.bs.snr[bs].tolist())

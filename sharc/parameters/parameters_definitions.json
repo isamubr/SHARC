@@ -192,16 +192,6 @@
             "default_value": 18,
             "param_options": ""
         },
-        "ue_k": {
-            "data_type": "int",
-            "default_value": 3,
-            "param_options": ""
-        },
-        "ue_k_m": {
-            "data_type": "int",
-            "default_value": 2,
-            "param_options": ""
-        },
         "ue_indoor_percent": {
             "data_type": "int",
             "default_value": 0,

@@ -103,6 +103,7 @@ class SimulationImtVale(ABC, Observable):
 
         # calculates the number of RB per UE on a given BS
         #self.num_rb_per_ue = np.trunc(self.num_rb_per_bs/self.parameters.imt.ue_k)
+        self.num_rb_per_ue = np.power(0.1, 50)*np.ones(num_ue)
 
         self.results = Results(self.parameters_filename, self.parameters.general.overwrite_output)
 
@@ -218,54 +219,9 @@ class SimulationImtVale(ABC, Observable):
     #         self.bs.bandwidth[bs] = self.num_rb_per_bs[bs]*self.parameters.imt.rb_bandwidth
     #         self.ue.bandwidth[ue] = self.num_rb_per_ue[bs]*self.parameters.imt.rb_bandwidth
 
-    def scheduler(self, random_number_gen: np.random.RandomState):
-        """
-        This scheduler allocates and activates the UEs according to the number of
-        RBs available at the BS and the RB requirements for the UEs
-        """
-        bs_active = np.where(self.bs.active)[0]
-
-        for bs in bs_active:
-            # shuffled list of UEs connected to the current BS
-            ue_list = self.link[bs]
-            random_number_gen.shuffle(ue_list)
-
-            # number of available RB for the current BS
-            num_available_rbs = self.num_rb_per_bs[bs]
-
-            # activation of UEs based on the number of available RBs in the BS
-            for i in range(len(ue_list)):
-                # checking if there are still available RBs in the BS
-                if num_available_rbs > self.parameters.imt.rb_per_ue:
-                    # allocates the UE
-                    num_available_rbs = num_available_rbs - self.parameters.imt.rb_per_ue
-                else:
-                    self.link[bs] = self.link[bs][:i]
-
-            # creation of beams
-            # TODO: adapt this part to the case of antennas Omni
-            if self.bs.active[bs]:
-                self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
-                for ue in self.link[bs]:
-                    # add beam to BS antennas
-                    self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
-                                                     self.bs_to_ue_theta[bs, ue])
-                    # add beam to UE antennas
-                    self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs, ue] - 180,
-                                                     180 - self.bs_to_ue_theta[bs, ue])
-                    # set beam resource block group
-                    self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
-
-            # calculating the bandwidths
-            # TODO: check if it should be the total BS bandwidth or only the occupied bandwidth
-            self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
-            ue_active = self.link[bs]
-            self.ue.bandwidth[ue_active] = self.parameters.imt.rb_per_ue * self.parameters.imt.rb_bandwidth
-
-    def new_scheduler(self):
+    def scheduler(self):
 
         if self.parameters.general.imt_link == "DOWNLINK":
-            print("drop")
             bs_active = np.where(self.bs.active)[0]
             for bs in bs_active:
                 ue_list = self.link[bs]
@@ -299,11 +255,16 @@ class SimulationImtVale(ABC, Observable):
 
                         # calculating the UE's bandwidth
                         self.ue.bandwidth[self.link[bs][i]] = ue_num_rb * self.parameters.imt.rb_bandwidth
+                        # number of RB allocated for the UE
+                        self.num_rb_per_ue[self.link[bs][i]] = ue_num_rb
 
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
                 # activating the allocated UEs
                 self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
+
+                # calculating the BS's bandwidth
+                self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
 
         else:
 
@@ -339,11 +300,16 @@ class SimulationImtVale(ABC, Observable):
 
                         # calculating the UE's bandwidth
                         self.ue.bandwidth[self.link[bs][i]] = ue_num_rb * self.parameters.imt.rb_bandwidth
+                        # number of RB allocated for the UE
+                        self.num_rb_per_ue[self.link[bs][i]] = ue_num_rb
 
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
                 # activating the allocated UEs
                 self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
+
+                # calculating the BS's bandwidth
+                self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
 
     def estimate_dl_sinr(self, current_bs, ue_list):
         """
@@ -378,7 +344,6 @@ class SimulationImtVale(ABC, Observable):
 
         # calculate intra system interference
         for bi in bs_interf:
-            print("interf")
             interference = bs_tx_power[bi][0] - self.parameters.imt.bs_ohmic_loss \
                             - self.coupling_loss_imt[bi, ue_list] \
                             - self.parameters.imt.ue_body_loss - self.parameters.imt.ue_ohmic_loss
@@ -421,6 +386,8 @@ class SimulationImtVale(ABC, Observable):
         # create a list with base stations that generate interference in the current BS
         bs_active = np.where(self.bs.active)[0]
         bs_interf = [b for b in bs_active if b not in [current_bs]]
+        # eliminating BSs that don't have associated UEs
+        bs_interf = [b for b in bs_interf if self.link[b]]
 
         # calculate intra system interference (consider only the UE closest to the current BS)
         for bi in bs_interf:
@@ -485,7 +452,7 @@ class SimulationImtVale(ABC, Observable):
         This method returns the throughput per RB in kbps for a given SINR in the UL
         """
         sinr_vals = [-30, -14, -11.5, -10, -6, -2, 2, 6, 10, 14, 18, 22, 24.1, 30]
-        tput_vals = [0, 0, 4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
+        tput_vals = [np.power(0.1, 50), np.power(0.1, 50), 4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
                      720.702]
 
         if ue_sinr > 30:
