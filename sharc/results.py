@@ -42,6 +42,8 @@ class Results(object):
         self.imt_dl_tput_ext = list()
         self.imt_dl_tput = list()
 
+        self.imt_outage_per_drop = list()
+
         self.system_ul_coupling_loss = list()
         self.system_ul_interf_power = list()
 
@@ -386,6 +388,18 @@ class Results(object):
             title = "[SYS] CDF of system interference power from IMT DL"
             x_label = "Interference Power [dBm]"
             y_label = "Probability of Power < $X$"
+            file_name = title
+            #x_limits = (-80, -20)
+            y_limits = (0, 1)
+            self.plot_list.append(Plot(x, y, x_label, y_label, title, file_name, x_lim=x_limits, y_lim=y_limits))
+        if len(self.imt_outage_per_drop) > 0:
+            values, base = np.histogram(self.imt_outage_per_drop, bins=n_bins)
+            cumulative = np.cumsum(values)
+            x = base[:-1]
+            y = cumulative / cumulative[-1]
+            title = "[IMT] CDF of the outage per drop"
+            x_label = "Outage"
+            y_label = "Probability of Outage < $X$"
             file_name = title
             #x_limits = (-80, -20)
             y_limits = (0, 1)

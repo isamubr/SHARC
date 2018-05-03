@@ -63,6 +63,8 @@ class SimulationImtVale(ABC, Observable):
 
         self.propagation_imt = None
 
+        self.outage_per_drop = 0
+
     def add_observer_list(self, observers: list):
         for o in observers:
             self.add_observer(o)
@@ -222,9 +224,17 @@ class SimulationImtVale(ABC, Observable):
     def scheduler(self):
 
         if self.parameters.general.imt_link == "DOWNLINK":
+            # initializing the variables total_associated_ues and num_allocated_ues
+            total_associated_ues = 0
+            num_allocated_ues = 0
+
             bs_active = np.where(self.bs.active)[0]
+
             for bs in bs_active:
                 ue_list = self.link[bs]
+
+                # counting the total number of UEs associated to active BSs
+                total_associated_ues += len(ue_list)
 
                 # estimating the SINR for the first allocation
                 sinr_vector = self.estimate_dl_sinr(bs, ue_list)
@@ -260,17 +270,34 @@ class SimulationImtVale(ABC, Observable):
 
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
+
+                # counting the number of allocated UEs on the given BS
+                num_allocated_ues += len(allocated_ues)
+
                 # activating the allocated UEs
                 self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
 
                 # calculating the BS's bandwidth
                 self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
 
+            if total_associated_ues != 0:
+                # calculating the outage for the current drop
+                self.outage_per_drop = 1 - num_allocated_ues/total_associated_ues
+            else:
+                self.outage_per_drop = 0
+
         else:
+            # initializing the variables total_associated_ues and num_allocated_ues
+            total_associated_ues = 0
+            num_allocated_ues = 0
 
             bs_active = np.where(self.bs.active)[0]
+
             for bs in bs_active:
                 ue_list = self.link[bs]
+
+                # counting the total number of UEs associated to active BSs
+                total_associated_ues += len(ue_list)
 
                 # estimating the SINR for the first allocation
                 sinr_vector = self.estimate_ul_sinr(bs, ue_list)
@@ -305,11 +332,21 @@ class SimulationImtVale(ABC, Observable):
 
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
+
+                # counting the number of allocated UEs on the given BS
+                num_allocated_ues += len(allocated_ues)
+
                 # activating the allocated UEs
                 self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
 
                 # calculating the BS's bandwidth
                 self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
+
+                if total_associated_ues != 0:
+                    # calculating the outage for the current drop
+                    self.outage_per_drop = 1 - num_allocated_ues / total_associated_ues
+                else:
+                    self.outage_per_drop = 0
 
     def estimate_dl_sinr(self, current_bs, ue_list):
         """
@@ -451,13 +488,13 @@ class SimulationImtVale(ABC, Observable):
         """
         This method returns the throughput per RB in kbps for a given SINR in the UL
         """
-        sinr_vals = [-30, -14, -11.5, -10, -6, -2, 2, 6, 10, 14, 18, 22, 24.1, 30]
-        tput_vals = [np.power(0.1, 50), np.power(0.1, 50), 4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
+        sinr_vals = [-11.5, -10, -6, -2, 2, 6, 10, 14, 18, 22, 24.1, 30]
+        tput_vals = [4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
                      720.702]
 
         if ue_sinr > 30:
             ue_tput = 720.702
-        elif ue_sinr < - 30:
+        elif ue_sinr < - 11.5:
             # negligible value to represent a throughput equal to zero. Cannot set to zero due to the division done in
             # the scheduler method
             ue_tput = np.power(0.1, 50)

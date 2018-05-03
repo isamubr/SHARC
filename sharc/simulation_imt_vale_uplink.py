@@ -157,6 +157,8 @@ class SimulationImtValeUplink(SimulationImtVale):
             self.results.imt_ul_sinr.extend(self.bs.sinr[bs].tolist())
             self.results.imt_ul_snr.extend(self.bs.snr[bs].tolist())
 
+            self.results.imt_outage_per_drop.append(self.outage_per_drop)
+
         if write_to_file:
             self.results.write_files(snapshot_number)
             self.notify_observers(source=__name__, results=self.results)
