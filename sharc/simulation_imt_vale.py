@@ -154,6 +154,9 @@ class SimulationImtVale(ABC, Observable):
         num_bs = path_loss.shape[0]
         num_ue = path_loss.shape[1]
 
+        # Initialize the BS links for each drop
+        self.link = dict([(bs, list()) for bs in range(num_bs)])
+
         # forming the links between UEs and BSs based on the path loss
         ue_path_loss = {}
         ue_to_bs = {}
