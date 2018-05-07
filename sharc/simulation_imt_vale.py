@@ -186,44 +186,6 @@ class SimulationImtVale(ABC, Observable):
 
                 self.ue.spectral_mask[ue].set_mask()
 
-    # def select_ue(self, random_number_gen: np.random.RandomState):
-    #     """
-    #     Select K UEs randomly from all the UEs linked to one BS as “chosen”
-    #     UEs. These K “chosen” UEs will be scheduled during this snapshot.
-    #     """
-    #     self.bs_to_ue_phi, self.bs_to_ue_theta = \
-    #         self.bs.get_pointing_vector_to(self.ue)
-    #
-    #     bs_active = np.where(self.bs.active)[0]
-    #     for bs in bs_active:
-    #         # select K UE's among the ones that are connected to BS
-    #         random_number_gen.shuffle(self.link[bs])
-    #         K = self.parameters.imt.ue_k
-    #         del self.link[bs][K:]
-    #         # Activate the selected UE's and create beams
-    #         if self.bs.active[bs]:
-    #             self.ue.active[self.link[bs]] = np.ones(K, dtype=bool)
-    #             for ue in self.link[bs]:
-    #                 # add beam to BS antennas
-    #                 self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
-    #                                              self.bs_to_ue_theta[bs, ue])
-    #                 # add beam to UE antennas
-    #                 self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs, ue] - 180,
-    #                                              180 - self.bs_to_ue_theta[bs, ue])
-    #                 # set beam resource block group
-    #                 self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
-    #
-    # def scheduler_old(self):
-    #     """
-    #     This scheduler divides the available resource blocks among UE's for
-    #     a given BS
-    #     """
-    #     bs_active = np.where(self.bs.active)[0]
-    #     for bs in bs_active:
-    #         ue = self.link[bs]
-    #         self.bs.bandwidth[bs] = self.num_rb_per_bs[bs]*self.parameters.imt.rb_bandwidth
-    #         self.ue.bandwidth[ue] = self.num_rb_per_ue[bs]*self.parameters.imt.rb_bandwidth
-
     def scheduler(self):
 
         if self.parameters.general.imt_link == "DOWNLINK":
