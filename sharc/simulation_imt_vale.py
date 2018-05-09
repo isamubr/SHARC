@@ -148,8 +148,7 @@ class SimulationImtVale(ABC, Observable):
 
     def connect_ue_to_bs(self, param: ParametersImtVale):
         """
-        Link the UE's to the serving BS. It is assumed that each group of K*M
-        user equipments are distributed and pointed to a certain base station
+        Link the UE to the BS based on the RSSI.
         """
         # array with the path losses.
         path_loss = self.propagation_imt.get_loss(bs_id=self.bs.station_id, ue_position_x=self.ue.x,

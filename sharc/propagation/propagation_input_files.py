@@ -173,7 +173,7 @@ class PropagationInputFiles(Propagation):
 
 
 if __name__ == '__main__':
-    param_imt = ParametersImtVale(imt_link="DOWNLINK")
+    param_imt = ParametersImtVale(imt_link='DOWNLINK')
     param_imt.path_loss_folder = "../parameters/measurements"
     param_imt.path_loss_files = param_imt.get_path_loss_files(param_imt.path_loss_folder)
     prop = PropagationInputFiles(param_imt)

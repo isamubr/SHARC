@@ -83,7 +83,7 @@ class Topography:
 
 
 if __name__ == '__main__':
-    file = os.path.join('..','parameters','maps','Brucutu_res_20m.asc')
+    file = os.path.join('..', 'parameters', 'maps', 'Brucutu_res_20m.asc')
     topo_data = Topography()
     topo_data.parse_raster_data(file)
     print(topo_data)
