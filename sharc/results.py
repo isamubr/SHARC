@@ -44,6 +44,10 @@ class Results(object):
 
         self.imt_outage_per_drop = list()
 
+        self.imt_ues_in_outage_coordinates = list()
+        self.imt_ues_in_outage_counter = list()
+        self.imt_ues_in_outage_map = list()
+
         self.system_ul_coupling_loss = list()
         self.system_ul_interf_power = list()
 
@@ -410,6 +414,11 @@ class Results(object):
         file_extension = ".txt"
         header_text = "Results collected after " + str(snapshot_number) + " snapshots."
         self.generate_plot_list(n_bins)
+
+        np.savetxt(os.path.join(self.output_directory, "Outage map" + file_extension),
+                   self.imt_ues_in_outage_map,
+                   fmt="%.5f", delimiter="\t", header=header_text,
+                   newline=os.linesep)
 
         for plot in self.plot_list:
             np.savetxt(os.path.join(self.output_directory, plot.file_name + file_extension),

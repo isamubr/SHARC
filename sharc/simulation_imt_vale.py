@@ -65,6 +65,12 @@ class SimulationImtVale(ABC, Observable):
 
         self.outage_per_drop = 0
 
+        #self.ue_outage_x = []
+        #self.ue_outage_y = []
+
+        self.ues_in_outage_coordinates = []
+        self.ues_in_outage_counter = []
+
     def add_observer_list(self, observers: list):
         for o in observers:
             self.add_observer(o)
@@ -233,6 +239,10 @@ class SimulationImtVale(ABC, Observable):
                         # number of RB allocated for the UE
                         self.num_rb_per_ue[self.link[bs][i]] = ue_num_rb
 
+                    else:
+                        # storing the x and y coordinates of the UE in outage
+                        self.get_outage_positions(self.ue.x[self.link[bs][i]], self.ue.y[self.link[bs][i]])
+
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
 
@@ -294,6 +304,9 @@ class SimulationImtVale(ABC, Observable):
                         self.ue.bandwidth[self.link[bs][i]] = ue_num_rb * self.parameters.imt.rb_bandwidth
                         # number of RB allocated for the UE
                         self.num_rb_per_ue[self.link[bs][i]] = ue_num_rb
+                    else:
+                        # storing the x and y coordinates of the UE in outage
+                        self.get_outage_positions(self.ue.x[self.link[bs][i]], self.ue.y[self.link[bs][i]])
 
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
@@ -471,6 +484,27 @@ class SimulationImtVale(ABC, Observable):
             ue_tput = mcs_curve(ue_sinr)
 
         return ue_tput
+
+    def get_outage_positions(self, ue_x, ue_y):
+        """
+        Saves the (x, y) coordinates of the UEs in outage and counts its occurrences
+        """
+
+        # tuple with the x,y coordinates of the UE in outage
+        outage_position = (ue_x, ue_y)
+
+        # checking if the current outage occurred before
+        if outage_position not in self.ues_in_outage_coordinates:
+            # appends the current coordinates to the list
+            self.ues_in_outage_coordinates.append(outage_position)
+            # counts the first occurrence of the current position
+            self.ues_in_outage_counter.append(1)
+        else:
+            # get the index of the tuple that is already registered
+            index = self.ues_in_outage_coordinates.index(outage_position)
+            # counts one more occurrence
+            self.ues_in_outage_counter[index] += 1
+
 
     def calculate_gains(self, station_1: StationManager, station_2: StationManager) -> np.array:
         """

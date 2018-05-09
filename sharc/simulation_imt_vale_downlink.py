@@ -153,6 +153,11 @@ class SimulationImtValeDownlink(SimulationImtVale):
 
             self.results.imt_outage_per_drop.append(self.outage_per_drop)
 
+            ue_x = [i[0] for i in self.ues_in_outage_coordinates]
+            ue_y = [i[1] for i in self.ues_in_outage_coordinates]
+
+            self.results.imt_ues_in_outage_map = list(zip(ue_x, ue_y, self.ues_in_outage_counter))
+
         if write_to_file:
             self.results.write_files(snapshot_number)
             self.notify_observers(source=__name__, results=self.results)
