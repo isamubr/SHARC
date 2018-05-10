@@ -65,9 +65,6 @@ class SimulationImtVale(ABC, Observable):
 
         self.outage_per_drop = 0
 
-        #self.ue_outage_x = []
-        #self.ue_outage_y = []
-
         self.ues_in_outage_coordinates = []
         self.ues_in_outage_counter = []
 

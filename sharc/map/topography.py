@@ -71,14 +71,14 @@ class Topography:
             self.up_right = [xllcorner + (1 + self.ncols) * self.resolution,
                              yllcorner + (1 + self.nrows) * self.resolution]
             self.topography_grid = np.array(grid_data)
-            
+
     def get_z(self, x:np.array, y: np.array):
-        
+
         lin_f = (y - self.low_left[1]) / self.resolution
         col_f = (x - self.low_left[0]) / self.resolution
         lin = self.nrows - lin_f.astype(int) - 1
         col = col_f.astype(int)
-        
+
         return self.topography_grid[lin,col]
 
 
@@ -107,7 +107,6 @@ if __name__ == '__main__':
                                                   topo_data.low_left[1] + topo_data.nrows*topo_data.resolution])
     plt.colorbar()
     plt.show()
-
 
 
 
