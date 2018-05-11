@@ -42,7 +42,8 @@ class SimulationImtValeDownlink(SimulationImtVale):
         # network load factor)
         self.bs = StationFactory.generate_imt_vale_base_stations(self.parameters.imt,
                                                                  self.parameters.antenna_imt,
-                                                                 self.topology)
+                                                                 self.topology,
+                                                                 random_number_gen)
 
         # Create IMT user equipments
         self.ue = StationFactory.generate_imt_ue_vale_outdoor(self.parameters.imt,

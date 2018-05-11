@@ -68,7 +68,7 @@ class StationFactory(object):
             imt_base_stations.tx_power = param.bs_conducted_power * np.ones(num_bs)
 
         imt_base_stations.indoor = topology.indoor
-        imt_base_stations.active = np.random.rand(num_bs) < param.bs_load_probability
+        imt_base_stations.active = random_number_gen.rand(num_bs) < param.bs_load_probability
 
         imt_base_stations.rx_power = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
         imt_base_stations.rx_interference = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
@@ -107,7 +107,8 @@ class StationFactory(object):
     @staticmethod
     def generate_imt_vale_base_stations(param: ParametersImtVale,
                                         param_ant: ParametersAntennaImt,
-                                        topology: Topology):
+                                        topology: Topology,
+                                        random_number_gen: np.random.RandomState):
 
         num_bs = topology.num_base_stations
         imt_base_stations = StationManager(num_bs)
@@ -122,7 +123,7 @@ class StationFactory(object):
         imt_base_stations.tx_power = param.bs_conducted_power
 
         imt_base_stations.indoor = topology.indoor
-        imt_base_stations.active = np.random.rand(num_bs) < param.bs_load_probability
+        imt_base_stations.active = random_number_gen.rand(num_bs) < param.bs_load_probability
 
         imt_base_stations.rx_power = dict([(bs, -500) for bs in range(num_bs)])
         imt_base_stations.rx_interference = dict([(bs, -500) for bs in range(num_bs)])
