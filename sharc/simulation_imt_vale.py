@@ -208,7 +208,7 @@ class SimulationImtVale(ABC, Observable):
 
                 # sort self.link[bs] in descending order of SINR
                 self.link[bs] = [x for _, x in sorted(zip(sinr_vector, self.link[bs]))][::-1]
-                sinr_vector = np.sort(sinr_vector)[::-1]
+                self.ue.sinr[self.link[bs]] = np.sort(sinr_vector)[::-1]
 
                 # number of available RB for the current BS
                 num_available_rbs = math.ceil(self.parameters.imt.bs_rb_load_factor*self.num_rb_per_bs[bs])
@@ -216,10 +216,10 @@ class SimulationImtVale(ABC, Observable):
                 allocated_ues = list()
 
                 # allocation through the ue_list
-                for i in range(len(self.link[bs])):
+                for ue in self.link[bs]:
 
                     # get the throughput per RB for the current UE
-                    ue_tput = self.get_throughput_dl(sinr_vector[i])*1e3
+                    ue_tput = self.get_throughput_dl(self.ue.sinr[ue])*1e3
 
                     # calculate the number of RB required for the current UE
                     ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate/ue_tput)
@@ -228,16 +228,16 @@ class SimulationImtVale(ABC, Observable):
                     if num_available_rbs > ue_num_rb:
                         # allocates the UE
                         num_available_rbs = num_available_rbs - ue_num_rb
-                        allocated_ues.append(self.link[bs][i])
+                        allocated_ues.append(ue)
 
                         # calculating the UE's bandwidth
-                        self.ue.bandwidth[self.link[bs][i]] = ue_num_rb * self.parameters.imt.rb_bandwidth
+                        self.ue.bandwidth[ue] = ue_num_rb * self.parameters.imt.rb_bandwidth
                         # number of RB allocated for the UE
-                        self.num_rb_per_ue[self.link[bs][i]] = ue_num_rb
+                        self.num_rb_per_ue[ue] = ue_num_rb
 
                     else:
                         # storing the x and y coordinates of the UE in outage
-                        self.get_outage_positions(self.ue.x[self.link[bs][i]], self.ue.y[self.link[bs][i]])
+                        self.get_outage_positions(self.ue.x[ue], self.ue.y[ue])
 
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
@@ -275,17 +275,17 @@ class SimulationImtVale(ABC, Observable):
 
                 # sort self.link[bs] in descending order of SINR
                 self.link[bs] = [x for _, x in sorted(zip(sinr_vector, self.link[bs]))][::-1]
-                sinr_vector = np.sort(sinr_vector)[::-1]
+                self.ue.sinr[self.link[bs]] = np.sort(sinr_vector)[::-1]
 
                 # number of available RB for the current BS
                 num_available_rbs = math.ceil(self.parameters.imt.bs_rb_load_factor * self.num_rb_per_bs[bs])
 
                 allocated_ues = list()
                 # allocation through the ue_list
-                for i in range(len(self.link[bs])):
+                for ue in self.link[bs]:
 
                     # get the throughput per RB for the current UE
-                    ue_tput = self.get_throughput_ul(sinr_vector[i])*1e3
+                    ue_tput = self.get_throughput_ul(self.ue.sinr[ue])*1e3
 
                     # calculate the number of RB required for the current UE
                     ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate / ue_tput)
@@ -294,15 +294,15 @@ class SimulationImtVale(ABC, Observable):
                     if num_available_rbs > ue_num_rb:
                         # allocates the UE
                         num_available_rbs = num_available_rbs - ue_num_rb
-                        allocated_ues.append(self.link[bs][i])
+                        allocated_ues.append(ue)
 
                         # calculating the UE's bandwidth
-                        self.ue.bandwidth[self.link[bs][i]] = ue_num_rb * self.parameters.imt.rb_bandwidth
+                        self.ue.bandwidth[ue] = ue_num_rb * self.parameters.imt.rb_bandwidth
                         # number of RB allocated for the UE
-                        self.num_rb_per_ue[self.link[bs][i]] = ue_num_rb
+                        self.num_rb_per_ue[ue] = ue_num_rb
                     else:
                         # storing the x and y coordinates of the UE in outage
-                        self.get_outage_positions(self.ue.x[self.link[bs][i]], self.ue.y[self.link[bs][i]])
+                        self.get_outage_positions(self.ue.x[ue], self.ue.y[ue])
 
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
