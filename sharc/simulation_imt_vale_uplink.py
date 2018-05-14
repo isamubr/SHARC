@@ -6,6 +6,8 @@ Created on Apr 06 09:29 2018
 """
 
 import numpy as np
+import math
+from scipy.interpolate import interp1d
 
 from sharc.simulation_imt_vale import SimulationImtVale
 from sharc.parameters.parameters import Parameters
@@ -21,6 +23,7 @@ class SimulationImtValeUplink(SimulationImtVale):
 
     def __init__(self, parameters: Parameters):
         super().__init__(parameters)
+        self.SCHED_MAX_ALLOC_ROUNDS = 2
 
     def snapshot(self, *args, **kwargs):
         write_to_file = kwargs["write_to_file"]
@@ -64,6 +67,163 @@ class SimulationImtValeUplink(SimulationImtVale):
         self.calculate_sinr()
 
         self.collect_results(write_to_file, snapshot_number)
+
+    def scheduler(self):
+        # initializing the variables total_associated_ues and num_allocated_ues
+        total_associated_ues = 0
+        num_allocated_ues = 0
+
+        bs_active = np.where(self.bs.active)[0]
+
+        for bs in bs_active:
+            ue_list = self.link[bs]
+
+            # counting the total number of UEs associated to active BSs
+            total_associated_ues += len(ue_list)
+
+            # estimating the SINR for the first allocation
+            sinr_vector = self.estimate_ul_sinr(bs, ue_list)
+
+            # sort self.link[bs] in descending order of SINR
+            self.link[bs] = [x for _, x in sorted(zip(sinr_vector, self.link[bs]))][::-1]
+            self.ue.sinr[self.link[bs]] = np.sort(sinr_vector)[::-1]
+
+            # Each round the SINR estimation is updated. At least 2 rounds are needed for a stable estimation.
+            for i in range(self.SCHED_MAX_ALLOC_ROUNDS):
+
+                # number of available RB for the current BS
+                num_available_rbs = math.ceil(self.parameters.imt.bs_rb_load_factor * self.num_rb_per_bs[bs])
+
+                allocated_ues = list()
+                # allocation through the ue_list
+                for ue in self.link[bs]:
+
+                    # get the throughput per RB for the current UE
+                    ue_tput = self.get_throughput_ul(self.ue.sinr[ue])*1e3
+
+                    # calculate the number of RB required for the current UE
+                    ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate / ue_tput)
+
+                    # checking if there are still available RBs in the current BS
+                    if num_available_rbs > ue_num_rb:
+                        # allocates the UE
+                        num_available_rbs = num_available_rbs - ue_num_rb
+                        allocated_ues.append(ue)
+
+                        # calculating the UE's bandwidth
+                        self.ue.bandwidth[ue] = ue_num_rb * self.parameters.imt.rb_bandwidth
+                        # number of RB allocated for the UE
+                        self.num_rb_per_ue[ue] = ue_num_rb
+                    else:
+                        # storing the x and y coordinates of the UE in outage
+                        self.get_outage_positions(self.ue.x[ue], self.ue.y[ue])
+
+                # self.link only with the allocated UEs
+                self.link[bs] = allocated_ues
+
+                # Update the estimation of DL SINR after allocation
+                self.power_control()
+                self.calculate_sinr()
+
+            # Distribute the remaining RB to the UEs in a round-robin fashinon
+            n = -1
+            while num_available_rbs:
+                n += 1
+                self.num_rb_per_ue[n % len(self.num_rb_per_ue)] += 1
+                num_available_rbs -= 1
+
+            # counting the number of allocated UEs on the given BS
+            num_allocated_ues += len(allocated_ues)
+
+            # activating the allocated UEs
+            self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
+
+            # calculating the BS's bandwidth
+            self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
+
+            if total_associated_ues != 0:
+                # calculating the outage for the current drop
+                self.outage_per_drop = 1 - num_allocated_ues / total_associated_ues
+            else:
+                self.outage_per_drop = 0
+
+    def estimate_ul_sinr(self, current_bs, ue_list):
+        """
+        This method estimates the DL SINR for the first allocation done by the scheduler
+        """
+        # initializing the interference variable
+        rx_interference = -500 * np.ones(len(ue_list))
+
+        # determining the TX power of each UE (no power control considered)
+        ue_tx_power = self.parameters.imt.ue_p_cmax * np.ones(len(ue_list))
+
+        # array with the received power of the BS from each UE
+        bs_rx_power = ue_tx_power  \
+                     - self.parameters.imt.ue_ohmic_loss \
+                     - self.parameters.imt.ue_body_loss \
+                     - self.coupling_loss_imt[current_bs, ue_list] \
+                     - self.parameters.imt.bs_ohmic_loss
+
+        # create a list with base stations that generate interference in the current BS
+        bs_active = np.where(self.bs.active)[0]
+        bs_interf = [b for b in bs_active if b not in [current_bs]]
+        # eliminating BSs that don't have associated UEs
+        bs_interf = [b for b in bs_interf if self.link[b]]
+
+        # calculate intra system interference (consider only the UE closest to the current BS)
+        for bi in bs_interf:
+            ui = self.link[bi]
+
+            # coupling loss from the interfering UEs to the current BS
+            ui_losses = self.coupling_loss_imt[current_bs, ui]
+
+            # minimum coupling loss between the current BS and an adjacent UE
+            min_ui_loss = min(ui_losses)
+
+            interference = ue_tx_power - self.parameters.imt.ue_ohmic_loss \
+                           - self.parameters.imt.ue_body_loss \
+                           - min_ui_loss - self.parameters.imt.bs_ohmic_loss
+
+            rx_interference = 10*np.log10( \
+                    np.power(10, 0.1*rx_interference)
+                    + np.power(10, 0.1*interference))
+
+        # calculate N
+        thermal_noise = \
+            10 * np.log10(self.parameters.imt.BOLTZMANN_CONSTANT * self.parameters.imt.noise_temperature * 1e3) + \
+            10 * np.log10(self.parameters.imt.rb_bandwidth * self.num_rb_per_bs[current_bs] * 1e6) + \
+            self.bs.noise_figure[current_bs]
+
+        # total interference per UE
+        total_interference = 10 * np.log10(np.power(10, 0.1 * rx_interference) + np.power(10, 0.1 * thermal_noise))
+
+        # calculating the SINR for each UE
+        sinr_vector = bs_rx_power - total_interference
+
+        return sinr_vector
+
+    def get_throughput_ul(self, ue_sinr):
+        """
+        This method returns the throughput per RB in kbps for a given SINR in the UL
+        """
+        sinr_vals = [-11.5, -10, -6, -2, 2, 6, 10, 14, 18, 22, 24.1, 30]
+        tput_vals = [4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
+                     720.702]
+
+        if ue_sinr > 30:
+            ue_tput = 720.702
+        elif ue_sinr < - 11.5:
+            # negligible value to represent a throughput equal to zero. Cannot set to zero due to the division done in
+            # the scheduler method
+            ue_tput = np.power(0.1, 50)
+        else:
+            # interpolate and generate MCS curve
+            mcs_curve = interp1d(sinr_vals, tput_vals)
+
+            # throughput per RB for the given MCS
+            ue_tput = mcs_curve(ue_sinr)
+
+        return ue_tput
 
     def power_control(self):
         """
