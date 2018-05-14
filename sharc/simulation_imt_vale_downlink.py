@@ -86,8 +86,11 @@ class SimulationImtValeDownlink(SimulationImtVale):
         tx_power = dict([(bs, list()) for bs in bs_active])
         self.bs.tx_power = dict([(bs, list()) for bs in bs_active])
         for bs in bs_active:
-            tx_power[bs] = total_power[bs] - 10*np.log10(len(self.link[bs]))
-            self.bs.tx_power[bs] = tx_power[bs]*np.ones(len(self.link[bs]))
+            if len(self.link[bs]) != 0:
+                tx_power[bs] = total_power[bs] - 10*np.log10(len(self.link[bs]))
+                self.bs.tx_power[bs] = tx_power[bs]*np.ones(len(self.link[bs]))
+            else:
+                self.bs.tx_power[bs] = tx_power[bs]*np.ones(len(self.link[bs]))
 
         # Update the spectral mask
         if self.adjacent_channel:
