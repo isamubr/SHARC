@@ -7,7 +7,6 @@ Created on Apr 05 10:37 2018
 import numpy as np
 import math
 from scipy.interpolate import interp1d
-from itertools import cycle
 
 from sharc.simulation_imt_vale import SimulationImtVale
 from sharc.parameters.parameters import Parameters
@@ -24,6 +23,24 @@ class SimulationImtValeDownlink(SimulationImtVale):
     def __init__(self, parameters: Parameters):
         super().__init__(parameters)
         self.SCHED_MAX_ALLOC_ROUNDS = 2
+        self.mcs_curve = None
+        self.initialize_mcs_curve()
+
+    def initialize_mcs_curve(self):
+        """
+        Initializes the MCS curve for DL that maps the SINR to the max throughput.
+        This is done in initialization time to save some computation
+        :return: None
+        """
+        SINR_VALS = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                     21, 22, 23, 24, 25]
+
+        TPUT_VALS = [39.7154, 48.2521, 58.2422, 69.7951, 82.9873, 97.8559, 114.3942, 132.5529, 152.2445, 173.3518,
+                     195.7379, 219.2562, 243.7591, 269.1051, 295.1634, 321.8168, 348.9628, 376.5132, 404.5830, 442.8072,
+                     481.8425, 521.5469, 561.7995, 602.4986, 643.5594, 684.9121, 726.4998, 768.2760, 810.2032, 852.2511,
+                     894.3953, 936.6164]
+
+        self.mcs_curve = interp1d(SINR_VALS, TPUT_VALS)
 
     def snapshot(self, *args, **kwargs):
         write_to_file = kwargs["write_to_file"]
@@ -73,6 +90,13 @@ class SimulationImtValeDownlink(SimulationImtVale):
         self.notify_observers(source=__name__, results=self.results)
 
     def scheduler(self):
+        """
+        Implements the scheluder algorithm on the DL direction
+        The scheduler allocates resources based on SINR. The potential allocated UEs are sorted in order of the best
+        SINR and the RBs are allocated based on the minimum data rate. The numbers of RB depends on the MCS for that
+        UE.
+        :return: None
+        """
 
         # initializing the variables total_associated_ues and num_allocated_ues
         total_associated_ues = 0
@@ -131,7 +155,7 @@ class SimulationImtValeDownlink(SimulationImtVale):
                 self.power_control()
                 self.calculate_sinr()
 
-            # Distribute the remaining RB to the UEs in a round-robin fashinon
+            # Distribute the remaining RB to the UEs in a round-robin fashion
             n = -1
             while num_available_rbs:
                 n += 1
@@ -212,13 +236,6 @@ class SimulationImtValeDownlink(SimulationImtVale):
         """
         This method returns the throughput per RB in kbps for a given SINR in the DL
         """
-        sinr_vals = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-                     21, 22, 23, 24, 25]
-        tput_vals = [39.7154, 48.2521, 58.2422, 69.7951, 82.9873, 97.8559, 114.3942, 132.5529, 152.2445, 173.3518,
-                     195.7379, 219.2562, 243.7591, 269.1051, 295.1634, 321.8168, 348.9628, 376.5132, 404.5830, 442.8072,
-                     481.8425, 521.5469, 561.7995, 602.4986, 643.5594, 684.9121, 726.4998, 768.2760, 810.2032, 852.2511,
-                     894.3953, 936.6164]
-
         if ue_sinr > 25:
             ue_tput = 936.6164
         elif ue_sinr < - 6:
@@ -226,11 +243,8 @@ class SimulationImtValeDownlink(SimulationImtVale):
             # the scheduler method
             ue_tput = np.power(0.1, 50)
         else:
-            # interpolate and generate MCS curve
-            mcs_curve = interp1d(sinr_vals, tput_vals)
-
             # throughput per RB for the given MCS
-            ue_tput = mcs_curve(ue_sinr)
+            ue_tput = self.mcs_curve(ue_sinr)
 
         return ue_tput
 

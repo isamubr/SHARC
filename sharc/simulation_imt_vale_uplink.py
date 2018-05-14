@@ -24,6 +24,20 @@ class SimulationImtValeUplink(SimulationImtVale):
     def __init__(self, parameters: Parameters):
         super().__init__(parameters)
         self.SCHED_MAX_ALLOC_ROUNDS = 2
+        self.mcs_curve = None
+        self.initialize_mcs_curve()
+
+    def initialize_mcs_curve(self):
+        """
+        Initializes the MCS curve for UL that maps the SINR to the max throughput.
+        This is done in initialization time to save some computation
+        :return: None
+        """
+        SINR_VALS = [-11.5, -10, -6, -2, 2, 6, 10, 14, 18, 22, 24.1, 30]
+        TPUT_VALS = [4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
+                     720.702]
+
+        self.mcs_curve = interp1d(SINR_VALS, TPUT_VALS)
 
     def snapshot(self, *args, **kwargs):
         write_to_file = kwargs["write_to_file"]
@@ -69,6 +83,13 @@ class SimulationImtValeUplink(SimulationImtVale):
         self.collect_results(write_to_file, snapshot_number)
 
     def scheduler(self):
+        """
+        Implements the scheluder algorithm on the UL direction
+        The scheduler allocates resources based on SINR. The potential allocated UEs are sorted in order of the best
+        SINR and the RBs are allocated based on the minimum data rate. The numbers of RB depends on the MCS for that
+        UE.
+        :return: None
+        """
         # initializing the variables total_associated_ues and num_allocated_ues
         total_associated_ues = 0
         num_allocated_ues = 0
@@ -206,10 +227,6 @@ class SimulationImtValeUplink(SimulationImtVale):
         """
         This method returns the throughput per RB in kbps for a given SINR in the UL
         """
-        sinr_vals = [-11.5, -10, -6, -2, 2, 6, 10, 14, 18, 22, 24.1, 30]
-        tput_vals = [4.492, 8.532, 29.956, 71.008, 126.814, 211.917, 322.393, 443.439, 575.342, 692.987, 720.702,
-                     720.702]
-
         if ue_sinr > 30:
             ue_tput = 720.702
         elif ue_sinr < - 11.5:
@@ -217,11 +234,8 @@ class SimulationImtValeUplink(SimulationImtVale):
             # the scheduler method
             ue_tput = np.power(0.1, 50)
         else:
-            # interpolate and generate MCS curve
-            mcs_curve = interp1d(sinr_vals, tput_vals)
-
             # throughput per RB for the given MCS
-            ue_tput = mcs_curve(ue_sinr)
+            ue_tput = self.mcs_curve(ue_sinr)
 
         return ue_tput
 
