@@ -117,10 +117,15 @@ class ParametersImtVale(ParameterHandler):
 
         return shape_list
 
-    @staticmethod
-    def get_path_loss_files(path_loss_files_folder: str):
+    def get_path_loss_files(self, path_loss_files_folder: str):
         # Loop through all the txt files in the folder
-        path_loss_files = glob(os.path.join(path_loss_files_folder, '*.txt'))
+        all_path_loss_files = glob(os.path.join(path_loss_files_folder, '*.txt'))
+        path_loss_files = []
+        for pl_file in all_path_loss_files:
+            for cid in self.cell_id:
+                if cid in pl_file:
+                    path_loss_files.append(pl_file)
+
         if not path_loss_files:
             sys.stderr.write("\n No Path Loss input file were found in {}\n".format(path_loss_files_folder))
             sys.exit(1)
