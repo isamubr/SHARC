@@ -135,8 +135,7 @@ class TopologyInputMap(Topology):
 if __name__ == '__main__':
     random_number_gen = np.random.RandomState(seed=200)
     parameters_imt = ParametersImtVale(imt_link='DOWNLINK')
-    # TODO: Add a method to ParamatersImt that reads the input cell data file
-    parameters_imt.bs_physical_data_file = '../parameters/bs_data/brucutu-2Macros-1Small.xls'
+    parameters_imt.bs_physical_data_file = '../parameters/bs_data/brucutu-2Macros-1Small-omni.xls'
     parameters_imt.bs_data = parameters_imt.read_input_cell_data_file(parameters_imt.bs_physical_data_file)
     parameters_imt.ue_polygon_file = '../parameters/polygons/ContornoBrucutu.kml'
     parameters_imt.ue_polygons = ParametersImtVale.read_input_ue_polygon_kml_file(parameters_imt.ue_polygon_file, '23K')
