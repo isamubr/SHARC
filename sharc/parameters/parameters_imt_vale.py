@@ -64,7 +64,10 @@ class ParametersImtVale(ParameterHandler):
                              'contain the minimal set of parametes: {}'.format(param_min_set))
             sys.exit(1)
 
-        bs_data = bs_data_df.to_dict('list')
+        # Load only active cell data
+        active_cell_idx = [i for i, v in enumerate(bs_data_df['bDeleted'].tolist()) if not v]
+        bs_data = bs_data_df.iloc[active_cell_idx].to_dict('list')
+
         self.num_macrocell_sites = len(bs_data['strCellID'])
         self.site_id = bs_data['strSiteID']
         self.cell_id = bs_data['strCellID']
