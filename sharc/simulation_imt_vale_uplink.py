@@ -146,7 +146,7 @@ class SimulationImtValeUplink(SimulationImtVale):
                 self.power_control()
                 self.calculate_sinr()
 
-            # Distribute the remaining RB to the UEs in a round-robin fashinon
+            # Distribute the remaining RB to the UEs in a round-robin fashion
             n = -1
             while num_available_rbs:
                 n += 1

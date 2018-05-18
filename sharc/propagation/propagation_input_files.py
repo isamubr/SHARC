@@ -107,9 +107,9 @@ class PropagationInputFiles(Propagation):
 
                 # Initialize path loss array
                 n_lin = int((head["UPPER_RIGHT"][1] -
-                             head["LOWER_LEFT"][1]) / head["RESOLUTION"])
+                             head["LOWER_LEFT"][1]) / head["RESOLUTION"]) + 1
                 n_col = int((head["UPPER_RIGHT"][0] -
-                             head["LOWER_LEFT"][0]) / head["RESOLUTION"])
+                             head["LOWER_LEFT"][0]) / head["RESOLUTION"]) + 1
                 loss = -np.inf * np.ones((n_lin, n_col))
 
                 # Loop through all the remaining lines
