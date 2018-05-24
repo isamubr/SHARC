@@ -301,7 +301,7 @@ class SimulationImtValeUplink(SimulationImtVale):
             # calculate N
             self.bs.thermal_noise[bs] = \
                 10*np.log10(self.parameters.imt.BOLTZMANN_CONSTANT*self.parameters.imt.noise_temperature*1e3) + \
-                10*np.log10(self.bs.bandwidth[bs] * 1e6) + \
+                10*np.log10(self.ue.bandwidth[ue] * 1e6) + \
                 self.bs.noise_figure[bs]
 
             # calculate I+N

@@ -156,7 +156,7 @@ class StationFactory(object):
         imt_base_stations.bandwidth = param.bandwidth
         imt_base_stations.center_freq = param.frequency
         imt_base_stations.noise_figure = param.bs_noise_figure * np.ones(num_bs)
-        imt_base_stations.thermal_noise = -500*np.ones(num_bs)
+        imt_base_stations.thermal_noise = dict([(bs, -500) for bs in range(num_bs)])
 
         if param.spectral_mask == "ITU 265-E":
             imt_base_stations.spectral_mask = [SpectralMaskImt(StationType.IMT_BS,
