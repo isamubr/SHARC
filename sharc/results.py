@@ -59,6 +59,8 @@ class Results(object):
         self.system_rx_interf = list()
         self.system_inr_scaled = list()
 
+        self.imt_num_rb_per_ue = list()
+
         if not overwrite_output:
             today = datetime.date.today()
 
@@ -406,6 +408,18 @@ class Results(object):
             y_label = "Probability of Outage < $X$"
             file_name = title
             #x_limits = (-80, -20)
+            y_limits = (0, 1)
+            self.plot_list.append(Plot(x, y, x_label, y_label, title, file_name, x_lim=x_limits, y_lim=y_limits))
+
+        if len(self.imt_num_rb_per_ue) > 0:
+            u, cnt = np.unique(self.imt_num_rb_per_ue, return_counts=True)
+            x = u
+            x.sort()
+            y = np.cumsum(cnt) / sum(cnt)
+            title = "[IMT] CDF of the RB distribution per drop"
+            x_label = "Num of RBs"
+            y_label = "Probability of Num of RBs < $X$"
+            file_name = title
             y_limits = (0, 1)
             self.plot_list.append(Plot(x, y, x_label, y_label, title, file_name, x_lim=x_limits, y_lim=y_limits))
 

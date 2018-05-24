@@ -343,6 +343,8 @@ class SimulationImtValeUplink(SimulationImtVale):
 
             self.results.imt_ues_in_outage_map = list(zip(ue_x, ue_y, self.ues_in_outage_counter))
 
+            self.results.imt_num_rb_per_ue.extend(self.num_rb_per_ue)
+
         if write_to_file:
             self.results.write_files(snapshot_number)
             self.notify_observers(source=__name__, results=self.results)
