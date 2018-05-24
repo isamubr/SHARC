@@ -228,6 +228,8 @@ class SimulationImtVale(ABC, Observable):
         if station_1.station_type is StationType.IMT_BS:
             if station_2.station_type is StationType.IMT_UE:
                 beams_idx = self.bs_to_ue_beam_rbs[station_2_active]
+                # FIXME - we're activating all UEs here because this function is called before the scheduler
+                station_2_active = np.ones(station_2.num_stations, dtype=bool)
 
         elif station_1.station_type is StationType.IMT_UE:
             beams_idx = np.zeros(len(station_2_active), dtype=int)

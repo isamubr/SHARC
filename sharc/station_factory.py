@@ -139,7 +139,7 @@ class StationFactory(object):
         # Generate the antenas for all base stations
         for ant_idx, antenna_pattern in enumerate(param.bs_antenna_pattern):
             if antenna_pattern == 'omni_10dBi':
-                imt_base_stations.antenna[ant_idx] = AntennaOmni(10)
+                imt_base_stations.antenna[ant_idx] = AntennaOmni(0)
             else:
                 err_msg = '[StationFactory] ERROR! Invalid antenna type {}\n'.format(antenna_pattern)
                 sys.stderr.write(err_msg)
