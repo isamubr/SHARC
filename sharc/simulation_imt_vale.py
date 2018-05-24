@@ -105,9 +105,9 @@ class SimulationImtVale(ABC, Observable):
         self.num_rb_per_bs = np.trunc((1 - self.parameters.imt.guard_band_ratio) *
                                              self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
 
-        # calculates the number of RB per UE on a given BS
-        #self.num_rb_per_ue = np.trunc(self.num_rb_per_bs/self.parameters.imt.ue_k)
-        self.num_rb_per_ue = np.power(0.1, 50)*np.ones(num_ue)
+        # Number of RB per UE on a given BS. One RB is allocated per connected UE
+        # before the scheduler do the proper allocation
+        self.num_rb_per_ue = np.ones(num_ue)
 
         self.results = Results(self.parameters_filename, self.parameters.general.overwrite_output)
 
@@ -171,10 +171,10 @@ class SimulationImtVale(ABC, Observable):
 
             self.link[bs_index].append(ue_index)
 
-        # UE BW and frequency is the same of it's connected BS.
+        # UE frequency is the same of it's connected BS.
         for bs in self.link.keys():
             for ue in self.link[bs]:
-                self.ue.bandwidth[ue] = self.bs.bandwidth[bs]
+                self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
                 self.ue.center_freq[ue] = self.bs.center_freq[bs]
 
                 if param.spectral_mask == "ITU 265-E":

@@ -131,13 +131,14 @@ class SimulationImtValeUplink(SimulationImtVale):
                         num_available_rbs = num_available_rbs - ue_num_rb
                         allocated_ues.append(ue)
 
-                        # calculating the UE's bandwidth
-                        self.ue.bandwidth[ue] = ue_num_rb * self.parameters.imt.rb_bandwidth
                         # number of RB allocated for the UE
                         self.num_rb_per_ue[ue] = ue_num_rb
                     else:
                         # storing the x and y coordinates of the UE in outage
                         self.get_outage_positions(self.ue.x[ue], self.ue.y[ue])
+
+                if not allocated_ues:
+                    continue
 
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
@@ -148,10 +149,12 @@ class SimulationImtValeUplink(SimulationImtVale):
 
             # Distribute the remaining RB to the UEs in a round-robin fashion
             n = -1
+            num_rb_per_ue = self.num_rb_per_ue[self.link[bs]]
             while num_available_rbs:
                 n += 1
-                self.num_rb_per_ue[n % len(self.num_rb_per_ue)] += 1
+                num_rb_per_ue[n % len(num_rb_per_ue)] += 1
                 num_available_rbs -= 1
+            self.num_rb_per_ue[self.link[bs]] = num_rb_per_ue
 
             # counting the number of allocated UEs on the given BS
             num_allocated_ues += len(allocated_ues)
@@ -161,6 +164,9 @@ class SimulationImtValeUplink(SimulationImtVale):
 
             # calculating the BS's bandwidth
             self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
+
+            # calculating the UE's bandwidth
+            self.ue.bandwidth[self.link[bs]] = self.num_rb_per_ue[self.link[bs]] * self.parameters.imt.rb_bandwidth
 
             if total_associated_ues != 0:
                 # calculating the outage for the current drop
@@ -270,7 +276,7 @@ class SimulationImtValeUplink(SimulationImtVale):
             self.bs.rx_power[bs] = self.ue.tx_power[ue]  \
                                         - self.parameters.imt.ue_ohmic_loss \
                                         - self.parameters.imt.ue_body_loss \
-                                        - self.coupling_loss_imt[bs,ue] - self.parameters.imt.bs_ohmic_loss
+                                        - self.coupling_loss_imt[bs, ue] - self.parameters.imt.bs_ohmic_loss
             # create a list of BSs that serve the interfering UEs
             bs_interf = [b for b in bs_active if b not in [bs]]
             # eliminating BSs that don't have associated UEs
@@ -281,7 +287,7 @@ class SimulationImtValeUplink(SimulationImtVale):
                 ui = self.link[bi]
                 interference = self.ue.tx_power[ui] - self.parameters.imt.ue_ohmic_loss  \
                                 - self.parameters.imt.ue_body_loss \
-                                - self.coupling_loss_imt[bs,ui] - self.parameters.imt.bs_ohmic_loss
+                                - self.coupling_loss_imt[bs, ui] - self.parameters.imt.bs_ohmic_loss
 
                 # summing all the interferences
                 interference_linear = np.power(10, 0.1*interference)
