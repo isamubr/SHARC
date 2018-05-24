@@ -157,10 +157,12 @@ class SimulationImtValeDownlink(SimulationImtVale):
 
             # Distribute the remaining RB to the UEs in a round-robin fashion
             n = -1
+            num_rb_per_ue = self.num_rb_per_ue[self.link[bs]]
             while num_available_rbs:
                 n += 1
-                self.num_rb_per_ue[n % len(self.num_rb_per_ue)] += 1
+                num_rb_per_ue[n % len(num_rb_per_ue)] += 1
                 num_available_rbs -= 1
+            self.num_rb_per_ue[self.link[bs]] = num_rb_per_ue
 
             # counting the number of allocated UEs on the given BS
             num_allocated_ues += len(allocated_ues)
@@ -252,6 +254,36 @@ class SimulationImtValeDownlink(SimulationImtVale):
         """
         Apply downlink power control algorithm
         """
+        # The maximum transmit power of the base station is divided among
+        # active UEs, proportionally to the number of RBs occupied
+        #total_power = self.parameters.imt.bs_conducted_power + self.bs_power_gain
+
+        # calculate transmit powers to have a structure such as
+        # {bs_1: [pwr_1, pwr_2,...], ...}, where bs_1 is the base station id,
+        # pwr_1 is the transmit power from bs_1 to ue_1, pwr_2 is the transmit
+        # power from bs_1 to ue_2, etc
+        #bs_active = np.where(self.bs.active)[0]
+        #self.bs.tx_power = dict([(bs, list()) for bs in bs_active])
+
+        #for bs in bs_active:
+            # checking if there are UEs allocated in the current BS
+        #    if len(self.link[bs]) != 0:
+                # allocated UEs
+        #        ue_list = self.link[bs]
+
+        #        for index in range(len(ue_list)):
+                    # distribute power proportionally to the number of RBs occupied
+        #            self.bs.tx_power[bs].append(total_power[bs] + 10*np.log10(self.num_rb_per_ue[ue_list[index]]
+        #                                                                      / self.num_rb_per_bs[bs]))
+                # converting the list to array
+        #        self.bs.tx_power[bs] = np.asarray(self.bs.tx_power[bs])
+
+        #    else:
+                # de-activate current BS
+        #        self.bs.active[bs] = np.asarray([])
+
+
+
         # TODO use physical data for this power control
         # Currently, the maximum transmit power of the base station is equaly
         # divided among the selected UEs
