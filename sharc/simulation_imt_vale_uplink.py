@@ -137,6 +137,9 @@ class SimulationImtValeUplink(SimulationImtVale):
                         # storing the x and y coordinates of the UE in outage
                         self.get_outage_positions(self.ue.x[ue], self.ue.y[ue])
 
+                if not allocated_ues:
+                    continue
+
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
 
@@ -166,11 +169,11 @@ class SimulationImtValeUplink(SimulationImtVale):
                 # calculating the UE's bandwidth
                 self.ue.bandwidth[self.link[bs]] = self.num_rb_per_ue[self.link[bs]] * self.parameters.imt.rb_bandwidth
 
-            if total_associated_ues != 0:
-                # calculating the outage for the current drop
-                self.outage_per_drop = 1 - num_allocated_ues / total_associated_ues
-            else:
-                self.outage_per_drop = 0
+        if total_associated_ues != 0:
+            # calculating the outage for the current drop
+            self.outage_per_drop = 1 - num_allocated_ues / total_associated_ues
+        else:
+            self.outage_per_drop = 0
 
     def estimate_ul_sinr(self, current_bs, ue_list):
         """
