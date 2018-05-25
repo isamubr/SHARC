@@ -137,9 +137,6 @@ class SimulationImtValeUplink(SimulationImtVale):
                         # storing the x and y coordinates of the UE in outage
                         self.get_outage_positions(self.ue.x[ue], self.ue.y[ue])
 
-                if not allocated_ues:
-                    continue
-
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
 
@@ -147,26 +144,27 @@ class SimulationImtValeUplink(SimulationImtVale):
                 self.power_control()
                 self.calculate_sinr()
 
-            # Distribute the remaining RB to the UEs in a round-robin fashion
-            n = -1
-            num_rb_per_ue = self.num_rb_per_ue[self.link[bs]]
-            while num_available_rbs:
-                n += 1
-                num_rb_per_ue[n % len(num_rb_per_ue)] += 1
-                num_available_rbs -= 1
-            self.num_rb_per_ue[self.link[bs]] = num_rb_per_ue
+            if self.link[bs]:
+                # Distribute the remaining RB to the UEs in a round-robin fashion
+                n = -1
+                num_rb_per_ue = self.num_rb_per_ue[self.link[bs]]
+                while num_available_rbs:
+                    n += 1
+                    num_rb_per_ue[n % len(num_rb_per_ue)] += 1
+                    num_available_rbs -= 1
+                self.num_rb_per_ue[self.link[bs]] = num_rb_per_ue
 
-            # counting the number of allocated UEs on the given BS
-            num_allocated_ues += len(allocated_ues)
+                # counting the number of allocated UEs on the given BS
+                num_allocated_ues += len(allocated_ues)
 
-            # activating the allocated UEs
-            self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
+                # activating the allocated UEs
+                self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
 
-            # calculating the BS's bandwidth
-            self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
+                # calculating the BS's bandwidth
+                self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
 
-            # calculating the UE's bandwidth
-            self.ue.bandwidth[self.link[bs]] = self.num_rb_per_ue[self.link[bs]] * self.parameters.imt.rb_bandwidth
+                # calculating the UE's bandwidth
+                self.ue.bandwidth[self.link[bs]] = self.num_rb_per_ue[self.link[bs]] * self.parameters.imt.rb_bandwidth
 
             if total_associated_ues != 0:
                 # calculating the outage for the current drop
