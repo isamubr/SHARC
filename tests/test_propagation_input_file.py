@@ -65,7 +65,7 @@ class PropagationInputFilesTest(unittest.TestCase):
                               "POWER": ['10.000', 'W', 'EIRP'],
                               "ANTENNATYPE": 'ISO',
                               "LOWER_LEFT": [10.0, 10.0],
-                              "UPPER_RIGHT": [60.0, 60.0],
+                              "UPPER_RIGHT": [50.0, 50.0],
                               "HEIGHT": np.nan,
                               "RESOLUTION": 10.0,
                               "RECEIVER_GAIN": 0.0})
@@ -82,7 +82,7 @@ class PropagationInputFilesTest(unittest.TestCase):
                               "POWER": ['10.000', 'W', 'EIRP'],
                               "ANTENNATYPE": 'ISO',
                               "LOWER_LEFT": [10.0, 10.0],
-                              "UPPER_RIGHT": [60.0, 60.0],
+                              "UPPER_RIGHT": [50.0, 50.0],
                               "HEIGHT": 1.5,
                               "RESOLUTION": 10.0,
                               "RECEIVER_GAIN": 0.0})
@@ -93,7 +93,7 @@ class PropagationInputFilesTest(unittest.TestCase):
                               "POWER": ['10.000', 'W', 'EIRP'],
                               "ANTENNATYPE": 'ISO',
                               "LOWER_LEFT": [10.0, 10.0],
-                              "UPPER_RIGHT": [60.0, 60.0],
+                              "UPPER_RIGHT": [50.0, 50.0],
                               "HEIGHT": 1.5,
                               "RESOLUTION": 10.0,
                               "RECEIVER_GAIN": 0.0})
