@@ -274,10 +274,12 @@ class SimulationImtValeUplink(SimulationImtVale):
         for bs in bs_active:
             ue = self.link[bs]
 
-            self.bs.rx_power[bs] = self.ue.tx_power[ue]  \
-                                        - self.parameters.imt.ue_ohmic_loss \
-                                        - self.parameters.imt.ue_body_loss \
-                                        - self.coupling_loss_imt[bs, ue] - self.parameters.imt.bs_ohmic_loss
+            self.bs.rx_power[bs] = self.ue.tx_power[ue] - \
+                                   self.parameters.imt.ue_ohmic_loss - \
+                                   self.parameters.imt.ue_body_loss - \
+                                   self.coupling_loss_imt[bs, ue] - \
+                                   self.parameters.imt.bs_ohmic_loss
+
             # create a list of BSs that serve the interfering UEs
             bs_interf = [b for b in bs_active if b not in [bs]]
             # eliminating BSs that don't have associated UEs
@@ -286,18 +288,17 @@ class SimulationImtValeUplink(SimulationImtVale):
             # calculate intra system interference
             for bi in bs_interf:
                 ui = self.link[bi]
-                interference = self.ue.tx_power[ui] - self.parameters.imt.ue_ohmic_loss  \
-                                - self.parameters.imt.ue_body_loss \
-                                - self.coupling_loss_imt[bs, ui] - self.parameters.imt.bs_ohmic_loss
+                interference = self.ue.tx_power[ui] - self.parameters.imt.ue_ohmic_loss - \
+                               self.parameters.imt.ue_body_loss - \
+                               self.coupling_loss_imt[bs, ui] - self.parameters.imt.bs_ohmic_loss
 
                 # summing all the interferences
                 interference_linear = np.power(10, 0.1*interference)
                 interference_linear = sum(interference_linear)
                 interference = 10*np.log10(interference_linear)
 
-                self.bs.rx_interference[bs] = 10*np.log10( \
-                    np.power(10, 0.1*self.bs.rx_interference[bs])
-                    + np.power(10, 0.1*interference))
+                self.bs.rx_interference[bs] = 10*np.log10(np.power(10, -50.0) +  # Prevent log(0)
+                                                          np.power(10, 0.1*interference))
 
             # calculate N
             self.bs.thermal_noise[bs] = \

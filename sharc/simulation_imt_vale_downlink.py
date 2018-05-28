@@ -316,8 +316,8 @@ class SimulationImtValeDownlink(SimulationImtVale):
                                  - self.coupling_loss_imt[bi, ue] \
                                  - self.parameters.imt.ue_body_loss - self.parameters.imt.ue_ohmic_loss
 
-                self.ue.rx_interference[ue] = 10*np.log10( \
-                    np.power(10, 0.1*self.ue.rx_interference[ue]) + np.power(10, 0.1*interference))
+                self.ue.rx_interference[ue] = 10*np.log10(np.power(10, -50.0) +  # Prevent log(0)
+                                                          np.power(10, 0.1*interference))
 
         self.ue.thermal_noise = \
             10*math.log10(self.parameters.imt.BOLTZMANN_CONSTANT * self.parameters.imt.noise_temperature*1e3) + \
