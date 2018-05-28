@@ -27,7 +27,8 @@ class ParametersImtTest(unittest.TestCase):
                                                                  'topology_input_map_files',
                                                                  'cell_data_test_file.xlsx')
         self.parameters_imt.path_loss_folder = os.path.join(self.our_dir, 'propagation_test_files', 'test_1')
-        pass
+
+        self.parameters_imt.read_input_cell_data_file(self.parameters_imt.bs_physical_data_file)
 
     def test_read_input_ue_polygon_kml_file(self):
         poly_list = self.parameters_imt.read_input_ue_polygon_kml_file(self.parameters_imt.ue_polygon_file,
@@ -42,8 +43,8 @@ class ParametersImtTest(unittest.TestCase):
 
     def test_get_path_loss_files(self):
         file_list = self.parameters_imt.get_path_loss_files(self.parameters_imt.path_loss_folder)
-        test_dummy_1_file_name = os.path.join(self.our_dir, 'propagation_test_files', 'test_1', 'test_dummy_1.txt')
-        test_dummy_2_file_name = os.path.join(self.our_dir, 'propagation_test_files', 'test_1', 'test_dummy_2.txt')
+        test_dummy_1_file_name = os.path.join(self.our_dir, 'propagation_test_files', 'test_1', 'DUMMY0010.txt')
+        test_dummy_2_file_name = os.path.join(self.our_dir, 'propagation_test_files', 'test_1', 'DUMMY0020.txt')
         self.assertCountEqual(file_list, [test_dummy_1_file_name, test_dummy_2_file_name])
 
 

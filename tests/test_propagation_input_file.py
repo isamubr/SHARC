@@ -22,6 +22,10 @@ class PropagationInputFilesTest(unittest.TestCase):
         self.my_path = os.path.dirname(__file__)
         # Test 1
         self.parameters_imt.path_loss_folder = os.path.join(self.my_path, 'propagation_test_files', 'test_1')
+        self.parameters_imt.bs_physical_data_file = os.path.join(self.my_path,
+                                                                 'topology_input_map_files',
+                                                                 'cell_data_test_file.xlsx')
+        self.parameters_imt.read_input_cell_data_file(self.parameters_imt.bs_physical_data_file)
         self.parameters_imt.path_loss_files = \
             self.parameters_imt.get_path_loss_files(self.parameters_imt.path_loss_folder)
         self.propagation_1 = PropagationInputFiles(self.parameters_imt)
@@ -34,15 +38,15 @@ class PropagationInputFilesTest(unittest.TestCase):
 
     def test_files(self):
         # Test 1
-        test_dummy_1_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_1', 'test_dummy_1.txt')
-        test_dummy_2_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_1', 'test_dummy_2.txt')
+        test_dummy_1_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_1', 'DUMMY0010.txt')
+        test_dummy_2_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_1', 'DUMMY0020.txt')
 
         self.assertCountEqual(self.propagation_1.files, [test_dummy_1_file_name, test_dummy_2_file_name])
 
         # Test 2
-        test_dummy_1_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'test_dummy_1.txt')
-        test_dummy_2_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'test_dummy_2.txt')
-        test_dummy_3_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'test_dummy_3.txt')
+        test_dummy_1_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'DUMMY0010.txt')
+        test_dummy_2_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'DUMMY0020.txt')
+        test_dummy_3_file_name = os.path.join(self.my_path, 'propagation_test_files', 'test_2', 'DUMMY0030.txt')
 
         self.assertCountEqual(self.propagation_2.files,
                               [test_dummy_1_file_name, test_dummy_2_file_name, test_dummy_3_file_name])
