@@ -47,7 +47,15 @@ class ParameterHandler(ABC):
         config = configparser.ConfigParser()
         # Prevent from lowercasing all section keys
         config.optionxform = lambda option: option
-        config.read(config_file)
+        try:
+            with open(config_file) as f:
+                config.read_file(f)
+        except IOError:
+            err_msg = "PARAMETER ERROR [{}]: Could not find " \
+                      "configuration file {}".format(self.__class__.__name__, config_file)
+            sys.stderr.write(err_msg)
+            sys.exit(1)
+
         if self.param_section not in config.sections():
             err_msg = "PARAMETER ERROR[{}]: Configuration file \'{}\' does not contain\n" \
                       "the '{}' section".format(self.__class__.__name__, config_file, self.param_section)
