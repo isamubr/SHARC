@@ -62,6 +62,11 @@ class SimulationImtVale(ABC, Observable):
 
         self.propagation_imt = None
 
+        self.outage_per_drop = 0
+
+        self.ues_in_outage_coordinates = []
+        self.ues_in_outage_counter = []
+
     def add_observer_list(self, observers: list):
         for o in observers:
             self.add_observer(o)
@@ -73,7 +78,7 @@ class SimulationImtVale(ABC, Observable):
 
         self.topology.calculate_coordinates()
         num_bs = self.topology.num_base_stations
-        num_ue = num_bs*self.parameters.imt.ue_k*self.parameters.imt.ue_k_m
+        num_ue = self.parameters.imt.num_ue
 
         self.bs_power_gain = 10*math.log10(self.parameters.antenna_imt.bs_tx_n_rows *
                                            self.parameters.antenna_imt.bs_tx_n_columns)
@@ -100,8 +105,9 @@ class SimulationImtVale(ABC, Observable):
         self.num_rb_per_bs = np.trunc((1 - self.parameters.imt.guard_band_ratio) *
                                              self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
 
-        # calculates the number of RB per UE on a given BS
-        self.num_rb_per_ue = np.trunc(self.num_rb_per_bs/self.parameters.imt.ue_k)
+        # Number of RB per UE on a given BS. One RB is allocated per connected UE
+        # before the scheduler do the proper allocation
+        self.num_rb_per_ue = np.ones(num_ue)
 
         self.results = Results(self.parameters_filename, self.parameters.general.overwrite_output)
 
@@ -141,14 +147,16 @@ class SimulationImtVale(ABC, Observable):
 
     def connect_ue_to_bs(self, param: ParametersImtVale):
         """
-        Link the UE's to the serving BS. It is assumed that each group of K*M
-        user equipments are distributed and pointed to a certain base station
+        Link the UE to the BS based on the RSSI.
         """
         # array with the path losses.
         path_loss = self.propagation_imt.get_loss(bs_id=self.bs.station_id, ue_position_x=self.ue.x,
                                                   ue_position_y=self.ue.y)
         num_bs = path_loss.shape[0]
         num_ue = path_loss.shape[1]
+
+        # Initialize the BS links for each drop
+        self.link = dict([(bs, list()) for bs in range(num_bs)])
 
         # forming the links between UEs and BSs based on the path loss
         ue_path_loss = {}
@@ -163,10 +171,10 @@ class SimulationImtVale(ABC, Observable):
 
             self.link[bs_index].append(ue_index)
 
-        # UE BW and frequency is the same of it's connected BS.
+        # UE frequency is the same of it's connected BS.
         for bs in self.link.keys():
             for ue in self.link[bs]:
-                self.ue.bandwidth[ue] = self.bs.bandwidth[bs]
+                self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
                 self.ue.center_freq[ue] = self.bs.center_freq[bs]
 
                 if param.spectral_mask == "ITU 265-E":
@@ -179,43 +187,32 @@ class SimulationImtVale(ABC, Observable):
 
                 self.ue.spectral_mask[ue].set_mask()
 
-    def select_ue(self, random_number_gen: np.random.RandomState):
-        """
-        Select K UEs randomly from all the UEs linked to one BS as “chosen”
-        UEs. These K “chosen” UEs will be scheduled during this snapshot.
-        """
-        self.bs_to_ue_phi, self.bs_to_ue_theta = \
-            self.bs.get_pointing_vector_to(self.ue)
-
-        bs_active = np.where(self.bs.active)[0]
-        for bs in bs_active:
-            # select K UE's among the ones that are connected to BS
-            random_number_gen.shuffle(self.link[bs])
-            K = self.parameters.imt.ue_k
-            del self.link[bs][K:]
-            # Activate the selected UE's and create beams
-            if self.bs.active[bs]:
-                self.ue.active[self.link[bs]] = np.ones(K, dtype=bool)
-                for ue in self.link[bs]:
-                    # add beam to BS antennas
-                    self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
-                                                 self.bs_to_ue_theta[bs, ue])
-                    # add beam to UE antennas
-                    self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs, ue] - 180,
-                                                 180 - self.bs_to_ue_theta[bs, ue])
-                    # set beam resource block group
-                    self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
-
+    @abstractmethod
     def scheduler(self):
         """
-        This scheduler divides the available resource blocks among UE's for
-        a given BS
+        Implements the scheduler algotithm
         """
-        bs_active = np.where(self.bs.active)[0]
-        for bs in bs_active:
-            ue = self.link[bs]
-            self.bs.bandwidth[bs] = self.num_rb_per_bs[bs]*self.parameters.imt.rb_bandwidth
-            self.ue.bandwidth[ue] = self.num_rb_per_ue[bs]*self.parameters.imt.rb_bandwidth
+        pass
+
+    def get_outage_positions(self, ue_x, ue_y):
+        """
+        Saves the (x, y) coordinates of the UEs in outage and counts its occurrences
+        """
+
+        # tuple with the x,y coordinates of the UE in outage
+        outage_position = (ue_x, ue_y)
+
+        # checking if the current outage occurred before
+        if outage_position not in self.ues_in_outage_coordinates:
+            # appends the current coordinates to the list
+            self.ues_in_outage_coordinates.append(outage_position)
+            # counts the first occurrence of the current position
+            self.ues_in_outage_counter.append(1)
+        else:
+            # get the index of the tuple that is already registered
+            index = self.ues_in_outage_coordinates.index(outage_position)
+            # counts one more occurrence
+            self.ues_in_outage_counter[index] += 1
 
     def calculate_gains(self, station_1: StationManager, station_2: StationManager) -> np.array:
         """
@@ -231,6 +228,8 @@ class SimulationImtVale(ABC, Observable):
         if station_1.station_type is StationType.IMT_BS:
             if station_2.station_type is StationType.IMT_UE:
                 beams_idx = self.bs_to_ue_beam_rbs[station_2_active]
+                # FIXME - we're activating all UEs here because this function is called before the scheduler
+                station_2_active = np.ones(station_2.num_stations, dtype=bool)
 
         elif station_1.station_type is StationType.IMT_UE:
             beams_idx = np.zeros(len(station_2_active), dtype=int)

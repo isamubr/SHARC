@@ -42,6 +42,12 @@ class Results(object):
         self.imt_dl_tput_ext = list()
         self.imt_dl_tput = list()
 
+        self.imt_outage_per_drop = list()
+
+        self.imt_ues_in_outage_coordinates = list()
+        self.imt_ues_in_outage_counter = list()
+        self.imt_ues_in_outage_map = list()
+
         self.system_ul_coupling_loss = list()
         self.system_ul_interf_power = list()
 
@@ -52,6 +58,8 @@ class Results(object):
         self.system_pfd = list()
         self.system_rx_interf = list()
         self.system_inr_scaled = list()
+
+        self.imt_num_rb_per_ue = list()
 
         if not overwrite_output:
             today = datetime.date.today()
@@ -390,12 +398,41 @@ class Results(object):
             #x_limits = (-80, -20)
             y_limits = (0, 1)
             self.plot_list.append(Plot(x, y, x_label, y_label, title, file_name, x_lim=x_limits, y_lim=y_limits))
+        if len(self.imt_outage_per_drop) > 0:
+            values, base = np.histogram(self.imt_outage_per_drop, bins=n_bins)
+            cumulative = np.cumsum(values)
+            x = base[:-1]
+            y = cumulative / cumulative[-1]
+            title = "[IMT] CDF of the outage per drop"
+            x_label = "Outage"
+            y_label = "Probability of Outage < $X$"
+            file_name = title
+            #x_limits = (-80, -20)
+            y_limits = (0, 1)
+            self.plot_list.append(Plot(x, y, x_label, y_label, title, file_name, x_lim=x_limits, y_lim=y_limits))
+
+        if len(self.imt_num_rb_per_ue) > 0:
+            u, cnt = np.unique(self.imt_num_rb_per_ue, return_counts=True)
+            x = u
+            x.sort()
+            y = np.cumsum(cnt) / sum(cnt)
+            title = "[IMT] CDF of the RB distribution per drop"
+            x_label = "Num of RBs"
+            y_label = "Probability of Num of RBs < $X$"
+            file_name = title
+            y_limits = (0, 1)
+            self.plot_list.append(Plot(x, y, x_label, y_label, title, file_name, x_lim=x_limits, y_lim=y_limits))
 
     def write_files(self, snapshot_number: int):
         n_bins = 200
         file_extension = ".txt"
         header_text = "Results collected after " + str(snapshot_number) + " snapshots."
         self.generate_plot_list(n_bins)
+
+        np.savetxt(os.path.join(self.output_directory, "Outage map" + file_extension),
+                   self.imt_ues_in_outage_map,
+                   fmt="%.5f", delimiter="\t", header=header_text,
+                   newline=os.linesep)
 
         for plot in self.plot_list:
             np.savetxt(os.path.join(self.output_directory, plot.file_name + file_extension),

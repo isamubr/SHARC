@@ -112,6 +112,16 @@
             "default_value": 0.18,
             "param_options": ""
         },
+        "min_ue_data_rate": {
+            "data_type": "float",
+            "default_value": 100e3,
+            "param_options": ""
+        },
+        "bs_rb_load_factor": {
+            "data_type": "float",
+            "default_value": 0.9,
+            "param_options": ""
+        },
         "spectral_mask": {
             "data_type": "str",
             "default_value": "ITU 265-E",
@@ -177,14 +187,9 @@
             "default_value": "./parameters/polygons/PolygonBrucutuTest.kml",
             "param_options": ""
         },
-        "ue_k": {
+        "num_ue": {
             "data_type": "int",
-            "default_value": 3,
-            "param_options": ""
-        },
-        "ue_k_m": {
-            "data_type": "int",
-            "default_value": 2,
+            "default_value": 18,
             "param_options": ""
         },
         "ue_indoor_percent": {
@@ -218,8 +223,8 @@
             "param_options": ""
         },
         "ue_alpha": {
-            "data_type": "int",
-            "default_value": 1,
+            "data_type": "float",
+            "default_value": 1.0,
             "param_options": ""
         },
         "ue_p_cmax": {
