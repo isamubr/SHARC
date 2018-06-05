@@ -125,7 +125,7 @@ class SimulationImtVale(ABC, Observable):
         """
         Calculates the path coupling loss from each station_a to all station_b.
         Result is returned as a numpy array with dimensions num_a x num_b
-        TODO: calculate coupling loss between activa stations only
+        TODO: calculate coupling loss between active stations only
         """
         path_loss = propagation.get_loss(bs_id=self.bs.station_id,
                                          ue_position_x=self.ue.x,
@@ -149,29 +149,35 @@ class SimulationImtVale(ABC, Observable):
         """
         Link the UE to the BS based on the RSSI.
         """
-        # array with the path losses.
-        path_loss = self.propagation_imt.get_loss(bs_id=self.bs.station_id, ue_position_x=self.ue.x,
-                                                  ue_position_y=self.ue.y)
-        num_bs = path_loss.shape[0]
-        num_ue = path_loss.shape[1]
+        # Calculate the coupling lossess between UE and BS
+        # Add one beam to each UE for each BS. For initial RSSI computation the UE antenna is Omni
+        # with 0db gain
+        self.bs_to_ue_phi, self.bs_to_ue_theta = \
+            self.bs.get_pointing_vector_to(self.ue)
+        bs_active = np.where(self.bs.active)[0]
+        for bs in bs_active:
+            # Create beams
+            # add beam to BS antennas
+            for ue in range(self.ue.num_stations):
+                self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
+                                             self.bs_to_ue_theta[bs, ue])
+                # set beam resource block group
+                self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
+
+        rssi = self.calculate_coupling_loss(self.bs, self.ue, self.propagation_imt)
+
+        num_bs = self.bs.num_stations
 
         # Initialize the BS links for each drop
         self.link = dict([(bs, list()) for bs in range(num_bs)])
 
-        # forming the links between UEs and BSs based on the path loss
-        ue_path_loss = {}
-        ue_to_bs = {}
+        # Rank the best BS for each UE and connect
+        best_server_idx = np.argmin(np.matrix(rssi), axis=0).flat
 
-        for ue_index in range(0, num_ue):
-            ue_path_loss[ue_index] = [path_loss[row, ue_index] for row in range(0, num_bs)]
+        for ue, best_server in enumerate(best_server_idx):
+            self.link[best_server].append(ue)
 
-            bs_index = ue_path_loss[ue_index].index(min(ue_path_loss[ue_index]))
-
-            ue_to_bs[ue_index] = bs_index
-
-            self.link[bs_index].append(ue_index)
-
-        # UE frequency is the same of it's connected BS.
+        # Now that UE links are set, configure UE attributes that depends on the BS it's connected to.
         for bs in self.link.keys():
             for ue in self.link[bs]:
                 self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
@@ -227,12 +233,14 @@ class SimulationImtVale(ABC, Observable):
         # Initialize variables (phi, theta, beams_idx)
         if station_1.station_type is StationType.IMT_BS:
             if station_2.station_type is StationType.IMT_UE:
-                beams_idx = self.bs_to_ue_beam_rbs[station_2_active]
                 # FIXME - we're activating all UEs here because this function is called before the scheduler
-                station_2_active = np.ones(station_2.num_stations, dtype=bool)
+                station_2_active = np.where(np.ones(station_2.num_stations, dtype=bool))[0]
+                beams_idx = self.bs_to_ue_beam_rbs[station_2_active]
 
         elif station_1.station_type is StationType.IMT_UE:
-            beams_idx = np.zeros(len(station_2_active), dtype=int)
+            # FIXME - we're activating all UEs here because this function is called before the scheduler
+            station_1_active = np.where(np.ones(station_1.num_stations, dtype=bool))[0]
+            beams_idx = np.zeros(len(station_2_active), dtype=int) * -1
 
         # Calculate gains
         gains = np.zeros(phi.shape)

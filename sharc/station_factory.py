@@ -57,19 +57,10 @@ class StationFactory(object):
         imt_base_stations.y = topology.y
         imt_base_stations.azimuth = topology.azimuth
         imt_base_stations.elevation = topology.elevation
+        imt_base_stations.height = param.bs_height*np.ones(num_bs)
 
-        if param.topology == "INPUT_MAP":
-            imt_base_stations.station_id = np.array(param.bs_data['strCellID'])
-            imt_base_stations.height = np.array(param.bs_data['dHeight']) + topology.z
-            # FIXME: Differentiate tx power from conducted power
-            imt_base_stations.tx_power = np.array(param.bs_data['dMaxTxPowerdBm'])
-        else:
-            imt_base_stations.height = param.bs_height*np.ones(num_bs)
-            imt_base_stations.tx_power = param.bs_conducted_power * np.ones(num_bs)
-
-        imt_base_stations.indoor = topology.indoor
         imt_base_stations.active = random_number_gen.rand(num_bs) < param.bs_load_probability
-
+        imt_base_stations.tx_power = param.bs_conducted_power*np.ones(num_bs)
         imt_base_stations.rx_power = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
         imt_base_stations.rx_interference = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
         imt_base_stations.ext_interference = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
@@ -80,7 +71,6 @@ class StationFactory(object):
         imt_base_stations.sinr_ext = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
         imt_base_stations.inr = dict([(bs, -500 * np.ones(param.ue_k)) for bs in range(num_bs)])
 
-        # TODO: Not always the IMT antenna has beamforming
         imt_base_stations.antenna = np.empty(num_bs, dtype=AntennaBeamformingImt)
         par = param_ant.get_antenna_parameters("BS", "RX")
 
@@ -113,6 +103,7 @@ class StationFactory(object):
         num_bs = topology.num_base_stations
         imt_base_stations = StationManager(num_bs)
         imt_base_stations.station_type = StationType.IMT_BS
+
         # now we set the coordinates
         imt_base_stations.x = topology.x
         imt_base_stations.y = topology.y
@@ -135,28 +126,24 @@ class StationFactory(object):
         imt_base_stations.sinr_ext = dict([(bs, -500) for bs in range(num_bs)])
         imt_base_stations.inr = dict([(bs, -500) for bs in range(num_bs)])
 
-        # TODO: The default case is to use a beamforming antenna. Need to validate all antenna types from input file
-        # Generate the antenas for all base stations
-        for ant_idx, antenna_pattern in enumerate(param.bs_antenna_pattern):
+        # Generate the antennas for all base stations
+        for bs, antenna_pattern in enumerate(param.bs_antenna_pattern):
             if antenna_pattern == 'omni_10dBi':
-                imt_base_stations.antenna[ant_idx] = AntennaOmni(0)
+                imt_base_stations.antenna[bs] = AntennaOmni(10)
             else:
-                err_msg = '[StationFactory] ERROR! Invalid antenna type {}\n'.format(antenna_pattern)
-                sys.stderr.write(err_msg)
-                exit(1)
+                # TODO: The default case is Beamforming antenna. Need to parse all possible values
+                par = param_ant.get_antenna_parameters("BS", "RX")
+                imt_base_stations.antenna[bs] = \
+                    AntennaBeamformingImt(par, imt_base_stations.azimuth[bs],
+                                          imt_base_stations.elevation[bs])
 
-            # TODO: Add this commented code to add beamforming antenna
-            # else:
-            #     par = param_ant.get_antenna_parameters("BS", "RX")
-            #     for i in range(num_bs):
-            #         imt_base_stations.antenna[i] = \
-            #             AntennaBeamformingImt(par, imt_base_stations.azimuth[i],
-            #                                   imt_base_stations.elevation[i])
+            # err_msg = '[StationFactory] ERROR! Invalid antenna type {}\n'.format(antenna_pattern)
+            # sys.stderr.write(err_msg)
+            # exit(1)
 
         imt_base_stations.bandwidth = param.bandwidth
         imt_base_stations.center_freq = param.frequency
         imt_base_stations.noise_figure = param.bs_noise_figure * np.ones(num_bs)
-        # imt_base_stations.thermal_noise = -500*np.ones(num_bs)
         imt_base_stations.thermal_noise = dict([(bs, -500) for bs in range(num_bs)])
 
         if param.spectral_mask == "ITU 265-E":
@@ -438,10 +425,19 @@ class StationFactory(object):
                                      random_number_gen: np.random.RandomState,
                                      topology: Topology) -> StationManager:
 
+        num_bs = topology.num_base_stations
         num_ue = param.num_ue
 
         imt_ue = StationManager(num_ue)
         imt_ue.station_type = StationType.IMT_UE
+
+        # Calculate UE pointing
+        azimuth_range = (-60, 60)
+        rand_azimuth = (azimuth_range[1] - azimuth_range[0])*random_number_gen.random_sample(num_ue) + azimuth_range[0]
+        # Remove the randomness from azimuth and you will have a perfect pointing
+        elevation_range = (-90, 90)
+        rand_elevation = (elevation_range[1] - elevation_range[0])*random_number_gen.random_sample(num_ue) + \
+                     elevation_range[0]
 
         if param.topology == "INPUT_MAP":
             # TODO: define number of UEs in polygons based on QoS categories
@@ -454,8 +450,21 @@ class StationFactory(object):
             imt_ue.y = topology.y_ue
             imt_ue.height = param.ue_height * np.ones(num_ue) + topology.z_ue
 
+            # theta is the horizontal angle of the UE wrt the BS
+            theta = np.array([np.arctan2(imt_ue.y - topology.y[bs], imt_ue.x - topology.x[bs]) for bs in range(num_bs)])
+            distance = np.array([np.sqrt((imt_ue.x - topology.x[bs]) ** 2 + (imt_ue.y - topology.y[bs]) ** 2)
+                                 for bs in range(num_bs)])
+
+            # psi is the vertical angle of the UE wrt to the BS
+            psi = np.array([np.arctan((topology.z[bs] - imt_ue.height) / distance[bs]) for bs in range(num_bs)])
+
+            imt_ue.azimuth = (rand_azimuth + np.degrees(theta) + 180) % 360
+            imt_ue.elevation = rand_elevation + np.degrees(psi)
+
         else:
-            sys.stderr.write("ERROR\nInvalid UE distribution type: " + param.ue_distribution_type)
+            sys.stderr.write("ERROR[{}]:\nInvalid UE distribution type: {}"
+                             .format(StationFactory.generate_imt_ue_vale_outdoor.__qualname__,
+                                     param.ue_distribution_type))
             sys.exit(1)
 
         imt_ue.active = np.zeros(num_ue, dtype=bool)
@@ -463,12 +472,15 @@ class StationFactory(object):
         imt_ue.rx_interference = -500*np.ones(num_ue)
         imt_ue.ext_interference = -500*np.ones(num_ue)
 
+        # DEBUG - We initialize here all UE antennas to omni before BS association. After that, we add beamforming
+        imt_ue.antenna = [AntennaOmni(0) for i in range(num_ue)]
+
         # TODO: this piece of code works only for uplink
         # par = param_ant.get_antenna_parameters("UE", "TX")
         # for i in range(num_ue):
         #     imt_ue.antenna[i] = AntennaBeamformingImt(par, imt_ue.azimuth[i],
         #                                                    imt_ue.elevation[i])
-        imt_ue.antenna = [AntennaOmni(0) for i in range(num_ue)]
+        # imt_ue.antenna = [AntennaOmni(0) for i in range(num_ue)]
 
         imt_ue.noise_figure = param.ue_noise_figure * np.ones(num_ue)
 

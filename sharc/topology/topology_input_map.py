@@ -120,8 +120,11 @@ class TopologyInputMap(Topology):
 
         # plot base stations coverage area
         for x, y, a in zip(self.x, self.y, self.azimuth):
-            pa = patches.CirclePolygon((x, y), self.cell_radius, 20, fill=False, edgecolor="green", linestyle='solid')
-            ax.add_patch(pa)
+            # pa = patches.CirclePolygon((x, y), self.cell_radius, 20, fill=False, edgecolor="green", linestyle='solid')
+            # ax.add_patch(pa)
+            angle = np.deg2rad(a)
+            ax.arrow(x, y, self.cell_radius*np.cos(angle), self.cell_radius*np.sin(angle),
+                     fc="k", ec="k", head_width=10.0, head_length=15.0)
 
         # plot UE locations inside delimitation polygons
         for poly in self.polys:
