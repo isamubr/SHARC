@@ -472,15 +472,8 @@ class StationFactory(object):
         imt_ue.rx_interference = -500*np.ones(num_ue)
         imt_ue.ext_interference = -500*np.ones(num_ue)
 
-        # DEBUG - We initialize here all UE antennas to omni before BS association. After that, we add beamforming
+        # Initialize here all UE antennas to omni with 0dBi gain before BS association.
         imt_ue.antenna = [AntennaOmni(0) for i in range(num_ue)]
-
-        # TODO: this piece of code works only for uplink
-        # par = param_ant.get_antenna_parameters("UE", "TX")
-        # for i in range(num_ue):
-        #     imt_ue.antenna[i] = AntennaBeamformingImt(par, imt_ue.azimuth[i],
-        #                                                    imt_ue.elevation[i])
-        # imt_ue.antenna = [AntennaOmni(0) for i in range(num_ue)]
 
         imt_ue.noise_figure = param.ue_noise_figure * np.ones(num_ue)
 

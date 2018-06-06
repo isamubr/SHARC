@@ -21,6 +21,7 @@ from sharc.station_manager import StationManager
 from sharc.results import Results
 from sharc.spectral_mask_imt import SpectralMaskImt
 from sharc.spectral_mask_3gpp import SpectralMask3Gpp
+from sharc.antenna.antenna_beamforming_imt import AntennaBeamformingImt
 
 
 class SimulationImtVale(ABC, Observable):
@@ -162,9 +163,15 @@ class SimulationImtVale(ABC, Observable):
                 self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
                                              self.bs_to_ue_theta[bs, ue])
                 # set beam resource block group
+                # TODO: All bs points to all UEs. That's not the case after association
                 self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
 
-        rssi = self.calculate_coupling_loss(self.bs, self.ue, self.propagation_imt)
+        coupling_loss = self.calculate_coupling_loss(self.bs, self.ue, self.propagation_imt)
+
+        rssi = np.reshape(self.bs.tx_power, (self.bs.tx_power.shape[0], 1)) - coupling_loss - \
+                                                                   self.parameters.imt.bs_ohmic_loss - \
+                                                                   self.parameters.imt.ue_body_loss - \
+                                                                   self.parameters.imt.ue_ohmic_loss
 
         num_bs = self.bs.num_stations
 
@@ -172,12 +179,13 @@ class SimulationImtVale(ABC, Observable):
         self.link = dict([(bs, list()) for bs in range(num_bs)])
 
         # Rank the best BS for each UE and connect
-        best_server_idx = np.argmin(np.matrix(rssi), axis=0).flat
+        best_server_idx = np.argmax(np.matrix(rssi), axis=0).flat
 
         for ue, best_server in enumerate(best_server_idx):
             self.link[best_server].append(ue)
 
         # Now that UE links are set, configure UE attributes that depends on the BS it's connected to.
+        antenna_par = self.parameters.antenna_imt.get_antenna_parameters('UE', 'TX')
         for bs in self.link.keys():
             for ue in self.link[bs]:
                 self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
@@ -192,6 +200,18 @@ class SimulationImtVale(ABC, Observable):
                                                                  self.ue.bandwidth[ue])
 
                 self.ue.spectral_mask[ue].set_mask()
+
+                # Create and initialize UE antennas and point them to the BS
+                self.ue.antenna[ue] = AntennaBeamformingImt(antenna_par,
+                                                            self.ue.azimuth[bs, ue],
+                                                            self.ue.elevation[bs, ue])
+
+                # add beam to UE antennas
+                self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs, ue] - 180,
+                                             180 - self.bs_to_ue_theta[bs, ue])
+
+                # set beam resource block group
+                self.bs_to_ue_beam_rbs[ue] = len(self.bs.antenna[bs].beams_list) - 1
 
     @abstractmethod
     def scheduler(self):
