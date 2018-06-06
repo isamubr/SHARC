@@ -432,10 +432,10 @@ class StationFactory(object):
         imt_ue.station_type = StationType.IMT_UE
 
         # Calculate UE pointing
-        azimuth_range = (-60, 60)
+        azimuth_range = (-30, 30)
         rand_azimuth = (azimuth_range[1] - azimuth_range[0])*random_number_gen.random_sample(num_ue) + azimuth_range[0]
         # Remove the randomness from azimuth and you will have a perfect pointing
-        elevation_range = (-90, 90)
+        elevation_range = (-10, 10)
         rand_elevation = (elevation_range[1] - elevation_range[0])*random_number_gen.random_sample(num_ue) + \
                      elevation_range[0]
 
