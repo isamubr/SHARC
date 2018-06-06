@@ -192,7 +192,8 @@ class SimulationImtVale(ABC, Observable):
         # Now that UE links are set, configure UE attributes that depends on the BS it's connected to.
         antenna_par = self.parameters.antenna_imt.get_antenna_parameters('UE', 'TX')
         for bs in self.link.keys():
-            self.bs.antenna[bs].reset_beams()
+            if isinstance(self.bs.antenna[bs], AntennaBeamformingImt):
+                self.bs.antenna[bs].reset_beams()
             for ue in self.link[bs]:
                 self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
                 self.ue.center_freq[ue] = self.bs.center_freq[bs]
