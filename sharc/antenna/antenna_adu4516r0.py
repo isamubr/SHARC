@@ -118,6 +118,9 @@ class AntennaADU4516R0():
         :return: gain (np.array): element radiation pattern gain value
         """
 
+        phi = np.clip(phi, -180, 179)
+        theta = np.clip(phi, -180, 179)
+
         # horizontal gain
         g_h = self.horizontal_pattern(phi)
 

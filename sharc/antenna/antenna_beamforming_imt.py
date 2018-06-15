@@ -12,7 +12,7 @@ import sys
 from sharc.antenna.antenna_element_imt_m2101 import AntennaElementImtM2101
 from sharc.antenna.antenna_element_imt_f1336 import AntennaElementImtF1336
 from sharc.antenna.antenna_element_imt_const import AntennaElementImtConst
-from sharc.antenna.antenna_adu4516r0_0806_x_co_p45_00t import AntennaADU4516R0
+from sharc.antenna.antenna_adu4516r0 import AntennaADU4516R0
 from sharc.antenna.antenna import Antenna
 from sharc.support.named_tuples import AntennaPar
 from sharc.parameters.parameters_antenna_imt import ParametersAntennaImt

@@ -137,9 +137,6 @@ class SimulationImtValeUplink(SimulationImtVale):
                         # storing the x and y coordinates of the UE in outage
                         self.get_outage_positions(self.ue.x[ue], self.ue.y[ue])
 
-                if not allocated_ues:
-                    continue
-
                 # self.link only with the allocated UEs
                 self.link[bs] = allocated_ues
 
@@ -345,7 +342,7 @@ class SimulationImtValeUplink(SimulationImtVale):
 
             self.results.imt_ues_in_outage_map = list(zip(ue_x, ue_y, self.ues_in_outage_counter))
 
-            self.results.imt_num_rb_per_ue.extend(self.num_rb_per_ue)
+            self.results.imt_num_rb_per_ue.extend(self.num_rb_per_ue[self.link[bs]])
 
         if write_to_file:
             self.results.write_files(snapshot_number)
