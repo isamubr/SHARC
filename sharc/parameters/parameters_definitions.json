@@ -302,7 +302,7 @@
         "bs_element_pattern": {
             "data_type": "str",
             "default_value": "M2101",
-            "param_options": ["M2101", "F1336", "FIXED"]
+            "param_options": ["M2101", "F1336", "ADU4516R0", "FIXED"]
         },
         "ue_element_pattern": {
             "data_type": "str",
