@@ -8,9 +8,10 @@ Created on Tue Jan 30 16:00:22 2018
 import numpy as np
 import matplotlib.axes
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 from itertools import product
-from shapely.geometry import Point, Polygon
+import matplotlib.patches as patches
+from shapely.geometry import Point
+import random
 
 
 from sharc.topology.topology import Topology
@@ -119,12 +120,14 @@ class TopologyInputMap(Topology):
         plt.scatter(self.x, self.y, color='g', edgecolor="w", linewidth=0.5, label="Map_base_station")
 
         # plot base stations coverage area
-        for x, y, a in zip(self.x, self.y, self.azimuth):
-            # pa = patches.CirclePolygon((x, y), self.cell_radius, 20, fill=False, edgecolor="green", linestyle='solid')
-            # ax.add_patch(pa)
-            angle = np.deg2rad(a)
-            ax.arrow(x, y, self.cell_radius*np.cos(angle), self.cell_radius*np.sin(angle),
-                     fc="k", ec="k", head_width=10.0, head_length=15.0)
+        for x, y, a, pattern in zip(self.x, self.y, self.azimuth, self.param.bs_antenna_pattern):
+            if pattern == 'omni_10dBi':
+                pa = patches.CirclePolygon((x, y), 100, 20, fill=False, edgecolor="green", linestyle='solid')
+                ax.add_patch(pa)
+            else:
+                angle = np.deg2rad(a)
+                ax.arrow(x, y, self.cell_radius*np.cos(angle), self.cell_radius*np.sin(angle),
+                         fc="k", ec="k", head_width=10.0, head_length=15.0)
 
         # plot UE locations inside delimitation polygons
         for poly in self.polys:
@@ -136,7 +139,10 @@ class TopologyInputMap(Topology):
 
 
 if __name__ == '__main__':
-    random_number_gen = np.random.RandomState(seed=200)
+    seed = 101
+    random.seed(seed)
+    secondary_seed = random.randint(1, 2**32 - 1)
+    random_number_gen = np.random.RandomState(seed=secondary_seed)
     parameters_imt = ParametersImtVale(imt_link='DOWNLINK')
     parameters_imt.bs_physical_data_file = '../parameters/bs_data/brucutu-2Macros-1Small-omni.xls'
     parameters_imt.bs_data = parameters_imt.read_input_cell_data_file(parameters_imt.bs_physical_data_file)
@@ -149,7 +155,7 @@ if __name__ == '__main__':
     topology = TopologyInputMap(parameters_imt, topography)
     topology.calculate_coordinates()
     topology.map_polygons(parameters_imt.ue_polygons)
-    num_ues = [100]
+    num_ues = [3]
     topology.distribute_ues(num_ues, random_number_gen)
 
     fig = plt.figure(figsize=(8, 8), facecolor='w', edgecolor='k')  # create a figure object
