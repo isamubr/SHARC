@@ -119,7 +119,7 @@ class AntennaADU4516R0():
         """
 
         phi = np.clip(phi, -180, 179)
-        theta = np.clip(phi, -180, 179)
+        theta = np.clip(theta, -180, 179)
 
         # horizontal gain
         g_h = self.horizontal_pattern(phi)
