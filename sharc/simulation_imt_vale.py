@@ -143,7 +143,7 @@ class SimulationImtVale(ABC, Observable):
         self.imt_ue_antenna_gain = gain_b
 
         # calculate coupling loss
-        coupling_loss = np.squeeze(path_loss - gain_a - gain_b)
+        coupling_loss = path_loss - gain_a - gain_b
 
         return coupling_loss
 
