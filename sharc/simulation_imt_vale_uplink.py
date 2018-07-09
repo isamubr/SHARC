@@ -120,7 +120,9 @@ class SimulationImtValeUplink(SimulationImtVale):
                 for ue in self.link[bs]:
 
                     # get the throughput per RB for the current UE
-                    ue_tput = self.get_throughput_ul(self.ue.sinr[ue])*1e3
+                    #ue_tput = self.get_throughput_ul(self.ue.sinr[ue])*1e3
+                    # TESTE - DEBUG - Gustavo
+                    ue_tput = self.get_throughput_ul(self.ue.sinr[ue])
 
                     # calculate the number of RB required for the current UE
                     ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate / ue_tput)

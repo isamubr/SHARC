@@ -48,6 +48,8 @@ class Results(object):
         self.imt_ues_in_outage_counter = list()
         self.imt_ues_in_outage_map = list()
 
+        self.imt_ue_sinr_map = list()
+
         self.system_ul_coupling_loss = list()
         self.system_ul_interf_power = list()
 
@@ -407,10 +409,9 @@ class Results(object):
             x_label = "Outage"
             y_label = "Probability of Outage < $X$"
             file_name = title
-            #x_limits = (-80, -20)
+            x_limits = (0, 1)
             y_limits = (0, 1)
             self.plot_list.append(Plot(x, y, x_label, y_label, title, file_name, x_lim=x_limits, y_lim=y_limits))
-
         if len(self.imt_num_rb_per_ue) > 0:
             u, cnt = np.unique(self.imt_num_rb_per_ue, return_counts=True)
             x = u
@@ -431,6 +432,11 @@ class Results(object):
 
         np.savetxt(os.path.join(self.output_directory, "Outage map" + file_extension),
                    self.imt_ues_in_outage_map,
+                   fmt="%.5f", delimiter="\t", header=header_text,
+                   newline=os.linesep)
+
+        np.savetxt(os.path.join(self.output_directory, "SINR map" + file_extension),
+                   self.imt_ue_sinr_map,
                    fmt="%.5f", delimiter="\t", header=header_text,
                    newline=os.linesep)
 

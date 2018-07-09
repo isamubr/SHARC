@@ -68,6 +68,9 @@ class SimulationImtVale(ABC, Observable):
         self.ues_in_outage_coordinates = []
         self.ues_in_outage_counter = []
 
+        self.sinr_registered_positions = []
+        self.sinr_map = []
+
     def add_observer_list(self, observers: list):
         for o in observers:
             self.add_observer(o)
@@ -103,13 +106,16 @@ class SimulationImtVale(ABC, Observable):
         # group that is allocated to the given UE
         self.link = dict([(bs, list()) for bs in range(num_bs)])
 
-        # calculates the number of RB per BS
+        # calculates the number of RB per BS considering the given scheduling interval and that one subframe has
+        # a 1ms duration
         self.num_rb_per_bs = np.trunc((1 - self.parameters.imt.guard_band_ratio) *
-                                             self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
+                                      self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
 
-        # Number of RB per UE on a given BS. One RB is allocated per connected UE
-        # before the scheduler do the proper allocation
-        self.num_rb_per_ue = np.ones(num_ue)
+        self.num_rb_per_bs = np.trunc(self.num_rb_per_bs * self.parameters.imt.scheduling_time / 1e-3)
+
+        # Number of RB per UE on a given BS. The whole BS bandwidth is allocated to each UE
+        # before the scheduler does the proper allocation
+        self.num_rb_per_ue = (self.num_rb_per_bs[0] * 1e-3 / self.parameters.imt.scheduling_time) * np.ones(num_ue)
 
         self.results = Results(self.parameters_filename, self.parameters.general.overwrite_output)
 
@@ -195,7 +201,9 @@ class SimulationImtVale(ABC, Observable):
             if isinstance(self.bs.antenna[bs], AntennaBeamformingImt):
                 self.bs.antenna[bs].reset_beams()
             for ue in self.link[bs]:
-                self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
+                #self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
+                self.ue.bandwidth[ue] = (1 - self.parameters.imt.guard_band_ratio) * self.parameters.imt.bandwidth[0]
+
                 self.ue.center_freq[ue] = self.bs.center_freq[bs]
 
                 if param.spectral_mask == "ITU 265-E":

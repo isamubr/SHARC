@@ -13,6 +13,7 @@ from sharc.antenna.antenna_element_imt_m2101 import AntennaElementImtM2101
 from sharc.antenna.antenna_element_imt_f1336 import AntennaElementImtF1336
 from sharc.antenna.antenna_element_imt_const import AntennaElementImtConst
 from sharc.antenna.antenna_adu4516r0 import AntennaADU4516R0
+from sharc.antenna.antenna_omniSNEPA import AntennaOmniSNEPA
 from sharc.antenna.antenna import Antenna
 from sharc.support.named_tuples import AntennaPar
 from sharc.parameters.parameters_antenna_imt import ParametersAntennaImt
@@ -56,6 +57,8 @@ class AntennaBeamformingImt(Antenna):
             self.element = AntennaElementImtF1336(par)
         elif (par.element_pattern).upper() == "ADU4516R0":
             self.element = AntennaADU4516R0()
+        elif (par.element_pattern).upper() == "OMNI_SNEPA":
+            self.element = AntennaOmniSNEPA()
         elif (par.element_pattern).upper() == "FIXED":
             self.element = AntennaElementImtConst(par)
         else:
