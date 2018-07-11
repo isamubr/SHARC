@@ -131,7 +131,7 @@ class SimulationImtValeDownlink(SimulationImtVale):
                     ue_tput = self.get_throughput_dl(self.ue.sinr[ue])
 
                     # calculate the number of RB required for the current UE
-                    ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate/ue_tput)
+                    ue_num_rb = math.ceil(self.parameters.imt.min_ue_data_rate / ue_tput)
 
                     # checking if there are still available RBs in the current BS
                     if num_available_rbs > ue_num_rb:
@@ -165,15 +165,8 @@ class SimulationImtValeDownlink(SimulationImtVale):
 
                 # calculating the UE's bandwidth
                 for ue in self.link[bs]:
-                    # checking if the UE occupies more than one subframe
-                    if self.num_rb_per_ue[ue] >= self.num_rb_per_bs[bs] * 1e-3 / self.parameters.imt.scheduling_time:
-                        # UE occupies the whole BS's bandwidth
-                        self.ue.bandwidth[ue] = (1 - self.parameters.imt.guard_band_ratio) * \
-                                                self.parameters.imt.bandwidth[bs]
-
-                    else:
-                        # UE partially occupies the BS's bandwidth
-                        self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
+                    self.ue.bandwidth[ue] = np.minimum(self.bs.bandwidth[bs],
+                                                       self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth)
 
                 # counting the number of allocated UEs on the given BS
                 num_allocated_ues += len(allocated_ues)
@@ -236,7 +229,7 @@ class SimulationImtValeDownlink(SimulationImtVale):
         # thermal noise (considering the whole BS bandwidth)
         thermal_noise = \
             10 * np.log10(self.parameters.imt.BOLTZMANN_CONSTANT * self.parameters.imt.noise_temperature * 1e3) + \
-            10 * np.log10((1 - self.parameters.imt.guard_band_ratio) * self.parameters.imt.bandwidth[current_bs] * 1e6) + \
+            10 * np.log10(self.bs.bandwidth[current_bs] * 1e6) + \
             self.ue.noise_figure[ue_list]
 
         # total interference per UE

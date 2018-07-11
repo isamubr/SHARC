@@ -108,14 +108,10 @@ class SimulationImtVale(ABC, Observable):
 
         # calculates the number of RB per BS considering the given scheduling interval and that one subframe has
         # a 1ms duration
-        self.num_rb_per_bs = np.trunc((1 - self.parameters.imt.guard_band_ratio) *
-                                      self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
+        num_rb_per_subframe = np.trunc((1 - self.parameters.imt.guard_band_ratio) *
+                                       self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
 
-        self.num_rb_per_bs = np.trunc(self.num_rb_per_bs * self.parameters.imt.scheduling_time / 1e-3)
-
-        # Number of RB per UE on a given BS. The whole BS bandwidth is allocated to each UE
-        # before the scheduler does the proper allocation
-        self.num_rb_per_ue = (self.num_rb_per_bs[0] * 1e-3 / self.parameters.imt.scheduling_time) * np.ones(num_ue)
+        self.num_rb_per_bs = np.trunc(num_rb_per_subframe * self.parameters.imt.scheduling_time / 1e-3)
 
         self.results = Results(self.parameters_filename, self.parameters.general.overwrite_output)
 
@@ -201,8 +197,12 @@ class SimulationImtVale(ABC, Observable):
             if isinstance(self.bs.antenna[bs], AntennaBeamformingImt):
                 self.bs.antenna[bs].reset_beams()
             for ue in self.link[bs]:
-                #self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
-                self.ue.bandwidth[ue] = (1 - self.parameters.imt.guard_band_ratio) * self.parameters.imt.bandwidth[0]
+                # Number of RB per UE on a given BS. The whole BS bandwidth is allocated to each UE
+                # before the scheduler does the proper allocation
+                self.num_rb_per_ue = (self.num_rb_per_bs[bs] * 1e-3 / self.parameters.imt.scheduling_time) * \
+                                     np.ones(num_ue)
+
+                self.ue.bandwidth[ue] = self.bs.bandwidth[bs]
 
                 self.ue.center_freq[ue] = self.bs.center_freq[bs]
 
