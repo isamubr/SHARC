@@ -120,8 +120,6 @@ class SimulationImtValeUplink(SimulationImtVale):
                 for ue in self.link[bs]:
 
                     # get the throughput per RB for the current UE
-                    #ue_tput = self.get_throughput_ul(self.ue.sinr[ue])*1e3
-                    # TESTE - DEBUG - Gustavo
                     ue_tput = self.get_throughput_ul(self.ue.sinr[ue])
 
                     # calculate the number of RB required for the current UE
@@ -155,6 +153,11 @@ class SimulationImtValeUplink(SimulationImtVale):
                     num_rb_per_ue[n % len(num_rb_per_ue)] += 1
                     num_available_rbs -= 1
                 self.num_rb_per_ue[self.link[bs]] = num_rb_per_ue
+
+                # calculating the UE's bandwidth
+                for ue in self.link[bs]:
+                    self.ue.bandwidth[ue] = np.minimum(self.bs.bandwidth[bs],
+                                                       self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth)
 
                 # counting the number of allocated UEs on the given BS
                 num_allocated_ues += len(allocated_ues)
@@ -218,7 +221,7 @@ class SimulationImtValeUplink(SimulationImtVale):
         # calculate N
         thermal_noise = \
             10 * np.log10(self.parameters.imt.BOLTZMANN_CONSTANT * self.parameters.imt.noise_temperature * 1e3) + \
-            10 * np.log10(self.parameters.imt.rb_bandwidth * self.num_rb_per_bs[current_bs] * 1e6) + \
+            10 * np.log10(self.bs.bandwidth[current_bs] * 1e6) + \
             self.bs.noise_figure[current_bs]
 
         # total interference per UE
