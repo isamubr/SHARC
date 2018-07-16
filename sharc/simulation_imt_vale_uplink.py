@@ -260,7 +260,9 @@ class SimulationImtValeUplink(SimulationImtVale):
             for bs in bs_active:
                 ue = self.link[bs]
                 p_cmax = self.parameters.imt.ue_p_cmax
-                m_pusch = self.num_rb_per_ue[ue]
+                max_rb_per_subframe = self.num_rb_per_bs[bs] * 1e-3 / self.parameters.imt.scheduling_time
+                m_pusch = np.minimum(self.num_rb_per_ue[ue],
+                                     max_rb_per_subframe)
                 p_o_pusch = self.parameters.imt.ue_p_o_pusch
                 alpha = self.parameters.imt.ue_alpha
                 pl = self.coupling_loss_imt[bs, ue] + self.parameters.imt.bs_ohmic_loss \
