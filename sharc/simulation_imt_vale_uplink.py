@@ -165,17 +165,16 @@ class SimulationImtValeUplink(SimulationImtVale):
                 # activating the allocated UEs
                 self.ue.active[self.link[bs]] = np.ones(len(self.link[bs]), dtype=bool)
 
-                # calculating the BS's bandwidth
-                self.bs.bandwidth[bs] = self.num_rb_per_bs[bs] * self.parameters.imt.rb_bandwidth
-
-                # calculating the UE's bandwidth
-                self.ue.bandwidth[self.link[bs]] = self.num_rb_per_ue[self.link[bs]] * self.parameters.imt.rb_bandwidth
-
         if total_associated_ues != 0:
             # calculating the outage for the current drop
             self.outage_per_drop = 1 - num_allocated_ues / total_associated_ues
         else:
             self.outage_per_drop = 0
+
+        # re-initializing the interference variable, since it was used in the scheduling and is again used to calculate
+        # the SINR statistic
+        for bs in bs_active:
+            self.bs.rx_interference[bs] = -500
 
     def estimate_ul_sinr(self, current_bs, ue_list):
         """
@@ -298,10 +297,11 @@ class SimulationImtValeUplink(SimulationImtVale):
 
                 # summing all the interferences
                 interference_linear = np.power(10, 0.1*interference)
-                interference_linear = sum(interference_linear)
+                #interference_linear = sum(interference_linear)
+                interference_linear = np.mean(interference_linear)
                 interference = 10*np.log10(interference_linear)
 
-                self.bs.rx_interference[bs] = 10*np.log10(np.power(10, -50.0) +  # Prevent log(0)
+                self.bs.rx_interference[bs] = 10*np.log10(np.power(10, 0.1*self.bs.rx_interference[bs]) +
                                                           np.power(10, 0.1*interference))
 
             # calculate N
