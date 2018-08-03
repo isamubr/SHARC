@@ -38,7 +38,7 @@ class SimulationImtValeTest(unittest.TestCase):
 
         # Test values
         self.bs_antenna_gain = [1, 2]
-        self.ue_antenna_gain = [10, 11]
+        self.ue_antenna_gain = [5, 5]
         self.path_loss_matrix = np.array([[91.32490, 142.0268],
                                           [150.8591, 61.05490]])
 
@@ -103,8 +103,8 @@ class SimulationImtValeTest(unittest.TestCase):
         self.simulation.scheduler()
 
         # One RB per UE allocated
-        bandwidth_per_ue = np.ones(2) * self.simulation.parameters.imt.rb_bandwidth
-        npt.assert_allclose(self.simulation.ue.bandwidth, bandwidth_per_ue*np.ones(2), atol=1e-2)
+        bandwidth_per_ue = self.simulation.bs.bandwidth
+        npt.assert_allclose(self.simulation.ue.bandwidth, bandwidth_per_ue, atol=1e-2)
 
         # there is no power control, so BS's will transmit at maximum power
         self.simulation.power_control()
@@ -173,8 +173,8 @@ class SimulationImtValeTest(unittest.TestCase):
                                                                             self.simulation.topology,
                                                                             self.random_number_gen)
 
-        self.simulation.bs.antenna = np.array([AntennaOmni(self.ue_antenna_gain[0]),
-                                               AntennaOmni(self.ue_antenna_gain[1])])
+        self.simulation.bs.antenna = np.array([AntennaOmni(self.bs_antenna_gain[0]),
+                                               AntennaOmni(self.bs_antenna_gain[1])])
 
         self.simulation.bs.active = np.ones(2, dtype=bool)
 
@@ -191,8 +191,8 @@ class SimulationImtValeTest(unittest.TestCase):
         self.simulation.ue.x = np.array([669242.9, 671354.38])
         self.simulation.ue.y = np.array([7803199.9, 7803206.72])
 
-        self.simulation.ue.antenna = np.array([AntennaOmni(self.bs_antenna_gain[0]),
-                                               AntennaOmni(self.bs_antenna_gain[1])])
+        self.simulation.ue.antenna = np.array([AntennaOmni(self.ue_antenna_gain[0]),
+                                               AntennaOmni(self.ue_antenna_gain[1])])
 
         self.simulation.ue.active = np.ones(2, dtype=bool)
 
