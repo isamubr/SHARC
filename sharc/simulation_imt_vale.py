@@ -21,6 +21,7 @@ from sharc.station_manager import StationManager
 from sharc.results import Results
 from sharc.spectral_mask_imt import SpectralMaskImt
 from sharc.spectral_mask_3gpp import SpectralMask3Gpp
+from sharc.antenna.antenna_beamforming_imt import AntennaBeamformingImt
 
 
 class SimulationImtVale(ABC, Observable):
@@ -67,6 +68,9 @@ class SimulationImtVale(ABC, Observable):
         self.ues_in_outage_coordinates = []
         self.ues_in_outage_counter = []
 
+        self.sinr_registered_positions = []
+        self.sinr_map = []
+
     def add_observer_list(self, observers: list):
         for o in observers:
             self.add_observer(o)
@@ -91,7 +95,8 @@ class SimulationImtVale(ABC, Observable):
 
         self.bs_to_ue_phi = np.empty([num_bs, num_ue])
         self.bs_to_ue_theta = np.empty([num_bs, num_ue])
-        self.bs_to_ue_beam_rbs = -1.0*np.ones(num_ue, dtype=int)
+        self.bs_to_ue_beam_rbs = np.empty([num_bs, num_ue])
+        self.bs_to_ue_beam_rbs.fill(-1)
 
         self.ue = np.empty(num_ue)
         self.bs = np.empty(num_bs)
@@ -101,13 +106,12 @@ class SimulationImtVale(ABC, Observable):
         # group that is allocated to the given UE
         self.link = dict([(bs, list()) for bs in range(num_bs)])
 
-        # calculates the number of RB per BS
-        self.num_rb_per_bs = np.trunc((1 - self.parameters.imt.guard_band_ratio) *
-                                             self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
+        # calculates the number of RB per BS considering the given scheduling interval and that one subframe has
+        # a 1ms duration
+        num_rb_per_subframe = np.trunc((1 - self.parameters.imt.guard_band_ratio) *
+                                       self.parameters.imt.bandwidth / self.parameters.imt.rb_bandwidth)
 
-        # Number of RB per UE on a given BS. One RB is allocated per connected UE
-        # before the scheduler do the proper allocation
-        self.num_rb_per_ue = np.ones(num_ue)
+        self.num_rb_per_bs = np.trunc(num_rb_per_subframe * self.parameters.imt.scheduling_time / 1e-3)
 
         self.results = Results(self.parameters_filename, self.parameters.general.overwrite_output)
 
@@ -125,7 +129,7 @@ class SimulationImtVale(ABC, Observable):
         """
         Calculates the path coupling loss from each station_a to all station_b.
         Result is returned as a numpy array with dimensions num_a x num_b
-        TODO: calculate coupling loss between activa stations only
+        TODO: calculate coupling loss between active stations only
         """
         path_loss = propagation.get_loss(bs_id=self.bs.station_id,
                                          ue_position_x=self.ue.x,
@@ -141,7 +145,7 @@ class SimulationImtVale(ABC, Observable):
         self.imt_ue_antenna_gain = gain_b
 
         # calculate coupling loss
-        coupling_loss = np.squeeze(path_loss - gain_a - gain_b)
+        coupling_loss = path_loss - gain_a - gain_b
 
         return coupling_loss
 
@@ -149,32 +153,57 @@ class SimulationImtVale(ABC, Observable):
         """
         Link the UE to the BS based on the RSSI.
         """
-        # array with the path losses.
-        path_loss = self.propagation_imt.get_loss(bs_id=self.bs.station_id, ue_position_x=self.ue.x,
-                                                  ue_position_y=self.ue.y)
-        num_bs = path_loss.shape[0]
-        num_ue = path_loss.shape[1]
+        num_bs = self.bs.num_stations
+        num_ue = self.ue.num_stations
+        # Calculate the coupling lossess between UE and BS
+        # Add one beam to each UE for each BS. For initial RSSI computation the UE antenna is Omni
+        # with 0db gain
+        self.bs_to_ue_phi, self.bs_to_ue_theta = \
+            self.bs.get_pointing_vector_to(self.ue)
+        bs_active = np.where(self.bs.active)[0]
+        for bs in bs_active:
+            # Create beams
+            # add beam to BS antennas
+            for ue in range(self.ue.num_stations):
+                self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
+                                             self.bs_to_ue_theta[bs, ue])
+                # set beam resource block group
+                # All bs points to all UEs. That's not the case after association
+                self.bs_to_ue_beam_rbs[bs, ue] = len(self.bs.antenna[bs].beams_list) - 1
+
+        coupling_loss = self.calculate_coupling_loss(self.bs, self.ue, self.propagation_imt)
+
+        rssi = np.reshape(self.bs.tx_power, (self.bs.tx_power.shape[0], 1)) - coupling_loss - \
+                                                                   self.parameters.imt.bs_ohmic_loss - \
+                                                                   self.parameters.imt.ue_body_loss - \
+                                                                   self.parameters.imt.ue_ohmic_loss
 
         # Initialize the BS links for each drop
         self.link = dict([(bs, list()) for bs in range(num_bs)])
 
-        # forming the links between UEs and BSs based on the path loss
-        ue_path_loss = {}
-        ue_to_bs = {}
+        # Rank the best BS for each UE and connect
+        best_server_idx = np.argmax(np.matrix(rssi), axis=0).flat
 
-        for ue_index in range(0, num_ue):
-            ue_path_loss[ue_index] = [path_loss[row, ue_index] for row in range(0, num_bs)]
+        for ue, best_server in enumerate(best_server_idx):
+            self.link[best_server].append(ue)
 
-            bs_index = ue_path_loss[ue_index].index(min(ue_path_loss[ue_index]))
+        # Re-initialize beam indices
+        self.bs_to_ue_beam_rbs = np.empty([num_bs, num_ue])
+        self.bs_to_ue_beam_rbs.fill(-1)
 
-            ue_to_bs[ue_index] = bs_index
-
-            self.link[bs_index].append(ue_index)
-
-        # UE frequency is the same of it's connected BS.
+        # Now that UE links are set, configure UE attributes that depends on the BS it's connected to.
+        antenna_par = self.parameters.antenna_imt.get_antenna_parameters('UE', 'TX')
         for bs in self.link.keys():
+            if isinstance(self.bs.antenna[bs], AntennaBeamformingImt):
+                self.bs.antenna[bs].reset_beams()
             for ue in self.link[bs]:
-                self.ue.bandwidth[ue] = self.num_rb_per_ue[ue] * self.parameters.imt.rb_bandwidth
+                # Number of RB per UE on a given BS. The whole BS bandwidth is allocated to each UE
+                # before the scheduler does the proper allocation
+                self.num_rb_per_ue = (self.num_rb_per_bs[bs] * 1e-3 / self.parameters.imt.scheduling_time) * \
+                                     np.ones(num_ue)
+
+                self.ue.bandwidth[ue] = self.bs.bandwidth[bs]
+
                 self.ue.center_freq[ue] = self.bs.center_freq[bs]
 
                 if param.spectral_mask == "ITU 265-E":
@@ -186,6 +215,21 @@ class SimulationImtVale(ABC, Observable):
                                                                  self.ue.bandwidth[ue])
 
                 self.ue.spectral_mask[ue].set_mask()
+
+                # Create and initialize UE antennas and point them to the BS
+                self.ue.antenna[ue] = AntennaBeamformingImt(antenna_par,
+                                                            self.ue.azimuth[bs, ue],
+                                                            self.ue.elevation[bs, ue])
+                # add beams to BS antennas towards the UE
+                self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs, ue],
+                                             self.bs_to_ue_theta[bs, ue])
+
+                # add beam to UE antennas towards the BS
+                self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs, ue] - 180,
+                                             180 - self.bs_to_ue_theta[bs, ue])
+
+                # set beam resource block group
+                self.bs_to_ue_beam_rbs[bs, ue] = len(self.bs.antenna[bs].beams_list) - 1
 
     @abstractmethod
     def scheduler(self):
@@ -227,19 +271,21 @@ class SimulationImtVale(ABC, Observable):
         # Initialize variables (phi, theta, beams_idx)
         if station_1.station_type is StationType.IMT_BS:
             if station_2.station_type is StationType.IMT_UE:
-                beams_idx = self.bs_to_ue_beam_rbs[station_2_active]
                 # FIXME - we're activating all UEs here because this function is called before the scheduler
-                station_2_active = np.ones(station_2.num_stations, dtype=bool)
+                station_2_active = np.where(np.ones(station_2.num_stations, dtype=bool))[0]
+                beams_idx = self.bs_to_ue_beam_rbs
 
         elif station_1.station_type is StationType.IMT_UE:
-            beams_idx = np.zeros(len(station_2_active), dtype=int)
+            # FIXME - we're activating all UEs here because this function is called before the scheduler
+            station_1_active = np.where(np.ones(station_1.num_stations, dtype=bool))[0]
+            beams_idx = np.zeros(phi.shape)
 
         # Calculate gains
         gains = np.zeros(phi.shape)
         for k in station_1_active:
             gains[k, station_2_active] = station_1.antenna[k].calculate_gain(phi_vec=phi[k, station_2_active],
                                                                              theta_vec=theta[k, station_2_active],
-                                                                             beams_l=beams_idx)
+                                                                             beams_l=beams_idx[k])
 
         return gains
 
