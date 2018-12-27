@@ -9,6 +9,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import matplotlib.axes
 
+
 class Topology(object):
 
     __metaclass__ = ABCMeta

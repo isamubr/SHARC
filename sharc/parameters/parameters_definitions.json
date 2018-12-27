@@ -575,6 +575,11 @@
             "default_value": 0,
             "param_options": ""
         },
+        "lon_deg": {
+            "data_type": "int",
+            "default_value": 0,
+            "param_options": ""
+        },
         "elevation": {
             "data_type": "int",
             "default_value": 270,

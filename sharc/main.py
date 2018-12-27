@@ -14,6 +14,7 @@ from sharc.gui.view import View
 from sharc.controller import Controller
 from sharc.support.logging import Logging
 
+
 def main():
     Logging.setup_logging()
     

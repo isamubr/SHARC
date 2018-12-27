@@ -242,14 +242,19 @@ if __name__ == '__main__':
 
     propagation_path = os.getcwd()
     sharc_path = os.path.dirname(propagation_path)
-    param_file = os.path.join(sharc_path, "parameters", "parameters.ini")
+    param_file = os.path.join(sharc_path, "parameters", "parameters_general.ini")
 
     params.set_file_name(param_file)
     params.read_params()
 
     sat_params = params.fss_ss
 
-    propagation = PropagationP619()
+    seed = 101
+    random.seed(seed)
+    secondary_seed = random.randint(1, 2**32 - 1)
+    random_number_gen = np.random.RandomState(seed=secondary_seed)
+
+    propagation = PropagationP619(random_number_gen)
 
     ##########################
     # Plot atmospheric loss
