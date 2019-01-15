@@ -58,7 +58,8 @@ class TopologySingleBaseStation(Topology):
                 self.elevation = TopologySingleBaseStation.ELEVATION*np.ones(2)
                 self.num_base_stations = 2
             self.indoor = np.zeros(self.num_base_stations, dtype = bool)
-
+    def save_to_file(self):
+        file_name = f"pathloss_{}"
 
     def plot(self, ax: matplotlib.axes.Axes):
         # plot base station

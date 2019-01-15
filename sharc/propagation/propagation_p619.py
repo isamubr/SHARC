@@ -187,13 +187,13 @@ class PropagationP619(Propagation):
         """
         d = kwargs["distance_3D"]
         f = kwargs["frequency"]
-        indoor_stations = kwargs["indoor_stations"]
+        indoor_stations = kwargs,get("indoor_stations",0)
         elevation = kwargs["elevation"]
         sat_params = kwargs["sat_params"]
         earth_to_space = kwargs["earth_to_space"]
         earth_station_antenna_gain = kwargs["earth_station_antenna_gain"]
         single_entry = kwargs.pop("single_entry", False)
-        number_of_sectors = kwargs["number_of_sectors"]
+        number_of_sectors = kwargs.get("number_of_sectors", 1)
 
         free_space_loss = self.free_space.get_loss(distance_3D=d, frequency=f)
 
@@ -213,10 +213,10 @@ class PropagationP619(Propagation):
         if single_entry:
             elevation_sectors = np.repeat(elevation["free_space"], number_of_sectors)
             tropo_scintillation_loss = \
-                self.scintillation.get_tropospheric_attenuation(elevation = elevation_sectors,
-                                                                antenna_gain_dB = earth_station_antenna_gain,
-                                                                frequency_MHz = freq_set,
-                                                                sat_params = sat_params)
+                self.scintillation.get_tropospheric_attenuation(elevation=elevation_sectors,
+                                                                antenna_gain_dB=earth_station_antenna_gain,
+                                                                frequency_MHz=freq_set,
+                                                                sat_params=sat_params)
 
             loss = (free_space_loss + self.depolarization_loss +
                     atmospheric_gasses_loss + beam_spreading_attenuation + diffraction_loss)
